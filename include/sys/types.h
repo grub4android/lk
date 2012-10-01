@@ -23,10 +23,8 @@
 #ifndef __SYS_TYPES_H
 #define __SYS_TYPES_H
 
-#include <stddef.h>
 #include <limits.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 typedef unsigned char uchar;
 typedef unsigned short ushort;
@@ -37,10 +35,6 @@ typedef unsigned short u_short;
 typedef unsigned int u_int;
 typedef unsigned long u_long;
 
-#ifndef _SIZE_T_DEFINED_
-typedef unsigned long size_t;
-#endif
-typedef long          ssize_t;
 typedef long long     off_t;
 
 typedef int status_t;

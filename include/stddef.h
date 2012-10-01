@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Travis Geiselbrecht
+ * Copyright (c) 2012 Travis Geiselbrecht
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,45 +20,20 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __STDINT_H
-#define __STDINT_H
+#ifndef __STDDEF_H
+#define __STDDEF_H
 
-#include <limits.h> // for ULONG_MAX
+#include <compiler.h> // for __offsetof()
 
-typedef unsigned char      uint8_t;
-typedef unsigned short     uint16_t;
-typedef unsigned int       uint32_t;
-typedef unsigned long long uint64_t;
-typedef signed char int8_t;
-typedef short     int16_t;
-typedef int       int32_t;
-typedef long long int64_t;
+#define offsetof(x, y) __offsetof(x, y)
 
-typedef int8_t int_least8_t;
-typedef int16_t int_least16_t;
-typedef int32_t int_least32_t;
-typedef int64_t int_least64_t;
-typedef uint8_t uint_least8_t;
-typedef uint16_t uint_least16_t;
-typedef uint32_t uint_least32_t;
-typedef uint64_t uint_least64_t;
+typedef long ptrdiff_t;
 
-typedef int8_t int_fast8_t;
-typedef int16_t int_fast16_t;
-typedef int32_t int_fast32_t;
-typedef int64_t int_fast64_t;
-typedef uint8_t uint_fast8_t;
-typedef uint16_t uint_fast16_t;
-typedef uint32_t uint_fast32_t;
-typedef uint64_t uint_fast64_t;
+#ifndef _SIZE_T_DEFINED_
+typedef unsigned long size_t;
+#endif
+typedef long          ssize_t;
 
-typedef long intptr_t;
-typedef unsigned long uintptr_t;
-
-typedef long long intmax_t;
-typedef unsigned long long uintmax_t;
-
-#define SIZE_MAX ULONG_MAX
+#define NULL 0
 
 #endif
-

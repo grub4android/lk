@@ -23,6 +23,7 @@
 #ifndef __APP_H
 #define __APP_H
 
+#include <stddef.h>
 /* app support api */
 void apps_init(void); /* one time setup */
 
