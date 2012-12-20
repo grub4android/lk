@@ -10,7 +10,8 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/rand.c \
 	$(LOCAL_DIR)/stdio.c \
 	$(LOCAL_DIR)/qsort.c \
-	$(LOCAL_DIR)/eabi.c
+	$(LOCAL_DIR)/eabi.c \
+	$(LOCAL_DIR)/gcd_lcm.c
 
 
 include $(LOCAL_DIR)/string/rules.mk
