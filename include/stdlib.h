@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2008-2014 Travis Geiselbrecht
  *
+ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -50,6 +52,14 @@ unsigned long long atoull(const char *num);
 /* allocate a buffer on the stack aligned and padded to the cpu's cache line size */
 #define STACKBUF_DMA_ALIGN(var, size) \
     uint8_t __##var[(size) + CACHE_LINE]; uint8_t *var = (uint8_t *)(ROUNDUP((addr_t)__##var, CACHE_LINE))
+
+/* Macro to allocate buffer in both local & global space, the STACKBUF_DMA_ALIGN cannot
+ * be used for global space.
+ * If we use STACKBUF_DMA_ALIGN 'C' compiler throws the error "Initializer element
+ * is not constant", since global variable need to be initialized with a constant value.
+ */
+#define BUF_DMA_ALIGN(var, size) \
+	static uint8_t var[ROUNDUP(size, CACHE_LINE)] __attribute__((aligned(CACHE_LINE)));
 
 #endif
 
