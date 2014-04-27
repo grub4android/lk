@@ -73,7 +73,8 @@ int zunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp,
 
 int gunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp)
 {
-	int i, flags;
+	unsigned int i;
+	int flags;
 
 	/* skip header */
 	i = 10;
