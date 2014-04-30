@@ -92,6 +92,10 @@
 
 #define MIPI_DSI_BASE                         (0x04700000)
 #define REG_DSI(off)                          (MIPI_DSI_BASE + (off))
+#define DSI0_PHY_BASE               MIPI_DSI_BASE
+#define DSI1_PHY_BASE               MIPI_DSI_BASE
+#define DSI0_PLL_BASE               MIPI_DSI_BASE
+#define DSI1_PLL_BASE               MIPI_DSI_BASE
 
 #define DSIPHY_REGULATOR_BASE                 (0x500)
 #define DSIPHY_TIMING_BASE                    (0x440)
