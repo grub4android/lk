@@ -1081,9 +1081,22 @@ continue_boot:
 	return 0;
 }
 
+#if BOOT_2NDSTAGE
+void fakeread_device_info(device_info *dev)
+{
+	memcpy(dev->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
+	dev->is_tampered = 0;
+	dev->is_unlocked = 0;
+	dev->charger_screen_enabled = 0;
+	strlcpy(dev->display_panel, "fakepanel",
+			sizeof(dev->display_panel));
+}
+#endif
+
 BUF_DMA_ALIGN(info_buf, BOOT_IMG_MAX_PAGE_SIZE);
 void write_device_info_mmc(device_info *dev)
 {
+#if !BOOT_2NDSTAGE
 	struct device_info *info = (void*) info_buf;
 	unsigned long long ptn = 0;
 	unsigned long long size;
@@ -1112,10 +1125,14 @@ void write_device_info_mmc(device_info *dev)
 		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
 		return;
 	}
+#endif
 }
 
 void read_device_info_mmc(device_info *dev)
 {
+#if BOOT_2NDSTAGE
+	fakeread_device_info(dev);
+#else
 	struct device_info *info = (void*) info_buf;
 	unsigned long long ptn = 0;
 	unsigned long long size;
@@ -1147,10 +1164,12 @@ void read_device_info_mmc(device_info *dev)
 		write_device_info_mmc(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
+#endif
 }
 
 void write_device_info_flash(device_info *dev)
 {
+#if !BOOT_2NDSTAGE
 	struct device_info *info = (void *) info_buf;
 	struct ptentry_msm *ptn;
 	struct ptable_msm *ptable;
@@ -1176,10 +1195,14 @@ void write_device_info_flash(device_info *dev)
 		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
 			return;
 	}
+#endif
 }
 
 void read_device_info_flash(device_info *dev)
 {
+#if BOOT_2NDSTAGE
+	fakeread_device_info(dev);
+#else
 	struct device_info *info = (void*) info_buf;
 	struct ptentry_msm *ptn;
 	struct ptable_msm *ptable;
@@ -1210,6 +1233,7 @@ void read_device_info_flash(device_info *dev)
 		write_device_info_flash(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
+#endif
 }
 
 void write_device_info(device_info *dev)
