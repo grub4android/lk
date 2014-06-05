@@ -85,6 +85,17 @@ struct board_data {
 	uint32_t platform_hlos_subtype;
 };
 
+#if BOOT_2NDSTAGE
+struct original_atags_info {
+	char cmdline[2048];
+	uint32_t platform_id;
+	uint32_t variant_id;
+	uint32_t soc_rev;
+};
+
+struct original_atags_info* board_get_original_atags_info(void);
+#endif
+
 void board_init();
 void target_detect(struct board_data *);
 void target_baseband_detect(struct board_data *);

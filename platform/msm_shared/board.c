@@ -31,6 +31,9 @@
 #include <board.h>
 #include <smem.h>
 #include <baseband.h>
+#include <arch/arm.h>
+#include <dev_tree.h>
+#include <libfdt.h>
 
 static struct board_data board = {UNKNOWN,
 	0,
@@ -40,6 +43,9 @@ static struct board_data board = {UNKNOWN,
 	BASEBAND_MSM,
 	{{PMIC_IS_INVALID, 0}, {PMIC_IS_INVALID, 0}, {PMIC_IS_INVALID, 0}},
 };
+
+static struct original_atags_info original_atags_info = {{},0,0,0,};
+static bool has_original_atags_info = 0;
 
 static void platform_detect()
 {
@@ -147,11 +153,116 @@ static void platform_detect()
 	}
 }
 
+#if BOOT_2NDSTAGE
+#if DEVICE_TREE
+struct dt_entry_v1
+{
+	uint32_t platform_id;
+	uint32_t variant_id;
+	uint32_t soc_rev;
+	uint32_t offset;
+	uint32_t size;
+};
+
+static int original_devtree_parse(void *fdt) {
+	int ret = 0;
+	int len = 0;
+	uint32_t offset = 0;
+	const char* str_prop = NULL;
+	int min_plat_id_len = DT_ENTRY_V1_SIZE;
+
+	/* Check the device tree header */
+	ret = fdt_check_header(fdt);
+	if (ret)
+	{
+		dprintf(CRITICAL, "Invalid device tree header \n");
+		return ret;
+	}
+
+	/* Get offset of the chosen node */
+	ret = fdt_path_offset(fdt, "/chosen");
+	if (ret < 0)
+	{
+		dprintf(CRITICAL, "Could not find chosen node.\n");
+		return ret;
+	}
+	offset = ret;
+
+	/* store cmdline */
+	str_prop = (const char *)fdt_getprop(fdt, offset, "bootargs", &len);
+	if (str_prop && len>0)
+	{
+		memcpy(original_atags_info.cmdline, str_prop, len);
+	}
+
+	/* Get offset of the root node */
+	ret = fdt_path_offset(fdt, "/");
+	if (ret < 0) {
+		dprintf(CRITICAL, "Could not find root node.\n");
+		return ret;
+	}
+	offset = ret;
+
+	/* Find the board-id prop from DTB , if board-id is present then
+	 * the DTB is version 2 */
+	str_prop = (const char *)fdt_getprop(fdt, offset, "qcom,board-id", &len);
+	if (str_prop)
+	{
+		// TODO support it
+		dprintf(CRITICAL, "DTB version 2 is not supported!\n");
+		return -1;
+	}
+
+	/* Get the msm-id prop from DTB */
+	str_prop = (const char *)fdt_getprop(fdt, offset, "qcom,msm-id", &len);
+	if (!str_prop || len <= 0) {
+		dprintf(CRITICAL, "qcom,msm-id entry not found\n");
+		return -1;
+	}
+	else if (len % min_plat_id_len) {
+		dprintf(CRITICAL, "qcom,msm-id in device tree is (%d) not a multiple of (%d)\n",
+			len, min_plat_id_len);
+		return -1;
+	}
+
+	/* store id's */
+	original_atags_info.platform_id = fdt32_to_cpu(((const struct dt_entry_v1 *)str_prop)->platform_id);
+	original_atags_info.variant_id = fdt32_to_cpu(((const struct dt_entry_v1 *)str_prop)->variant_id);
+	original_atags_info.soc_rev = fdt32_to_cpu(((const struct dt_entry_v1 *)str_prop)->soc_rev);
+
+	has_original_atags_info = 1;
+	return 0;
+}
+#else
+// TODO
+#endif
+
+struct original_atags_info* board_get_original_atags_info(void) {
+	if(has_original_atags_info)
+		return &original_atags_info;
+	else
+		return NULL;
+}
+#endif
+
 void board_init()
 {
 	platform_detect();
 	target_detect(&board);
 	target_baseband_detect(&board);
+
+#if BOOT_2NDSTAGE
+#if DEVICE_TREE
+	original_devtree_parse(original_atags);
+#else
+	dprintf(CRITICAL, "parsing atags isn't implemented!");
+#endif
+
+	if(has_original_atags_info)
+		dprintf(INFO, "socinfo: platform=%u variant=0x%x soc_rev=0x%x\n", original_atags_info.platform_id, original_atags_info.variant_id, original_atags_info.soc_rev);
+	else
+		dprintf(CRITICAL, "error parsing original atags info!");
+#endif
 }
 
 uint32_t board_platform_id(void)
