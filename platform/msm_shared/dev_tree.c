@@ -412,6 +412,8 @@ static int platform_dt_match(struct dt_entry *cur_dt_entry, uint32_t target_vari
 	 */
 	uint32_t cur_dt_target_id ;
 	uint32_t cur_dt_hlos_subtype;
+	uint32_t platform_id = board_platform_id();
+	uint32_t soc_version = board_soc_version();
 
 	/*
 	 * if variant_id has platform_hw_ver has major = 0xff and minor = 0xff,
@@ -437,13 +439,25 @@ static int platform_dt_match(struct dt_entry *cur_dt_entry, uint32_t target_vari
 	*  4. otherwise return 1
 	*/
 
-	if((cur_dt_entry->platform_id == board_platform_id()) &&
+#if BOOT_2NDSTAGE
+	struct original_atags_info *atags_info = board_get_original_atags_info();
+	if(atags_info==NULL) {
+		dprintf(CRITICAL, "%s: atags_info is NULL!\n", __func__);
+		return 1;
+	}
+
+	platform_id = atags_info->platform_id;
+	target_variant_id = atags_info->variant_id;
+	soc_version = atags_info->soc_rev;
+#endif
+
+	if((cur_dt_entry->platform_id == platform_id) &&
 		(cur_dt_target_id == target_variant_id) &&
 		(cur_dt_hlos_subtype == target_get_hlos_subtype())) {
 
-		if(cur_dt_entry->soc_rev == board_soc_version()) {
+		if(cur_dt_entry->soc_rev == soc_version) {
 			return 0;
-		} else if(cur_dt_entry->soc_rev < board_soc_version()) {
+		} else if(cur_dt_entry->soc_rev < soc_version) {
 			return -1;
 		}
 	}
