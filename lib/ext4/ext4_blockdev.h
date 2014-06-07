@@ -103,6 +103,9 @@ struct ext4_blockdev  {
 
     /**@brief   Physical write counter*/
     uint32_t    bwrite_ctr;
+
+    /**@brief   Private data for blockdev driver*/
+    void* private_data;
 };
 
 
