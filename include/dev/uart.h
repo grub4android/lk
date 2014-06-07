@@ -24,6 +24,7 @@
 #define __DEV_UART_H
 
 #include <sys/types.h>
+#include <stdbool.h>
 
 void uart_init(void);
 void uart_init_early(void);

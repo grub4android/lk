@@ -25,6 +25,7 @@
 #ifndef __TARGET_H
 #define __TARGET_H
 
+#include <stdbool.h>
 
 /* Target helper functions exposed to USB driver */
 typedef struct {
