@@ -3,6 +3,7 @@
  * All rights reserved.
  *
  * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -383,6 +384,7 @@ enum platform {
 	HW_PLATFORM_FFA = 2,
 	HW_PLATFORM_FLUID = 3,
 	HW_PLATFORM_SVLTE = 4,
+	HW_PLATFORM_OEM = 5,
 	HW_PLATFORM_QT = 6,
 	HW_PLATFORM_MTP_MDM = 7,
 	HW_PLATFORM_MTP = 8,

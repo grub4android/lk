@@ -1,4 +1,5 @@
 /* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,6 +37,8 @@
 #define TSH_MDT61_DISPLAY_WIDTH      800
 #define TSH_MDT61_MIPI_FB_WIDTH      (TSH_MDT61_DISPLAY_WIDTH - 200)
 #define TSH_MDT61_MIPI_FB_HEIGHT     1024
+#define REN_MIPI_FB_WIDTH		720
+#define REN_MIPI_FB_HEIGHT		1280
 
 #define MIPI_HSYNC_PULSE_WIDTH       8
 #define MIPI_HSYNC_BACK_PORCH_DCLK   16

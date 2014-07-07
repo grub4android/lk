@@ -3,6 +3,7 @@
  * All rights reserved.
  *
  * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -94,8 +95,14 @@ void write_device_info_flash(device_info *dev);
 
 #define MAX_TAGS_SIZE   1024
 
+#define NORMAL_MODE     0x77665501
 #define RECOVERY_MODE   0x77665502
 #define FASTBOOT_MODE   0x77665500
+
+#if WITH_XIAOMI_DUALBOOT
+#define BOOT0_MODE      0x6f656d10
+#define BOOT1_MODE      0x6f656d11
+#endif
 
 /* make 4096 as default size to ensure EFS,EXT4's erasing */
 #define DEFAULT_ERASE_SIZE  4096
@@ -133,6 +140,19 @@ static const char *baseband_dsda    = " androidboot.baseband=dsda";
 static const char *baseband_dsda2   = " androidboot.baseband=dsda2";
 static const char *baseband_sglte2  = " androidboot.baseband=sglte2";
 static const char *warmboot_cmdline = " qpnp-power-on.warm_boot=1";
+
+#if WITH_XIAOMI_DUALBOOT
+/* keep them same length */
+static const char *boot0_cmdline = " syspart=system ";
+static const char *boot1_cmdline = " syspart=system1";
+
+enum {
+	DUALBOOT_BOOT_NONE,
+	DUALBOOT_BOOT_FIRST,
+	DUALBOOT_BOOT_SECOND,
+};
+static unsigned dual_boot_sign = DUALBOOT_BOOT_NONE;
+#endif
 
 static unsigned page_size = 0;
 static unsigned page_mask = 0;
@@ -255,6 +275,13 @@ unsigned char *update_cmdline(const char * cmdline)
 		pause_at_bootup = 1;
 		cmdline_len += strlen(battchg_pause);
 	}
+
+#if WITH_XIAOMI_DUALBOOT
+	/* bootX_cmdline is a mandatory parameter
+	 * it should be there in any case
+	 */
+	cmdline_len += strlen(boot0_cmdline);
+#endif
 
 	if(target_use_signed_kernel() && auth_kernel_img) {
 		cmdline_len += strlen(auth_kernel);
@@ -384,6 +411,20 @@ unsigned char *update_cmdline(const char * cmdline)
 			if (have_cmdline) --dst;
 			while ((*dst++ = *src++));
 		}
+
+#if WITH_XIAOMI_DUALBOOT
+		if (dual_boot_sign == DUALBOOT_BOOT_SECOND) {
+			src = boot1_cmdline;
+			if (have_cmdline) --dst;
+			while ((*dst++ = *src++));
+		} else {
+			if (dual_boot_sign == DUALBOOT_BOOT_NONE)
+				dprintf(CRITICAL, "ERROR: boot and system not chosen\n");
+			src = boot0_cmdline;
+			if (have_cmdline) --dst;
+			while ((*dst++ = *src++));
+		}
+#endif
 
 		if(target_use_signed_kernel() && auth_kernel_img) {
 			src = auth_kernel;
@@ -651,6 +692,48 @@ BUF_DMA_ALIGN(buf, BOOT_IMG_MAX_PAGE_SIZE); //Equal to max-supported pagesize
 BUF_DMA_ALIGN(dt_buf, BOOT_IMG_MAX_PAGE_SIZE);
 #endif
 
+#if WITH_XIAOMI_DUALBOOT
+#define DUALBOOT_OFFSET_SECTORS 8	/* 4 pages, for recovery_message */
+static void check_boot_image(void)
+{
+	int index = INVALID_PTN;
+	unsigned long long ptn = 0;
+	struct dual_boot_message *dualboot_msg;
+
+	if (dual_boot_sign != DUALBOOT_BOOT_NONE)
+		goto out;
+
+	dual_boot_sign = DUALBOOT_BOOT_FIRST;
+
+	index = partition_get_index("misc");
+	ptn = partition_get_offset(index);
+	if (ptn == 0) {
+		dprintf(CRITICAL, "ERROR: No misc found\n");
+		goto out;
+	}
+
+	ptn += DUALBOOT_OFFSET_SECTORS * MMC_BOOT_RD_BLOCK_LEN;
+	memset(buf, 0, sizeof(buf));
+	if (mmc_read(ptn, (unsigned int *)buf, MMC_BOOT_RD_BLOCK_LEN)) {
+		dprintf(CRITICAL, "ERROR: Cannot read misc\n");
+		goto out;
+	}
+
+	dualboot_msg = (struct dual_boot_message *)buf;
+
+	if (!strncmp(dualboot_msg->command, "boot-system", 11)) {
+		if (dualboot_msg->command[11] == '1')
+			dual_boot_sign = DUALBOOT_BOOT_SECOND;
+	} else
+		dprintf(CRITICAL, "WARNING: dual_boot_message not set\n");
+
+out:
+	/* either DUALBOOT_BOOT_FIRST or DUALBOOT_BOOT_SECOND at this point */
+	dprintf(INFO, "Dualboot choosing: %d of (1, 2) boot & system\n",
+		dual_boot_sign);
+}
+#endif
+
 static void verify_signed_bootimg(uint32_t bootimg_addr, uint32_t bootimg_size)
 {
 	int ret;
@@ -785,7 +868,16 @@ int boot_linux_from_mmc(void)
 		goto unified_boot;
 	}
 	if (!boot_into_recovery) {
-		index = partition_get_index("boot");
+#if WITH_XIAOMI_DUALBOOT
+		check_boot_image();
+
+		if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+			index = partition_get_index("boot1");
+		else
+#endif
+		{
+			index = partition_get_index("boot");
+		}
 		ptn = partition_get_offset(index);
 		if(ptn == 0) {
 			dprintf(CRITICAL, "ERROR: No boot partition found\n");
@@ -1815,7 +1907,11 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 				return;
 			}
 
-			if (!strcmp(pname, "boot") || !strcmp(pname, "recovery")) {
+			if (!strcmp(pname, "boot")
+#if WITH_XIAOMI_DUALBOOT
+				|| !strcmp(pname, "boot1")
+#endif
+				|| !strcmp(pname, "recovery")) {
 				if (memcmp((void *)data, BOOT_MAGIC, BOOT_MAGIC_SIZE)) {
 					fastboot_fail("image is not a boot image");
 					return;
@@ -2163,7 +2259,7 @@ void cmd_reboot(const char *arg, void *data, unsigned sz)
 {
 	dprintf(INFO, "rebooting the device\n");
 	fastboot_okay("");
-	reboot_device(0);
+	reboot_device(NORMAL_MODE);
 }
 
 void cmd_reboot_bootloader(const char *arg, void *data, unsigned sz)
@@ -2531,6 +2627,13 @@ void aboot_init(const struct app_descriptor *app)
 	} else if(reboot_mode == FASTBOOT_MODE) {
 		boot_into_fastboot = true;
 	}
+#if WITH_XIAOMI_DUALBOOT
+	else if (reboot_mode == BOOT0_MODE) {
+		dual_boot_sign = DUALBOOT_BOOT_FIRST;
+	} else if (reboot_mode == BOOT1_MODE) {
+		dual_boot_sign = DUALBOOT_BOOT_SECOND;
+	}
+#endif
 
 	if (!boot_into_fastboot)
 	{
