@@ -587,7 +587,7 @@ void api_init(void)
 	/*
 	 * Produce the signature so the API consumers can find it
 	 */
-	sig = malloc(sizeof(struct api_signature));
+	sig = memalign(8, sizeof(struct api_signature));
 	if (sig == NULL) {
 		dprintf(INFO, "API: could not allocate memory for the signature!\n");
 		return;
