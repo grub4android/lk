@@ -7,3 +7,4 @@ OBJS += \
 	$(LOCAL_DIR)/fastboot.o \
 	$(LOCAL_DIR)/recovery.o
 
+include $(LOCAL_DIR)/uboot_api/rules.mk

@@ -55,6 +55,8 @@
 #include <sha.h>
 #include <platform/iomap.h>
 #include <boot_device.h>
+#include <api_public.h>
+#include "uboot_api/api_private.h"
 
 #if DEVICE_TREE
 #include <libfdt.h>
@@ -2623,6 +2625,9 @@ void aboot_init(const struct app_descriptor *app)
 	target_display_init(device.display_panel);
 	dprintf(SPEW, "Display Init: Done\n");
 #endif
+
+	/* initialize uboot api */
+	api_init();
 
 
 	target_serialno((unsigned char *) sn_buf);
