@@ -16,6 +16,7 @@
 #include <platform.h>
 #include <platform/timer.h>
 #include <dev/uart.h>
+#include <dev/fbcon.h>
 #include <debug.h>
 #include "../aboot.h"
 #include <api_public.h>
@@ -486,8 +487,13 @@ static int API_env_enum(va_list ap)
  */
 static int API_display_get_info(va_list ap)
 {
-	dprintf(INFO, "%s\n", __func__);
-	return 0;
+	int type;
+	struct display_info *di;
+
+	type = va_arg(ap, int);
+	di = va_arg(ap, struct display_info *);
+
+	return display_get_info(type, di);
 }
 
 /*
@@ -497,8 +503,14 @@ static int API_display_get_info(va_list ap)
  */
 static int API_display_draw_bitmap(va_list ap)
 {
-	dprintf(INFO, "%s\n", __func__);
-	return 0;
+	ulong bitmap;
+	int x, y;
+
+	bitmap = va_arg(ap, ulong);
+	x = va_arg(ap, int);
+	y = va_arg(ap, int);
+
+	return display_draw_bitmap(bitmap, x, y);
 }
 
 /*
@@ -508,9 +520,39 @@ static int API_display_draw_bitmap(va_list ap)
  */
 static int API_display_clear(va_list ap)
 {
-	dprintf(INFO, "%s\n", __func__);
+	display_clear();
 	return 0;
 }
+
+/*
+ * pseudo signature:
+ *
+ * void API_display_fb_get(unsigned long* fb)
+ */
+static int API_display_fb_get(va_list ap)
+{
+	unsigned long *fb;
+	struct fbcon_config* config =  fbcon_display();
+
+	if ((fb = (unsigned long *)va_arg(ap, uint32_t)) == NULL)
+		return API_EINVAL;
+
+	*fb = config->base;
+	return 0;
+}
+
+/*
+ * pseudo signature:
+ *
+ * void API_display_fb_flush(void)
+ */
+static int API_display_fb_flush(va_list ap)
+{
+	trigger_mdp_dsi();
+	return 0;
+}
+
+
 
 static cfp_t calls_table[API_MAXCALL] = { NULL, };
 
@@ -578,6 +620,8 @@ void api_init(void)
 	calls_table[API_DISPLAY_GET_INFO] = &API_display_get_info;
 	calls_table[API_DISPLAY_DRAW_BITMAP] = &API_display_draw_bitmap;
 	calls_table[API_DISPLAY_CLEAR] = &API_display_clear;
+	calls_table[API_DISPLAY_FB_GET] = &API_display_fb_get;
+	calls_table[API_DISPLAY_FB_FLUSH] = &API_display_fb_flush;
 	calls_no = API_MAXCALL;
 
 	dprintf(INFO, "API initialized with %d calls\n", calls_no);
