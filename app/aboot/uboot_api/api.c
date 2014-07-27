@@ -598,6 +598,7 @@ int syscall(int call, int *retval, ...)
 void api_init(void)
 {
 	struct api_signature *sig = NULL;
+	char* api_sig_magic = API_SIG_MAGIC;
 
 	/* TODO put this into linker set one day... */
 	calls_table[API_RSVD] = NULL;
@@ -638,13 +639,15 @@ void api_init(void)
 	}
 
 	dprintf(INFO, "API sig @ 0x%08x\n", sig);
-	memcpy(sig->magic, API_SIG_MAGIC, 8);
+	memcpy(sig->magic, api_sig_magic, 8);
 	sig->version = API_SIG_VERSION;
 	sig->syscall = &syscall;
 	sig->checksum = 0;
 	sig->checksum = calculate_crc32((unsigned char *)sig,
 			      sizeof(struct api_signature));
 	dprintf(INFO, "syscall entry: 0x%08x\n", sig->syscall);
+
+	memset(api_sig_magic, 0, strlen(api_sig_magic));
 }
 
 void platform_set_mr(struct sys_info *si, unsigned long start, unsigned long size,
