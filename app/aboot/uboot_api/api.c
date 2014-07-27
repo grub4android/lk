@@ -202,7 +202,7 @@ static int API_dev_enum(va_list ap)
 	if (di->cookie == NULL) {
 		/* start over - clean up enumeration */
 		dev_enum_reset();	/* XXX shouldn't the name contain 'stor'? */
-		dprintf(DEBUG, "RESTART ENUM\n");
+		dprintf(INFO, "RESTART ENUM\n");
 
 		/* net device enumeration first */
 		//if (dev_enum_net(di))

@@ -8,7 +8,6 @@
 
 //#include <config.h>
 //#include <common.h>
-#define DEBUG INFO
 #include <debug.h>
 #include <api_public.h>
 #include "uboot_part.h"
