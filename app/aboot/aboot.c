@@ -667,6 +667,22 @@ void boot_linux(void *kernel, unsigned *tags,
 		entry(0, machtype, (unsigned*)tags_phys);
 }
 
+void do_boot(struct boot_img_hdr *hdr, const char *cmdline)
+{
+	if(strcmp(hdr->name, "GRUB")==0) {
+		void (*entry)(unsigned, unsigned, unsigned*) = 
+			(entry_func_ptr*)(PA((addr_t)hdr->kernel_addr));
+
+		dprintf(INFO, "booting GRUB @ %p\n", entry);
+		entry(0, board_machtype(), NULL);
+	}
+	else {
+		boot_linux((void *)hdr->kernel_addr, (unsigned *) hdr->tags_addr,
+			   (const char *)cmdline, board_machtype(),
+			   (void *)hdr->ramdisk_addr, hdr->ramdisk_size);
+	}
+}
+
 /* Function to check if the memory address range falls within the aboot
  * boundaries.
  * start: Start of the memory region
@@ -1177,9 +1193,7 @@ int boot_linux_from_mmc(void)
 
 unified_boot:
 
-	boot_linux((void *)hdr->kernel_addr, (void *)hdr->tags_addr,
-		   (const char *)hdr->cmdline, board_machtype(),
-		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size);
+	do_boot(hdr, (const char *)hdr->cmdline);
 
 	return 0;
 }
@@ -1436,9 +1450,7 @@ continue_boot:
 
 	/* TODO: create/pass atags to kernel */
 
-	boot_linux((void *)hdr->kernel_addr, (void *)hdr->tags_addr,
-		   (const char *)hdr->cmdline, board_machtype(),
-		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size);
+	do_boot(hdr, (const char *)hdr->cmdline);
 
 	return 0;
 }
@@ -1799,9 +1811,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 	fastboot_stop();
 
-	boot_linux((void*) hdr->kernel_addr, (void*) hdr->tags_addr,
-		   (const char*) hdr->cmdline, board_machtype(),
-		   (void*) hdr->ramdisk_addr, hdr->ramdisk_size);
+	do_boot(hdr, (const char *)hdr->cmdline);
 }
 
 void cmd_erase(const char *arg, void *data, unsigned sz)
