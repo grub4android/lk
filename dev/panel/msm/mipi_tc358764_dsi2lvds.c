@@ -242,7 +242,7 @@ struct wr_cmd_payload {
 	u16 data0;
 	u16 data1;
 	u16 align32;
-} __packed;
+} ((__packed__));
 
 static u32 mipi_d2l_read_reg(u16 reg)
 {
