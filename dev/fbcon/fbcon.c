@@ -228,6 +228,22 @@ void display_image_on_screen()
 		fbimg->header.height = SPLASH_IMAGE_WIDTH;
 #if DISPLAY_TYPE_MIPI
 		fbimg->image = (unsigned char *)imageBuffer_rgb888;
+
+	#if DISPLAY_USE_RGB
+			unsigned i;
+			for(i=0; i<(fbimg->header.width*fbimg->header.height); i++) {
+				int r,g,b;
+				char* color = (char*) fbimg->image + i*3;
+
+				b = color[0];
+				g = color[1];
+				r = color[2];
+
+				color[0] = r;
+				color[1] = g;
+				color[2] = b;
+			}
+	#endif
 #else
 		fbimg->image = (unsigned char *)imageBuffer;
 #endif
