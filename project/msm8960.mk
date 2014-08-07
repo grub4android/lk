@@ -11,8 +11,14 @@ EMMC_BOOT := 1
 
 #DEFINES += WITH_DEBUG_DCC=1
 DEFINES += WITH_DEBUG_UART=1
+DEFINES += WITH_DEBUG_LOG_BUF=1
 #DEFINES += WITH_DEBUG_FBCON=1
 DEFINES += WITH_XIAOMI_DUALBOOT=1
+
+#Disable thumb mode
+#TODO: The gold linker has issues generating correct
+#thumb interworking code for LK. Confirm that the issue
+#is with the linker and file a bug rep
 ENABLE_THUMB := false
 
 ifeq ($(EMMC_BOOT),1)
