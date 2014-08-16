@@ -18,7 +18,6 @@
 #include <dev/uart.h>
 #include <dev/fbcon.h>
 #include <debug.h>
-#include "../aboot.h"
 #include <api_public.h>
 
 #include "api_private.h"

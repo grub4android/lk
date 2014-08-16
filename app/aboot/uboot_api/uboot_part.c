@@ -42,13 +42,7 @@ static unsigned long block_write(int dev, lbaint_t start, lbaint_t blkcnt, const
 }
 
 static int initialize(void) {
-	struct mmc_boot_host *mmc_host;
-	struct mmc_boot_card *mmc_card;
-
-	mmc_host = get_mmc_host();
-	mmc_card = get_mmc_card();
-
-	mmcdev.lba = (mmc_card->capacity) / BLOCK_SIZE;
+	mmcdev.lba = (mmc_get_device_capacity()) / BLOCK_SIZE;
 	return 0;
 }
 
