@@ -72,7 +72,9 @@ static int API_tstc(va_list ap)
 	if ((t = (int *)va_arg(ap, uint32_t)) == NULL)
 		return API_EINVAL;
 
+#if WITH_DEBUG_UART
 	*t = uart_tstc(0);
+#endif
 	return 0;
 }
 
@@ -88,7 +90,7 @@ static int API_putc(va_list ap)
 	if ((c = (char *)va_arg(ap, uint32_t)) == NULL)
 		return API_EINVAL;
 
-	uart_putc(0, *c);
+	_dputc(*c);
 	return 0;
 }
 
