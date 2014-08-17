@@ -201,7 +201,7 @@ static int API_dev_enum(va_list ap)
 	if (di->cookie == NULL) {
 		/* start over - clean up enumeration */
 		dev_enum_reset();	/* XXX shouldn't the name contain 'stor'? */
-		dprintf(INFO, "RESTART ENUM\n");
+		dprintf(SPEW, "RESTART ENUM\n");
 
 		/* net device enumeration first */
 		//if (dev_enum_net(di))
@@ -577,12 +577,12 @@ int syscall(int call, int *retval, ...)
 	int rv;
 
 	if (call < 0 || call >= calls_no) {
-		dprintf(INFO, "invalid call #%d\n", call);
+		dprintf(CRITICAL, "invalid call #%d\n", call);
 		return 0;
 	}
 
 	if (calls_table[call] == NULL) {
-		dprintf(INFO, "syscall #%d does not have a handler\n", call);
+		dprintf(CRITICAL, "syscall #%d does not have a handler\n", call);
 		return 0;
 	}
 
@@ -633,7 +633,7 @@ void api_init(void)
 	 */
 	sig = memalign(8, sizeof(struct api_signature));
 	if (sig == NULL) {
-		dprintf(INFO, "API: could not allocate memory for the signature!\n");
+		dprintf(CRITICAL, "API: could not allocate memory for the signature!\n");
 		return;
 	}
 

@@ -106,7 +106,7 @@ static int dev_stor_get(int type, int first, int *more, struct uboot_device_info
 		if (di->cookie != NULL) {
 			dd = (block_dev_desc_t *)di->cookie;
 			if (dd->type == DEV_TYPE_UNKNOWN) {
-				dprintf(INFO, "device instance exists, but is not active..");
+				dprintf(SPEW, "device instance exists, but is not active..");
 				found = 0;
 			} else {
 				di->di_stor.block_count = dd->lba;
@@ -150,7 +150,7 @@ static int dev_enum_stor(int type, struct uboot_device_info *di)
 {
 	int found = 0, more = 0;
 
-	dprintf(INFO, "called, type %d\n", type);
+	dprintf(SPEW, "called, type %d\n", type);
 
 	/*
 	 * Formulae for enumerating storage devices:
@@ -171,7 +171,7 @@ static int dev_enum_stor(int type, struct uboot_device_info *di)
 
 	if (di->cookie == NULL) {
 
-		dprintf(INFO, "group%d - enum restart\n", type);
+		dprintf(SPEW, "group%d - enum restart\n", type);
 
 		/*
 		 * 1. Enumeration (re-)started: take the first available
@@ -182,10 +182,10 @@ static int dev_enum_stor(int type, struct uboot_device_info *di)
 
 	} else if (dev_is_stor(type, di)) {
 
-		dprintf(INFO, "group%d - enum continued for the next device\n", type);
+		dprintf(SPEW, "group%d - enum continued for the next device\n", type);
 
 		if (specs[type].enum_ended) {
-			dprintf(INFO, "group%d - nothing more to enum!\n", type);
+			dprintf(SPEW, "group%d - nothing more to enum!\n", type);
 			return 0;
 		}
 
@@ -195,11 +195,11 @@ static int dev_enum_stor(int type, struct uboot_device_info *di)
 	} else {
 
 		if (specs[type].enum_ended) {
-			dprintf(INFO, "group %d - already enumerated, skipping\n", type);
+			dprintf(SPEW, "group %d - already enumerated, skipping\n", type);
 			return 0;
 		}
 
-		dprintf(INFO, "group%d - first time enum\n", type);
+		dprintf(SPEW, "group%d - first time enum\n", type);
 
 		if (specs[type].enum_started == 0) {
 			/*
@@ -218,7 +218,7 @@ static int dev_enum_stor(int type, struct uboot_device_info *di)
 			found = dev_stor_get(type, 1, &more, di);
 
 		} else {
-			dprintf(INFO, "group%d - out of order iteration\n", type);
+			dprintf(SPEW, "group%d - out of order iteration\n", type);
 			found = 0;
 			more = 0;
 		}
@@ -231,10 +231,10 @@ static int dev_enum_stor(int type, struct uboot_device_info *di)
 	specs[type].enum_ended = (!more) ? 1 : 0;
 
 	if (found)
-		dprintf(INFO, "device found, returning cookie 0x%08x\n",
+		dprintf(SPEW, "device found, returning cookie 0x%08x\n",
 			(uint32_t)di->cookie);
 	else
-		dprintf(INFO, "no device found\n");
+		dprintf(SPEW, "no device found\n");
 
 	return found;
 }
@@ -326,7 +326,7 @@ lbasize_t dev_read_stor(void *cookie, void *buf, lbasize_t len, lbastart_t start
 		return 0;
 
 	if ((dd->block_read) == NULL) {
-		dprintf(INFO, "no block_read() for device 0x%08x\n", cookie);
+		dprintf(SPEW, "no block_read() for device 0x%08x\n", cookie);
 		return 0;
 	}
 
