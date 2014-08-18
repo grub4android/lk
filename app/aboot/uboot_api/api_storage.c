@@ -70,9 +70,11 @@ static int dev_stor_get(int type, int first, int *more, struct uboot_device_info
 		di->cookie = (void *)get_dev(specs[type].name, 0);
 		if (di->cookie == NULL)
 			return 0;
-		else
+		else {
 			found = 1;
-
+			if(1<specs[type].max_dev)
+				*more = 1;
+		}
 	} else {
 		for (i = 0; i < specs[type].max_dev; i++)
 			if (di->cookie == (void *)get_dev(specs[type].name, i)) {
