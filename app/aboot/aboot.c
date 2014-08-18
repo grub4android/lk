@@ -57,6 +57,7 @@
 #include <boot_device.h>
 #include <api_public.h>
 #include "uboot_api/api_private.h"
+#include "grub.h"
 
 #if DEVICE_TREE
 #include <libfdt.h>
@@ -2257,6 +2258,10 @@ void cmd_continue(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
 	fastboot_stop();
+
+	// try to boot GRUB
+	grub_boot();
+
 	if (target_is_emmc_boot())
 	{
 		boot_linux_from_mmc();
@@ -2689,6 +2694,9 @@ void aboot_init(const struct app_descriptor *app)
 
 	if (!boot_into_fastboot)
 	{
+		// try to boot GRUB
+		grub_boot();
+
 		if (target_is_emmc_boot())
 		{
 			if(emmc_recovery_init())
