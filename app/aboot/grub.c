@@ -39,7 +39,7 @@ int grub_boot(void)
 	priv.index = partition_get_index("aboot");
 	priv.ptn = partition_get_offset(priv.index) + 1024*1024; // 1MB offset to aboot
 	tio.blksz = BLOCK_SIZE;
-	tio.lba = partition_get_size(priv.index) / tio.blksz;
+	tio.lba = partition_get_size(priv.index) / tio.blksz - 1;
 
 	// search file
 	if(tar_get_fileinfo(&tio, "./boot/grub/core.img", &fi)) {
