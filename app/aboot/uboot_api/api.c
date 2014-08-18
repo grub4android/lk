@@ -439,9 +439,15 @@ static int API_env_get(va_list ap)
 	if ((value = (char **)va_arg(ap, uint32_t)) == NULL)
 		return API_EINVAL;
 
-	*value = NULL;
+	if(strcmp("grub_bootdev", name)==0)
+		*value = "hd1";
+	else if(strcmp("grub_bootpath", name)==0)
+		*value = "/boot/grub";
+	else {
+		dprintf(INFO, "%s: %s\n", __func__, name);
+		*value = NULL;
+	}
 
-	dprintf(INFO, "%s: %s\n", __func__, name);
 	return 0;
 }
 
