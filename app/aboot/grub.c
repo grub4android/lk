@@ -18,7 +18,8 @@ struct tar_io_priv {
 unsigned long grub_tar_read(struct tar_io *tio, ulong start, ulong blkcnt, void *buffer) {
 	struct tar_io_priv *priv = (struct tar_io_priv*) tio->priv;
 
-	return mmc_read(priv->ptn + start*BLOCK_SIZE, buffer, blkcnt*BLOCK_SIZE);
+	unsigned long long ptn = ((unsigned long long) start)*BLOCK_SIZE;
+	return mmc_read(priv->ptn + ptn, buffer, blkcnt*BLOCK_SIZE);
 }
 
 static struct tar_io_priv priv;
