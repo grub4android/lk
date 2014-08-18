@@ -33,9 +33,9 @@ int display_get_info(int type, struct display_info *di)
 		di->screen_rows = 0;
 		di->screen_cols = 0;
 #if DISPLAY_USE_RGB
-		di->color_format = DISPLAY_COLOR_FORMAT_RGB888;
-#else
 		di->color_format = DISPLAY_COLOR_FORMAT_BGR888;
+#else
+		di->color_format = DISPLAY_COLOR_FORMAT_RGB888;
 #endif
 		break;
 	}
