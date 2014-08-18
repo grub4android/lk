@@ -117,6 +117,9 @@ struct uboot_device_info {
 #define DISPLAY_TYPE_LCD	0x0001
 #define DISPLAY_TYPE_VIDEO	0x0002
 
+#define DISPLAY_COLOR_FORMAT_RGB888	0x0001
+#define DISPLAY_COLOR_FORMAT_BGR888	0x0002
+
 struct display_info {
 	int type;
 	/* screen size in pixels */
@@ -125,6 +128,8 @@ struct display_info {
 	/* screen size in rows and columns of text */
 	int screen_rows;
 	int screen_cols;
+
+	int color_format;
 };
 
 #endif /* _API_PUBLIC_H_ */
