@@ -42,7 +42,8 @@ static block_dev_desc_t tardev = {
 static unsigned long block_read(int dev, lbaint_t start, lbaint_t blkcnt, void *buffer) {
 	// NAND
 	if(dev==0) {
-		return mmc_read(start*BLOCK_SIZE, buffer, blkcnt*BLOCK_SIZE);
+		unsigned long long ptn = ((unsigned long long) start)*BLOCK_SIZE;
+		return mmc_read(ptn, buffer, blkcnt*BLOCK_SIZE);
 	}
 	// BOOT-TAR
 	else if(dev==1) {
