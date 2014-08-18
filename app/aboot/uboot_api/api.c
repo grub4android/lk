@@ -17,6 +17,7 @@
 #include <platform/timer.h>
 #include <dev/uart.h>
 #include <dev/fbcon.h>
+#include <dev/keys.h>
 #include <debug.h>
 #include <api_public.h>
 
@@ -559,6 +560,30 @@ static int API_display_fb_flush(va_list ap)
 	return 0;
 }
 
+/*
+ * pseudo signature:
+ *
+ * int API_input_getkey(void)
+ */
+static int API_input_getkey(va_list ap)
+{
+	static time_t input_last_request = 0;
+	static const int input_delay = 200;
+
+	ulong diff = current_time()-input_last_request;
+	if(diff<input_delay) return 0;
+	else input_last_request = current_time();
+
+	if(target_volume_up())
+		return KEY_UP;
+	if(target_volume_down())
+		return KEY_DOWN;
+	if(target_power_key())
+		return KEY_RIGHT;
+
+	return 0;
+}
+
 
 
 static cfp_t calls_table[API_MAXCALL] = { NULL, };
@@ -630,6 +655,7 @@ void api_init(void)
 	calls_table[API_DISPLAY_CLEAR] = &API_display_clear;
 	calls_table[API_DISPLAY_FB_GET] = &API_display_fb_get;
 	calls_table[API_DISPLAY_FB_FLUSH] = &API_display_fb_flush;
+	calls_table[API_INPUT_GETKEY] = &API_input_getkey;
 	calls_no = API_MAXCALL;
 
 	dprintf(INFO, "API initialized with %d calls\n", calls_no);

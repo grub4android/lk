@@ -540,3 +540,27 @@ void target_mmc_caps(struct mmc_host *host)
 	host->caps.bus_width = MMC_BOOT_BUS_WIDTH_8_BIT;
 	host->caps.hs_clk_rate = MMC_CLK_96MHZ;
 }
+
+int target_volume_up()
+{
+	uint8_t key_status;
+	pm8921_gpio_get(0, &key_status);
+
+	return key_status;
+}
+
+uint32_t target_volume_down()
+{
+	uint8_t key_status;
+	pm8921_gpio_get(1, &key_status);
+
+	return key_status;
+}
+
+int target_power_key(void)
+{
+	int ret = 0;
+
+	pm8921_pwrkey_status(&ret);
+	return ret;
+}
