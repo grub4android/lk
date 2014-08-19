@@ -572,6 +572,15 @@ static int API_display_fb_flush(va_list ap)
 	return 0;
 }
 
+static int keymap[MAX_KEYS];
+#define CHECK_AND_REPORT_KEY(code, value) \
+	if(value) { \
+		if(!keymap[code]){ \
+			keymap[code] = 1; \
+			return code; \
+		} \
+	} else{keymap[code]=0;}
+
 /*
  * pseudo signature:
  *
@@ -579,21 +588,9 @@ static int API_display_fb_flush(va_list ap)
  */
 static int API_input_getkey(va_list ap)
 {
-	static time_t input_last_request = 0;
-	static const int input_delay = 200;
-
-	ulong diff = current_time()-input_last_request;
-	if(diff<input_delay) return 0;
-	else input_last_request = current_time();
-
-	if(target_volume_up())
-		return KEY_UP;
-	if(target_volume_down())
-		return KEY_DOWN;
-	if(target_power_key())
-		return KEY_RIGHT;
-
-	return 0;
+	CHECK_AND_REPORT_KEY(KEY_UP, target_volume_up());
+	CHECK_AND_REPORT_KEY(KEY_DOWN, target_volume_down());
+	CHECK_AND_REPORT_KEY(KEY_RIGHT, target_power_key());
 }
 
 /*
