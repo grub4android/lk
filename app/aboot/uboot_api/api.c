@@ -134,7 +134,19 @@ static int API_reset(va_list ap)
  */
 static int API_get_sys_info(va_list ap)
 {
-	return API_ENODEV;
+	struct sys_info *si;
+
+	si = (struct sys_info *)va_arg(ap, uint32_t);
+	if (si == NULL)
+		return API_ENOMEM;
+
+	if(si->mr_no>0) {
+		si->mr[0].start = BASE_ADDR;
+		si->mr[0].size = 44*1024*1024;
+		si->mr[0].flags = MR_ATTR_DRAM;
+	}
+
+	return 0;
 }
 
 /*
