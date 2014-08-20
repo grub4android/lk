@@ -595,16 +595,6 @@ static int API_input_getkey(va_list ap)
 /*
  * pseudo signature:
  *
- * void* API_boot_get_ldr_addr(void)
- */
-static void* API_boot_get_ldr_addr(va_list ap)
-{
-	return target_get_scratch_address();
-}
-
-/*
- * pseudo signature:
- *
  * int API_boot_file(struct boot_request *bi)
  */
 static int API_boot_file(va_list ap)
@@ -693,7 +683,6 @@ void api_init(void)
 	calls_table[API_DISPLAY_FB_FLUSH] = &API_display_fb_flush;
 	calls_table[API_INPUT_GETKEY] = &API_input_getkey;
 	calls_table[API_BOOT_FILE] = &API_boot_file;
-	calls_table[API_BOOT_GET_LDR_ADDR] = &API_boot_get_ldr_addr;
 	calls_no = API_MAXCALL;
 
 	dprintf(INFO, "API initialized with %d calls\n", calls_no);
