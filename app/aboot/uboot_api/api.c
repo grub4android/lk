@@ -141,18 +141,9 @@ static int API_get_sys_info(va_list ap)
 		return API_ENOMEM;
 
 	// kernel memory
-	if(si->mr_no>0) {
-		si->mr[0].start = BASE_ADDR;
-		si->mr[0].size = 44*1024*1024;
-		si->mr[0].flags = MR_ATTR_DRAM;
-	}
-
+	platform_set_mr(si, BASE_ADDR, 44*1024*1024, MR_ATTR_DRAM);
 	// scratch memory(LK uses this as a fastboot buffer)
-	if(si->mr_no>1) {
-		si->mr[1].start = target_get_scratch_address();
-		si->mr[1].size = target_get_max_flash_size();
-		si->mr[1].flags = MR_ATTR_DRAM;
-	}
+	platform_set_mr(si, target_get_scratch_address(), target_get_max_flash_size(), MR_ATTR_DRAM);
 
 	return 0;
 }
