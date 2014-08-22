@@ -19,6 +19,9 @@
 #include <dev/fbcon.h>
 #include <dev/keys.h>
 #include <debug.h>
+#include <arch/ops.h>
+#include <include/boot_stats.h>
+#include <kernel/thread.h>
 #include <api_public.h>
 
 #include "api_private.h"
@@ -590,25 +593,61 @@ static int API_input_getkey(va_list ap)
 	CHECK_AND_REPORT_KEY(KEY_UP, target_volume_up());
 	CHECK_AND_REPORT_KEY(KEY_DOWN, target_volume_down());
 	CHECK_AND_REPORT_KEY(KEY_RIGHT, target_power_key());
+
+	return 0;
 }
 
 /*
  * pseudo signature:
  *
- * int API_boot_file(struct boot_request *bi)
+ * int API_boot_create_tags(struct tag_info *info)
  */
-static int API_boot_file(va_list ap)
+static int API_boot_create_tags(va_list ap)
 {
-	struct boot_request *bi;
+	struct tags_info *info = va_arg(ap, struct tags_info *);
 
-	bi = (struct boot_request *)va_arg(ap, uint32_t);
-	if (bi == NULL)
-		return API_ENOMEM;
+	if(info->dt_size>0) {
+		dprintf(CRITICAL, "DT is not imlemented yet.\n");
+		return API_EINVAL;
+	}
+	else {
+		unsigned char *final_cmdline = update_cmdline(info->cmdline);
+		generate_atags(info->tags_addr, final_cmdline, info->ramdisk, info->ramdisk_size);
+	}
 
+	return 0;
+}
 
-	cmd_boot("", bi->data, bi->size);
+/*
+ * pseudo signature:
+ *
+ * int API_boot_prepare(void)
+ */
+static int API_boot_prepare(va_list ap)
+{
+	fastboot_stop();
 
-	return API_EINVAL;
+	/* Perform target specific cleanup */
+	target_uninit();
+
+	/* Turn off splash screen if enabled */
+	#if DISPLAY_SPLASH_SCREEN
+	target_display_shutdown();
+	#endif
+
+	enter_critical_section();
+
+	/* do any platform specific cleanup before kernel entry */
+	platform_uninit();
+
+	arch_disable_cache(UCACHE);
+
+	#if ARM_WITH_MMU
+	arch_disable_mmu();
+	#endif
+	bs_set_timestamp(BS_KERNEL_ENTRY);
+
+	return 0;
 }
 
 
@@ -682,7 +721,8 @@ void api_init(void)
 	calls_table[API_DISPLAY_FB_GET] = &API_display_fb_get;
 	calls_table[API_DISPLAY_FB_FLUSH] = &API_display_fb_flush;
 	calls_table[API_INPUT_GETKEY] = &API_input_getkey;
-	calls_table[API_BOOT_FILE] = &API_boot_file;
+	calls_table[API_BOOT_CREATE_TAGS] = &API_boot_create_tags;
+	calls_table[API_BOOT_PREPARE] = &API_boot_prepare;
 	calls_no = API_MAXCALL;
 
 	dprintf(INFO, "API initialized with %d calls\n", calls_no);
