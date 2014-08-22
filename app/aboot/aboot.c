@@ -2695,7 +2695,8 @@ void aboot_init(const struct app_descriptor *app)
 	if (!boot_into_fastboot)
 	{
 		// try to boot GRUB
-		grub_boot();
+		if(!boot_into_recovery)
+			grub_boot();
 
 		if (target_is_emmc_boot())
 		{
