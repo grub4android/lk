@@ -2260,7 +2260,8 @@ void cmd_continue(const char *arg, void *data, unsigned sz)
 	fastboot_stop();
 
 	// try to boot GRUB
-	grub_boot();
+	if(grub_boot())
+		return;
 
 	if (target_is_emmc_boot())
 	{
@@ -2695,8 +2696,9 @@ void aboot_init(const struct app_descriptor *app)
 	if (!boot_into_fastboot)
 	{
 		// try to boot GRUB
-		if(!boot_into_recovery)
-			grub_boot();
+		if(!boot_into_recovery && grub_boot()) {
+			goto boot_error;
+		}
 
 		if (target_is_emmc_boot())
 		{
@@ -2725,6 +2727,8 @@ void aboot_init(const struct app_descriptor *app)
 	#endif
 			boot_linux_from_flash();
 		}
+
+boot_error:
 		dprintf(CRITICAL, "ERROR: Could not do normal boot. Reverting "
 			"to fastboot mode.\n");
 	}
