@@ -46,7 +46,7 @@ static unsigned long block_read(int dev, lbaint_t start, lbaint_t blkcnt, void *
 		return mmc_read(ptn, buffer, blkcnt*BLOCK_SIZE);
 	}
 	// BOOT-TAR
-	else if(dev==1) {
+	else if(dev==1 && grub_has_tar()) {
 		return grub_tar_read(grub_tar_get_tio(), start, blkcnt, buffer);
 	}
 
@@ -74,7 +74,7 @@ block_dev_desc_t *get_dev(const char *ifname, int dev) {
 		// NAND
 		if(dev==0) return &mmcdev;
 		// BOOT-TAR
-		else if(dev==1) return &tardev;
+		else if(dev==1 && grub_has_tar()) return &tardev;
 	}
 
 	return NULL;

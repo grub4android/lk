@@ -455,7 +455,7 @@ static int API_env_get(va_list ap)
 		return API_EINVAL;
 
 	if(strcmp("grub_bootdev", name)==0)
-		*value = "hd1";
+		grub_get_bootdev(value);
 	else if(strcmp("grub_bootpath", name)==0)
 		*value = "/boot/grub";
 	else {
