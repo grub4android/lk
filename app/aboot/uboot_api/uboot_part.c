@@ -43,7 +43,9 @@ static unsigned long block_read(int dev, lbaint_t start, lbaint_t blkcnt, void *
 	// NAND
 	if(dev==0) {
 		unsigned long long ptn = ((unsigned long long) start)*BLOCK_SIZE;
-		return mmc_read(ptn, buffer, blkcnt*BLOCK_SIZE);
+		if(mmc_read(ptn, buffer, blkcnt*BLOCK_SIZE))
+			return 0;
+		return blkcnt*BLOCK_SIZE;
 	}
 	// BOOT-TAR
 	else if(dev==1 && grub_has_tar()) {
@@ -63,6 +65,7 @@ static int initialize(void) {
 	mmcdev.lba = (mmc_get_device_capacity()) / BLOCK_SIZE;
 	tardev.lba = tio->lba;
 
+	initialized = 1;
 	return 0;
 }
 

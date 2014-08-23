@@ -7,9 +7,12 @@
 #include <lib/tar.h>
 #include <platform.h>
 #include <ext4.h>
+#include <ext4_types.h>
+#include <ext4_fs.h>
 #include <ext4_mmcdev.h>
 
 #include "grub.h"
+#include "stat.h"
 #include "uboot_api/uboot_part.h"
 
 struct tar_io_priv {
@@ -21,7 +24,9 @@ unsigned long grub_tar_read(struct tar_io *tio, ulong start, ulong blkcnt, void 
 	struct tar_io_priv *priv = (struct tar_io_priv*) tio->priv;
 
 	unsigned long long ptn = ((unsigned long long) start)*BLOCK_SIZE;
-	return mmc_read(priv->ptn + ptn, buffer, blkcnt*BLOCK_SIZE);
+	if(mmc_read(priv->ptn + ptn, buffer, blkcnt*BLOCK_SIZE))
+		return 0;
+	return blkcnt*BLOCK_SIZE;
 }
 
 static struct tar_io_priv priv;
@@ -47,10 +52,58 @@ int grub_has_tar(void) {
 
 #ifdef GRUB_BOOT_PARTITION
 #define GRUB_MOUNTPOINT "/"GRUB_BOOT_PARTITION"/"
+#define HAS_FLAG(m, mask)	(((m) & mask) == mask)
+#define ALLOW_BOOT(m) ( \
+	S_ISREG((m)) \
+	&& !HAS_FLAG((m), S_IXUSR) \
+\
+	&& !HAS_FLAG((m), S_IXGRP) \
+	&& !HAS_FLAG((m), S_IWGRP) \
+\
+	&& !HAS_FLAG((m), S_IXOTH) \
+	&& !HAS_FLAG((m), S_IWOTH) \
+)
+static int grub_mmc_check_permissions(const char *path, int *allow) {
+	int ret;
+	ext4_file f;
+	struct ext4_inode_ref ref;
+
+	// open file
+	ret = ext4_fopen(&f, path, "rb");
+	if(ret != EOK){
+		dprintf(CRITICAL, "ext4_fopen ERROR = %d\n", ret);
+		return -1;
+	}
+
+	// get inode ref
+	ret = ext4_fs_get_inode_ref(&f.mp->fs, f.inode, &ref);
+	if(ret != EOK){
+		dprintf(CRITICAL, "ext4_fs_get_inode_ref ERROR = %d\n", ret);
+		goto err_close_file;
+	}
+
+	// check permissions
+	if(ref.inode->uid==0 && ref.inode->gid==0 && ALLOW_BOOT(ref.inode->mode))
+		*allow = 1;
+	else
+		*allow = 0;
+
+	if(*allow==0) {
+		ref.inode->mode |= S_IXUGO;
+		dprintf(CRITICAL, "file %s has wrong permissions!\n", path);
+	}
+
+	ext4_fclose(&f);
+	return 0;
+
+err_close_file:
+	ext4_fclose(&f);
+	return -1;
+}
 static int grub_load_from_mmc(void) {
 	ext4_file f;
 	uint32_t bytes_read;
-	int ret = 0;
+	int ret = 0, allow = 0;
 
 	dprintf(INFO, "%s: part=[%s]\n", __func__, GRUB_BOOT_PARTITION);
 
@@ -75,6 +128,15 @@ static int grub_load_from_mmc(void) {
 		return -1;
 	}
 
+	// check permissions of crucial files
+	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT"boot/grub/core.img", &allow)==EOK && !allow)
+		return -1;
+	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT"boot/grub/grub.cfg", &allow)==EOK && !allow)
+		return -1;
+	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT"boot/grub/grubenv", &allow)==EOK && !allow)
+		return -1;
+	dprintf(INFO, "Permissions are good\n");
+
 	// open file
 	ret = ext4_fopen(&f, GRUB_MOUNTPOINT"boot/grub/core.img", "rb");
 	if(ret != EOK){
@@ -83,7 +145,7 @@ static int grub_load_from_mmc(void) {
 	}
 
 	// read file
-	ret = ext4_fread(&f, GRUB_LOADING_ADDRESS, ext4_fsize(&f), &bytes_read);
+	ret = ext4_fread(&f, (void*)GRUB_LOADING_ADDRESS, ext4_fsize(&f), &bytes_read);
 	if(ret != EOK){
 		dprintf(CRITICAL, "ext4_fread ERROR = %d\n", ret);
 		return -1;
@@ -92,14 +154,14 @@ static int grub_load_from_mmc(void) {
 	// close file
 	ret = ext4_fclose(&f);
 	if(ret != EOK){
-		printf("ext4_fclose ERROR = %d\n", ret);
+		dprintf(CRITICAL, "ext4_fclose ERROR = %d\n", ret);
 		return -1;
 	}
 
 	// unmount partition
 	ret = ext4_umount(GRUB_MOUNTPOINT);
 	if(ret != EOK){
-		printf("ext4_umount ERROR = %d\n", ret);
+		dprintf(CRITICAL, "ext4_umount ERROR = %d\n", ret);
 		return -1;
 	}
 
@@ -128,7 +190,7 @@ static int grub_load_from_tar(void) {
 	}
 
 	// load file into RAM
-	if(tar_read_file(&tio, &fi, GRUB_LOADING_ADDRESS)) {
+	if(tar_read_file(&tio, &fi, (void*)GRUB_LOADING_ADDRESS)) {
 		dprintf(CRITICAL, "%s: couldn't read core.img!\n", __func__);
 		return -1;
 	}
