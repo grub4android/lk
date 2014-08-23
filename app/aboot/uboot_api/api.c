@@ -625,8 +625,6 @@ static int API_boot_create_tags(va_list ap)
  */
 static int API_boot_prepare(va_list ap)
 {
-	fastboot_stop();
-
 	/* Perform target specific cleanup */
 	target_uninit();
 
