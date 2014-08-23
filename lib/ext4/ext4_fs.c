@@ -271,6 +271,18 @@ int ext4_fs_check_features(struct ext4_fs *fs, bool *read_only)
         return ENOTSUP;
     }
 
+    v = (ext4_get32(&fs->sb, features_incompatible) &
+            (EXT4_FEATURE_INCOMPAT_RECOVER));
+    if(v & EXT4_FEATURE_INCOMPAT_RECOVER) {
+        printf("Filesystem needs recovery");
+#if !CONFIG_EXT4_READONLY
+        printf(" - abort\n");
+        return;
+#else
+        printf(" - ignore!\n");
+#endif
+    }
+
 
     /*Check features_read_only*/
     v = (ext4_get32(&fs->sb, features_read_only) &

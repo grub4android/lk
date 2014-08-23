@@ -209,7 +209,11 @@ int ext4_block_set(struct ext4_blockdev *bdev, struct ext4_block *b)
     pba = (b->lb_id * bdev->lg_bsize) / bdev->ph_bsize;
     pb_cnt = bdev->lg_bsize / bdev->ph_bsize;
 
+#if CONFIG_EXT4_READONLY
+    r = EOK;
+#else
     r = bdev->bwrite(bdev, b->data, pba, pb_cnt);
+#endif
     bdev->bc->dirty[b->cache_id] = false;
     if(r != EOK){
         b->dirty = false;
@@ -251,7 +255,11 @@ int ext4_blocks_set_direct(struct ext4_blockdev *bdev, const void *buf,
 
     bdev->bwrite_ctr++;
 
+#if CONFIG_EXT4_READONLY
+    return EOK;
+#else
     return bdev->bwrite(bdev, buf, pba, pb_cnt * cnt);
+#endif
 }
 
 
@@ -291,7 +299,11 @@ int ext4_block_writebytes(struct ext4_blockdev *bdev, uint64_t off,
 
         memcpy(bdev->ph_bbuf + unalg, p, wlen);
 
+#if CONFIG_EXT4_READONLY
+        r = EOK;
+#else
         r = bdev->bwrite(bdev, bdev->ph_bbuf, block_idx, 1);
+#endif
         if(r != EOK)
             return r;
 
@@ -303,7 +315,11 @@ int ext4_block_writebytes(struct ext4_blockdev *bdev, uint64_t off,
 
     /*Aligned data*/
     blen = len / bdev->ph_bsize;
+#if CONFIG_EXT4_READONLY
+    r = EOK;
+#else
     r = bdev->bwrite(bdev, p, block_idx, blen);
+#endif
 
     if(r != EOK)
         return r;
@@ -322,7 +338,11 @@ int ext4_block_writebytes(struct ext4_blockdev *bdev, uint64_t off,
 
         memcpy(bdev->ph_bbuf, p, len);
 
+#if CONFIG_EXT4_READONLY
+        r = EOK;
+#else
         r = bdev->bwrite(bdev, bdev->ph_bbuf, block_idx, 1);
+#endif
 
         if(r != EOK)
             return r;

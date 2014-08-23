@@ -97,6 +97,10 @@
 #define CONFIG_EXT4_MOUNTPOINTS_COUNT   2
 #endif
 
+#ifndef CONFIG_EXT4_READONLY
+#define CONFIG_EXT4_READONLY 1
+#endif
+
 #endif /* EXT4_CONFIG_H_ */
 
 /**
