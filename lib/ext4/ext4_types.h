@@ -611,6 +611,25 @@ static inline uint16_t to_le16(uint16_t n)
 #define ext4_set16(s, f, v)     do { (s)->f = to_le16(v); }while(0)
 #define ext4_set8 (s, f, v)     do { (s)->f = (v);        }while(0)
 
+/**@brief   Mount point descrpitor.*/
+struct ext4_mountpoint {
+
+    /**@brief   Mount done flag.*/
+    bool    mounted;
+
+    /**@brief   Mount point name (@ref ext4_mount)*/
+    char name[32];
+
+    /**@brief   Os dependent lock/unlock functions.*/
+    const struct ext4_lock *os_locks;
+
+    /**@brief   Ext4 filesystem internals.*/
+    struct ext4_fs fs;
+
+    /**@brief   Dynamic alocation cache flag.*/
+    bool cache_dynamic;
+};
+
 #endif /* EXT4_TYPES_H_ */
 
 /**

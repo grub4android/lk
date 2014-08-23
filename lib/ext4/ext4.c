@@ -58,25 +58,6 @@
 #define EXT4_MP_UNLOCK(_m)  \
         do { if((_m)->os_locks)  (_m)->os_locks->unlock(); }while(0)
 
-/**@brief   Mount point descrpitor.*/
-struct ext4_mountpoint {
-
-    /**@brief   Mount done flag.*/
-    bool    mounted;
-
-    /**@brief   Mount point name (@ref ext4_mount)*/
-    char name[32];
-
-    /**@brief   Os dependent lock/unlock functions.*/
-    const struct ext4_lock *os_locks;
-
-    /**@brief   Ext4 filesystem internals.*/
-    struct ext4_fs fs;
-
-    /**@brief   Dynamic alocation cache flag.*/
-    bool cache_dynamic;
-};
-
 /**@brief   Block devices descriptor.*/
 struct _ext4_devices {
 
