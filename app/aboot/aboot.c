@@ -1697,6 +1697,12 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 
 	hdr = (struct boot_img_hdr *)data;
 
+	if(strcmp(hdr->name, "GRUB")==0) {
+		grub_load_from_sideload(data);
+		fastboot_okay("");
+		return;
+	}
+
 	/* ensure commandline is terminated */
 	hdr->cmdline[BOOT_ARGS_SIZE-1] = 0;
 

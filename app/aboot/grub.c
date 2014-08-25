@@ -10,22 +10,30 @@
 #include <ext4_types.h>
 #include <ext4_fs.h>
 #include <ext4_mmcdev.h>
+#include <kernel/thread.h>
 
 #include "grub.h"
 #include "stat.h"
 #include "uboot_api/uboot_part.h"
+#include "bootimg.h"
 
 struct tar_io_priv {
 	unsigned long long index;
 	unsigned long long ptn;
+	int is_ramdisk;
 };
 
 unsigned long grub_tar_read(struct tar_io *tio, ulong start, ulong blkcnt, void *buffer) {
 	struct tar_io_priv *priv = (struct tar_io_priv*) tio->priv;
-
 	unsigned long long ptn = ((unsigned long long) start)*BLOCK_SIZE;
-	if(mmc_read(priv->ptn + ptn, buffer, blkcnt*BLOCK_SIZE))
-		return 0;
+
+	if(priv->is_ramdisk) {
+		memcpy(buffer, (void*)(unsigned long)(priv->ptn+ptn), blkcnt*BLOCK_SIZE);
+	}
+	else {
+		if(mmc_read(priv->ptn + ptn, buffer, blkcnt*BLOCK_SIZE))
+			return 0;
+	}
 	return blkcnt*BLOCK_SIZE;
 }
 
@@ -180,6 +188,7 @@ static int grub_load_from_tar(void) {
 	// prepare block api
 	priv.index = partition_get_index("aboot");
 	priv.ptn = partition_get_offset(priv.index) + 1024*1024; // 1MB offset to aboot
+	priv.is_ramdisk = 0;
 	tio.blksz = BLOCK_SIZE;
 	tio.lba = partition_get_size(priv.index) / tio.blksz - 1;
 
@@ -199,6 +208,58 @@ static int grub_load_from_tar(void) {
 	grub_found_tar = 1;
 
 	dprintf(INFO, "Loaded GRUB from TAR\n");
+	return 0;
+}
+
+static int grub_sideload_handler(void *data)
+{
+	struct boot_img_hdr *hdr =  (struct boot_img_hdr *)data;
+	unsigned kernel_size = ALIGN(hdr->kernel_size, hdr->page_size);
+	void* local_kernel_addr = data + hdr->page_size;
+	void* local_ramdisk_addr = local_kernel_addr + kernel_size;
+
+	// Load ramdisk & kernel
+	memmove((void*) BASE_ADDR, local_ramdisk_addr, hdr->ramdisk_size);
+	memmove((void*) hdr->kernel_addr, local_kernel_addr, hdr->kernel_size);
+
+	// use ramdisk
+	if(hdr->ramdisk_size>0) {
+		// prepare block api
+		priv.index = 0;
+		priv.ptn = BASE_ADDR;
+		priv.is_ramdisk = 1;
+		tio.blksz = BLOCK_SIZE;
+		tio.lba = hdr->ramdisk_size;
+		// set bootdev
+		grub_bootdev = strdup("hd1");
+		grub_found_tar = 1;
+	}
+	else {
+		// set bootdev
+		unsigned int index = (unsigned int) partition_get_index(GRUB_BOOT_PARTITION);
+		char buf[20];
+		sprintf(buf, "hd0,%u", index+1);
+		grub_bootdev = strdup(buf);
+	}
+	dprintf(INFO, "bootdev: %s\n", grub_bootdev);
+
+	// BOOT !
+	void (*entry)(unsigned, unsigned, unsigned*) = (void*)hdr->kernel_addr;
+	dprintf(INFO, "booting GRUB from sideload @ %p\n", entry);
+	entry(0, board_machtype(), NULL);
+
+	return 0;
+}
+
+int grub_load_from_sideload(void* data) {
+	thread_t *thr;
+
+	thr = thread_create("grub_sideload", grub_sideload_handler, data, DEFAULT_PRIORITY, 4096);
+	if (!thr)
+	{
+		return -1;
+	}
+	thread_resume(thr);
 	return 0;
 }
 
