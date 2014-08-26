@@ -32,7 +32,7 @@ int display_get_info(int type, struct display_info *di)
 		di->pixel_height = config->height;
 		di->screen_rows = 0;
 		di->screen_cols = 0;
-#if DISPLAY_USE_RGB
+#if DISPLAY_USE_BGR
 		di->color_format = DISPLAY_COLOR_FORMAT_BGR888;
 #else
 		di->color_format = DISPLAY_COLOR_FORMAT_RGB888;
