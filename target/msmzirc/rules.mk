@@ -4,7 +4,7 @@ INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
 
 PLATFORM := msmzirc
 
-MEMBASE                             := 0x87C00000
+MEMBASE                             ?= 0x87C00000
 MEMSIZE                             := 0x00100000 # 1MB
 BASE_ADDR                           := 0x80000000
 SCRATCH_ADDR                        := 0x80000000
