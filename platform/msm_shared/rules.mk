@@ -37,6 +37,29 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/mmc.c
 endif
 
+ifeq ($(ENABLE_2NDSTAGE_BOOT),1)
+ifeq ($(DISPLAY_2NDSTAGE_WIDTH),)
+$(error DISPLAY: No width specified.)
+else
+MODULE_DEFINES += DISPLAY_2NDSTAGE_WIDTH=$(DISPLAY_2NDSTAGE_WIDTH)
+endif
+
+ifeq ($(DISPLAY_2NDSTAGE_HEIGHT),)
+$(error DISPLAY: No height specified.)
+else
+MODULE_DEFINES += DISPLAY_2NDSTAGE_HEIGHT=$(DISPLAY_2NDSTAGE_HEIGHT)
+endif
+
+ifeq ($(DISPLAY_2NDSTAGE_BPP),)
+$(error DISPLAY: No bpp specified.)
+else
+MODULE_DEFINES += DISPLAY_2NDSTAGE_BPP=$(DISPLAY_2NDSTAGE_BPP)
+endif
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/display_2ndstage.o
+endif
+
 ifeq ($(PLATFORM),msm8x60)
 MODULE_SRCS += $(LOCAL_DIR)/mipi_dsi.c \
 		$(LOCAL_DIR)/i2c_qup.c \

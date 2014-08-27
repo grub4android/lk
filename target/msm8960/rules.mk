@@ -39,11 +39,15 @@ ifeq ($(LINUX_MACHTYPE_RUMI3), 1)
 GLOBAL_DEFINES += LINUX_MACHTYPE_RUMI3
 endif
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+MODULE_SRCS += \
+    $(LOCAL_DIR)/target_display.c
+endif
+
 MODULE_SRCS += \
 	$(LOCAL_DIR)/init.c \
 	$(LOCAL_DIR)/atags.c \
 	$(LOCAL_DIR)/keypad.c \
-	$(LOCAL_DIR)/target_display.c \
 	$(LOCAL_DIR)/oem_panel.c
 
 include make/module.mk
