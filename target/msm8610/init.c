@@ -98,7 +98,7 @@ void target_early_init(void)
 }
 
 /* Return 1 if vol_up pressed */
-static int target_volume_up(void)
+int target_volume_up(void)
 {
 	uint8_t status = 0;
 
@@ -118,6 +118,11 @@ uint32_t target_volume_down(void)
 {
 	/* Volume down button tied in with PMIC RESIN. */
 	return pm8x41_resin_status();
+}
+
+int target_power_key(void)
+{
+	return pm8x41_get_pwrkey_is_pressed();
 }
 
 static void target_keystatus(void)
