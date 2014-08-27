@@ -29,9 +29,12 @@ DEFINES += \
 	BASE_ADDR=$(BASE_ADDR) \
 	SCRATCH_ADDR=$(SCRATCH_ADDR)
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+OBJS += \
+    $(LOCAL_DIR)/target_display.o
+endif
 
 OBJS += \
 	$(LOCAL_DIR)/init.o \
 	$(LOCAL_DIR)/meminfo.o \
-	$(LOCAL_DIR)/target_display.o \
 	$(LOCAL_DIR)/oem_panel.o

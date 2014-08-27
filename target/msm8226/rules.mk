@@ -45,9 +45,12 @@ DEFINES += \
 	SCRATCH_SIZE_128MAP=$(SCRATCH_SIZE_128MAP) \
 	SCRATCH_SIZE_512MAP=$(SCRATCH_SIZE_512MAP)
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+OBJS += \
+    $(LOCAL_DIR)/target_display.o
+endif
 
 OBJS += \
     $(LOCAL_DIR)/init.o \
     $(LOCAL_DIR)/meminfo.o \
-    $(LOCAL_DIR)/target_display.o \
     $(LOCAL_DIR)/oem_panel.o

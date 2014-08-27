@@ -34,6 +34,29 @@ OBJS += \
 	$(LOCAL_DIR)/mmc.o
 endif
 
+ifeq ($(ENABLE_2NDSTAGE_BOOT),1)
+ifeq ($(DISPLAY_2NDSTAGE_WIDTH),)
+$(error DISPLAY: No width specified.)
+else
+DEFINES += DISPLAY_2NDSTAGE_WIDTH=$(DISPLAY_2NDSTAGE_WIDTH)
+endif
+
+ifeq ($(DISPLAY_2NDSTAGE_HEIGHT),)
+$(error DISPLAY: No height specified.)
+else
+DEFINES += DISPLAY_2NDSTAGE_HEIGHT=$(DISPLAY_2NDSTAGE_HEIGHT)
+endif
+
+ifeq ($(DISPLAY_2NDSTAGE_BPP),)
+$(error DISPLAY: No bpp specified.)
+else
+DEFINES += DISPLAY_2NDSTAGE_BPP=$(DISPLAY_2NDSTAGE_BPP)
+endif
+
+OBJS += \
+	$(LOCAL_DIR)/display_2ndstage.o
+endif
+
 ifeq ($(PLATFORM),msm8x60)
 	OBJS += $(LOCAL_DIR)/mipi_dsi.o \
 			$(LOCAL_DIR)/i2c_qup.o \

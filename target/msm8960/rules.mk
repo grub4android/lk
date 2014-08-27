@@ -42,8 +42,12 @@ ifeq ($(LINUX_MACHTYPE_RUMI3), 1)
 DEFINES += LINUX_MACHTYPE_RUMI3
 endif
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+OBJS += \
+    $(LOCAL_DIR)/target_display.o
+endif
+
 OBJS += \
 	$(LOCAL_DIR)/init.o \
 	$(LOCAL_DIR)/atags.o \
-	$(LOCAL_DIR)/keypad.o \
-	$(LOCAL_DIR)/target_display.o
+	$(LOCAL_DIR)/keypad.o
