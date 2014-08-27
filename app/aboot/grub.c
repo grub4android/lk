@@ -243,6 +243,10 @@ static int grub_sideload_handler(void *data)
 	}
 	dprintf(INFO, "bootdev: %s\n", grub_bootdev);
 
+#if ARM_WITH_MMU
+	arch_disable_mmu();
+#endif
+
 	// BOOT !
 	void (*entry)(unsigned, unsigned, unsigned*) = (void*)hdr->kernel_addr;
 	dprintf(INFO, "booting GRUB from sideload @ %p\n", entry);
@@ -277,6 +281,10 @@ int grub_boot(void)
 			return -1;
 		}
 	}
+
+#if ARM_WITH_MMU
+	arch_disable_mmu();
+#endif
 
 	// BOOT !
 	void (*entry)(unsigned, unsigned, unsigned*) = (void*)GRUB_LOADING_ADDRESS;
