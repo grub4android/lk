@@ -1058,7 +1058,7 @@ void mipi_dsi_shutdown(void)
 		writel(0x0, DSI_CC_REG);
 #elif (DISPLAY_MIPI_PANEL_NOVATEK_BLUE \
 	 || DISPLAY_MIPI_PANEL_TOSHIBA)\
-	 || (!DISPLAY_MIPI_PANEL_RENESAS)
+	 || (TARGET_MSM8960 && !DISPLAY_MIPI_PANEL_RENESAS)
 		secure_writel(0x0, DSI_CC_REG);
 		secure_writel(0x0, DSI_PIXEL_CC_REG);
 #endif

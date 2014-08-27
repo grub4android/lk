@@ -570,7 +570,9 @@ static int API_display_fb_get(va_list ap)
  */
 static int API_display_fb_flush(va_list ap)
 {
+#if TARGET_MSM8960
 	trigger_mdp_dsi();
+#endif
 	return 0;
 }
 
@@ -606,14 +608,15 @@ static int API_boot_create_tags(va_list ap)
 {
 	struct tags_info *info = va_arg(ap, struct tags_info *);
 
+#if DEVICE_TREE
 	if(info->dt_size>0) {
 		dprintf(CRITICAL, "DT is not imlemented yet.\n");
 		return API_EINVAL;
 	}
-	else {
-		unsigned char *final_cmdline = update_cmdline(info->cmdline);
-		generate_atags(info->tags_addr, final_cmdline, info->ramdisk, info->ramdisk_size);
-	}
+#else
+	unsigned char *final_cmdline = update_cmdline(info->cmdline);
+	generate_atags(info->tags_addr, final_cmdline, info->ramdisk, info->ramdisk_size);
+#endif
 
 	return 0;
 }
