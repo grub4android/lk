@@ -9,6 +9,8 @@
 #define ZCONF_H
 
 #undef DEBUG
+#define stderr CRITICAL
+#define fprintf dprintf
 
 /*
  * If you *really* need a unique prefix for all types and library functions,
