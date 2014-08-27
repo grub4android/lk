@@ -1,6 +1,9 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-MODULES += lib/ext4
+MODULES += \
+	lib/ext4 \
+	lib/zlib \
+	lib/tar
 
 INCLUDES += -I$(LK_TOP_DIR)/platform/msm_shared/include
 
