@@ -37,7 +37,7 @@ void gzfree(void *x, void *addr)
 /*
  * Uncompress blocks compressed with zlib without headers
  */
-int zunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp,
+int zunzip(void *dst, unsigned int dstlen, unsigned char *src, unsigned int *lenp,
 						int stoponerr, int offset)
 {
 	z_stream s;
@@ -71,7 +71,7 @@ int zunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp,
 	return 0;
 }
 
-int gunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp)
+int gunzip(void *dst, unsigned int dstlen, unsigned char *src, unsigned int *lenp)
 {
 	unsigned int i;
 	int flags;

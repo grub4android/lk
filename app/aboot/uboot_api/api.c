@@ -26,6 +26,7 @@
 #include <platform.h>
 #include <mipi_dsi.h>
 #include <api_public.h>
+#include <gzip.h>
 
 #include "api_private.h"
 #include "../grub.h"
@@ -658,6 +659,21 @@ static int API_boot_prepare(va_list ap)
 	return 0;
 }
 
+/*
+ * pseudo signature:
+ *
+ * int API_tool_gunzip(void *dst, unsigned int dstlen, unsigned char *src, unsigned int *lenp)
+ */
+static int API_tool_gunzip(va_list ap)
+{
+	void *dst = va_arg(ap, void*);
+	unsigned int dstlen = va_arg(ap, unsigned int);
+	unsigned char *src = va_arg(ap, unsigned char*);
+	unsigned int *lenp = va_arg(ap, unsigned int*);
+
+	return gunzip(dst, dstlen, src, lenp);
+}
+
 
 static cfp_t calls_table[API_MAXCALL] = { NULL, };
 
@@ -731,6 +747,7 @@ void api_init(void)
 	calls_table[API_INPUT_GETKEY] = &API_input_getkey;
 	calls_table[API_BOOT_CREATE_TAGS] = &API_boot_create_tags;
 	calls_table[API_BOOT_PREPARE] = &API_boot_prepare;
+	calls_table[API_TOOL_GUNZIP] = &API_tool_gunzip;
 	calls_no = API_MAXCALL;
 
 	dprintf(INFO, "API initialized with %d calls\n", calls_no);
