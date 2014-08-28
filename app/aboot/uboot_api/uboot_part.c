@@ -14,6 +14,7 @@
 #include <lib/tar.h>
 
 #include "uboot_part.h"
+#include "../grub.h"
 
 static unsigned long block_read(int dev, lbaint_t start, lbaint_t blkcnt, void *buffer);
 static unsigned long block_write(int dev, lbaint_t start, lbaint_t blkcnt, const void *buffer);
@@ -49,7 +50,8 @@ static unsigned long block_read(int dev, lbaint_t start, lbaint_t blkcnt, void *
 	}
 	// BOOT-TAR
 	else if(dev==1 && grub_has_tar()) {
-		return grub_tar_read(grub_tar_get_tio(), start, blkcnt, buffer);
+		struct tar_io *tio = grub_tar_get_tio();
+		return tio->block_read(tio, start, blkcnt, buffer);
 	}
 
 	return 0;

@@ -328,7 +328,7 @@ lbasize_t dev_read_stor(void *cookie, void *buf, lbasize_t len, lbastart_t start
 		return 0;
 
 	if ((dd->block_read) == NULL) {
-		dprintf(SPEW, "no block_read() for device 0x%08x\n", cookie);
+		dprintf(SPEW, "no block_read() for device %p\n", cookie);
 		return 0;
 	}
 

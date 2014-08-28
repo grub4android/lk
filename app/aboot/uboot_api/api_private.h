@@ -10,7 +10,7 @@
 #define _API_PRIVATE_H_
 
 void	api_init(void);
-//void	platform_set_mr(struct sys_info *, unsigned long, unsigned long, int);
+void	platform_set_mr(struct sys_info *, unsigned long, unsigned long, int);
 //int	platform_sys_info(struct sys_info *);
 
 void	dev_enum_reset(void);
@@ -28,8 +28,8 @@ lbasize_t	dev_read_stor(void *, void *, lbasize_t, lbastart_t);
 
 void dev_stor_init(void);
 
-//int display_get_info(int type, struct display_info *di);
-//int display_draw_bitmap(ulong bitmap, int x, int y);
-//void display_clear(void);
+int display_get_info(int type, struct display_info *di);
+int display_draw_bitmap(ulong bitmap, int x, int y);
+void display_clear(void);
 
 #endif /* _API_PRIVATE_H_ */

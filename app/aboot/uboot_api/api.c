@@ -22,11 +22,18 @@
 #include <arch/ops.h>
 #include <include/boot_stats.h>
 #include <kernel/thread.h>
+#include <target.h>
+#include <platform.h>
+#include <mipi_dsi.h>
 #include <api_public.h>
 
 #include "api_private.h"
+#include "../grub.h"
 
 extern unsigned int calculate_crc32(unsigned char *buffer, int len);
+extern unsigned char *update_cmdline(const char * cmdline);
+extern void generate_atags(unsigned *ptr, const char *cmdline,
+                    void *ramdisk, unsigned ramdisk_size);
 
 
 
@@ -146,7 +153,7 @@ static int API_get_sys_info(va_list ap)
 	// kernel memory
 	platform_set_mr(si, BASE_ADDR, 44*1024*1024, MR_ATTR_DRAM);
 	// scratch memory(LK uses this as a fastboot buffer)
-	platform_set_mr(si, target_get_scratch_address(), target_get_max_flash_size(), MR_ATTR_DRAM);
+	platform_set_mr(si, (unsigned long)target_get_scratch_address(), target_get_max_flash_size(), MR_ATTR_DRAM);
 
 	return 0;
 }
@@ -559,7 +566,7 @@ static int API_display_fb_get(va_list ap)
 	if ((fb = (unsigned long *)va_arg(ap, uint32_t)) == NULL)
 		return API_EINVAL;
 
-	*fb = config->base;
+	*fb = (unsigned long)config->base;
 	return 0;
 }
 
@@ -615,7 +622,7 @@ static int API_boot_create_tags(va_list ap)
 	}
 #else
 	unsigned char *final_cmdline = update_cmdline(info->cmdline);
-	generate_atags(info->tags_addr, final_cmdline, info->ramdisk, info->ramdisk_size);
+	generate_atags(info->tags_addr, (const char*)final_cmdline, info->ramdisk, info->ramdisk_size);
 #endif
 
 	return 0;
@@ -739,14 +746,14 @@ void api_init(void)
 		return;
 	}
 
-	dprintf(INFO, "API sig @ 0x%08x\n", sig);
+	dprintf(INFO, "API sig @ %p\n", sig);
 	memcpy(sig->magic, api_sig_magic, 8);
 	sig->version = API_SIG_VERSION;
 	sig->syscall = &syscall;
 	sig->checksum = 0;
 	sig->checksum = calculate_crc32((unsigned char *)sig,
 			      sizeof(struct api_signature));
-	dprintf(INFO, "syscall entry: 0x%08x\n", sig->syscall);
+	dprintf(INFO, "syscall entry: %p\n", sig->syscall);
 
 	memset(api_sig_magic, 0, strlen(api_sig_magic));
 }

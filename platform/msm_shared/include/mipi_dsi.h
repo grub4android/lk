@@ -2179,4 +2179,9 @@ int mipi_dsi_off(struct msm_panel_info *pinfo);
 int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count);
 int mipi_dsi_cmds_rx(char **rp, int len);
 int panel_id_detection();
+
+#if TARGET_MSM8960
+void trigger_mdp_dsi(void);
+#endif
+
 #endif

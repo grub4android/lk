@@ -42,6 +42,8 @@ void target_early_init(void);
 /* later init, after the kernel has come up */
 void target_init(void);
 
+void target_uninit(void);
+
 /* get memory address for fastboot image loading */
 void *target_get_scratch_address(void);
 
@@ -75,4 +77,8 @@ target_usb_iface_t * target_usb30_init();
 bool target_is_cdp_qvga();
 uint32_t target_hw_interposer();
 uint32_t target_override_pll();
+
+int target_volume_up();
+uint32_t target_volume_down();
+int target_power_key(void);
 #endif
