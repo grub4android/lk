@@ -577,7 +577,7 @@ static int API_display_fb_get(va_list ap)
  */
 static int API_display_fb_flush(va_list ap)
 {
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 	trigger_mdp_dsi();
 #endif
 	return 0;

@@ -329,6 +329,7 @@ struct pll_rate {
 #define BYTE_NS_VAL           0x00000001
 #define BYTE_CC_VAL           0x00000004
 
+#if TARGET_MSM8960_ARIES
 #define PIXEL_NS_VAL          0x00002003
 #define PIXEL_MD_VAL          0x000001FB
 #define PIXEL_CC_VAL          0x00000005
@@ -336,6 +337,15 @@ struct pll_rate {
 #define DSI_NS_VAL            0x00000003
 #define DSI_MD_VAL            0x000003FB
 #define DSI_CC_VAL            0x00000005
+#else
+#define PIXEL_NS_VAL          0x00F80003
+#define PIXEL_MD_VAL          0x000001FB
+#define PIXEL_CC_VAL          0x00000080
+
+#define DSI_NS_VAL            0xFA000003
+#define DSI_MD_VAL            0x000003FB
+#define DSI_CC_VAL            0x00000080
+#endif
 
 void config_mmss_clk(uint32_t ns,
              uint32_t md,

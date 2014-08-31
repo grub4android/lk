@@ -162,7 +162,7 @@ uint32_t gpio_get(uint32_t gpio)
 #define MSM_BOOT_UART_SWITCH_GPIO_MITWO		62
 void gpio_config_uart_dm(uint8_t id)
 {
-
+#if TARGET_MSM8960_ARIES
 	if(board_target_id() == LINUX_MACHTYPE_8960_CDP)
 	{
 		gpio_tlmm_config(MSM_BOOT_UART_SWITCH_GPIO_MITWOA, 0, GPIO_OUTPUT,
@@ -178,16 +178,29 @@ void gpio_config_uart_dm(uint8_t id)
 		gpio_set(MSM_BOOT_UART_SWITCH_GPIO_MITWO, GPIO_IN_OUT_HIGH);
 	}
 
-	if (board_platform_id() == MPQ8064 || board_platform_id() == MSM8260AB) {
+	if(board_platform_id() == MPQ8064 || board_platform_id() == MSM8260AB)
+#else
+	if(board_platform_id() == MPQ8064)
+#endif
+	{
 		switch (id) {
 
 		case GSBI_ID_5:
+#if TARGET_MSM8960_ARIES
 			/* configure rx gpio */
 			gpio_tlmm_config(23, 1, GPIO_INPUT, GPIO_NO_PULL,
 							 GPIO_8MA, GPIO_DISABLE);
 			/* configure tx gpio */
 			gpio_tlmm_config(22, 1, GPIO_OUTPUT, GPIO_NO_PULL,
 							 GPIO_8MA, GPIO_DISABLE);
+#else
+			/* configure rx gpio */
+			gpio_tlmm_config(52, 2, GPIO_INPUT, GPIO_NO_PULL,
+							 GPIO_8MA, GPIO_DISABLE);
+			/* configure tx gpio */
+			gpio_tlmm_config(51, 2, GPIO_OUTPUT, GPIO_NO_PULL,
+							 GPIO_8MA, GPIO_DISABLE);
+#endif
 			break;
 
 		default:
@@ -343,17 +356,28 @@ static struct pm8xxx_gpio_init pm8921_keypad_gpios[] = {
 	/* keys GPIOs */
 	PM8XXX_GPIO_INPUT(PM_GPIO(1), PM_GPIO_PULL_UP_31_5),
 	PM8XXX_GPIO_INPUT(PM_GPIO(2), PM_GPIO_PULL_UP_31_5),
-	PM8XXX_GPIO_OUTPUT(PM_GPIO(9), 0),
+#if TARGET_MSM8960_ARIES
 	PM8XXX_GPIO_OUTPUT(PM_GPIO(10), 0),
+#else
+	PM8XXX_GPIO_INPUT(PM_GPIO(3), PM_GPIO_PULL_UP_31_5),
+	PM8XXX_GPIO_INPUT(PM_GPIO(4), PM_GPIO_PULL_UP_31_5),
+	PM8XXX_GPIO_INPUT(PM_GPIO(5), PM_GPIO_PULL_UP_31_5),
+#endif
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(9), 0),
 };
 
 /* pm8921 GPIO configuration for APQ8064 keypad */
 static struct pm8xxx_gpio_init pm8921_keypad_gpios_apq[] = {
 	/* keys GPIOs */
+#if TARGET_MSM8960_ARIES
 	PM8XXX_GPIO_INPUT(PM_GPIO(1), PM_GPIO_PULL_UP_31_5),
 	PM8XXX_GPIO_INPUT(PM_GPIO(2), PM_GPIO_PULL_UP_31_5),
-	PM8XXX_GPIO_OUTPUT(PM_GPIO(9), 0),
 	PM8XXX_GPIO_OUTPUT(PM_GPIO(10), 0),
+#else
+	PM8XXX_GPIO_INPUT(PM_GPIO(35), PM_GPIO_PULL_UP_31_5),
+	PM8XXX_GPIO_INPUT(PM_GPIO(38), PM_GPIO_PULL_UP_31_5),
+#endif
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(9), 0),
 };
 
 /* pm8917 GPIO configuration for APQ8064 keypad */
@@ -499,6 +523,7 @@ void apq8064_display_gpio_init()
 		}
 }
 
+#if TARGET_MSM8960_ARIES
 static struct pm8xxx_gpio_init mi_display_gpios_apq[] = {
 	PM8XXX_GPIO_OUTPUT(PM_GPIO(11), 0),
 	PM8XXX_GPIO_OUTPUT(PM_GPIO(25), 0),
@@ -517,3 +542,4 @@ void mi_display_gpio_init()
 			&(mi_display_gpios_apq[i].config));
 	}
 }
+#endif

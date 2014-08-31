@@ -232,7 +232,7 @@ static char novatek_panel_enter_sleep[4] = { 0x10, 0x00, 0x05, 0x80 };	/* DTYPE_
 static char novatek_panel_exit_sleep[4] = { 0x11, 0x00, 0x05, 0x80 };	/* DTYPE_DCS_WRITE */
 static char novatek_panel_display_off[4] = { 0x28, 0x00, 0x05, 0x80 };	/* DTYPE_DCS_WRITE */
 static char novatek_panel_display_on[4] = { 0x29, 0x00, 0x05, 0x80 };	/* DTYPE_DCS_WRITE */
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 static char novatek_panel_max_packet[4] = { 0x06, 0x00, 0x37, 0x80 };	/* DTYPE_SET_MAX_PACKET */
 #else
 static char novatek_panel_max_packet[4] = { 0x04, 0x00, 0x37, 0x80 };	/* DTYPE_SET_MAX_PACKET */
@@ -2180,7 +2180,7 @@ int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count);
 int mipi_dsi_cmds_rx(char **rp, int len);
 int panel_id_detection();
 
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 void trigger_mdp_dsi(void);
 #endif
 

@@ -369,7 +369,7 @@ int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 		dsb();
 		ret += dsi_cmd_dma_trigger_for_panel();
 		dsb();
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 		if (count == sizeof(cmd_delay)/sizeof(int)) {
 			if (i < (sizeof(cmd_delay)/sizeof(int)))
 				mdelay(cmd_delay[i]);
@@ -489,13 +489,12 @@ static uint32_t mipi_novatek_manufacture_id(void)
 	char *rp = rec_buf;
 	uint32_t *lp, data;
 
-
+#if TARGET_MSM8960_ARIES
 	mipi_dsi_cmds_tx(&novatek_panel_max_packet_cmd, 1);
-
-#if TARGET_MSM8960
 	mipi_dsi_cmds_tx(&novatek_panel_manufacture_id_cmd, 1);
 	mipi_dsi_cmds_rx(&rp, 2);
 #else
+	mipi_dsi_cmds_tx(&novatek_panel_manufacture_id_cmd, 1);
 	mipi_dsi_cmds_rx(&rp, 3);
 #endif
 
@@ -506,7 +505,7 @@ static uint32_t mipi_novatek_manufacture_id(void)
 	return data;
 }
 
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 static uint32_t mipi_novatek_manufacture_id0(void)
 {
 	char rec_buf[24];
@@ -626,7 +625,7 @@ int mdss_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo, uint32_t
 	return status;
 }
 
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 int mipi_dsi_panel_initialize_prepare(struct mipi_dsi_panel_config *pinfo)
 {
 	unsigned char DMA_STREAM1 = 0;	// for mdp display processor path
@@ -1004,7 +1003,7 @@ void mipi_dsi_cmd_mode_trigger(void)
 			    panel_info->num_of_lanes /* num_of_lanes */ );
 }
 
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 void mipi_dsi_cmd_trigger(struct msm_fb_panel_data *pdata)
 {
 	struct msm_panel_info *pinfo = NULL;
@@ -1058,7 +1057,7 @@ void mipi_dsi_shutdown(void)
 		writel(0x0, DSI_CC_REG);
 #elif (DISPLAY_MIPI_PANEL_NOVATEK_BLUE \
 	 || DISPLAY_MIPI_PANEL_TOSHIBA)\
-	 || (TARGET_MSM8960 && !DISPLAY_MIPI_PANEL_RENESAS)
+	 || (TARGET_MSM8960_ARIES && !DISPLAY_MIPI_PANEL_RENESAS)
 		secure_writel(0x0, DSI_CC_REG);
 		secure_writel(0x0, DSI_PIXEL_CC_REG);
 #endif
@@ -1141,7 +1140,7 @@ int mipi_config(struct msm_fb_panel_data *panel)
 
 	mipi_dsi_phy_init(&mipi_pinfo);
 
-#if TARGET_MSM8960
+#if TARGET_MSM8960_ARIES
 	ret += mipi_dsi_panel_initialize_prepare(&mipi_pinfo);
 
 	if (board_target_id() == LINUX_MACHTYPE_8064_MITWO || (board_target_id() == LINUX_MACHTYPE_8064_MTP)) {

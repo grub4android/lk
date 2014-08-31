@@ -2,6 +2,7 @@
  * Copyright (c) 2009, Google Inc.
  * All rights reserved.
  * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -54,7 +55,8 @@
 extern void dmb(void);
 extern void msm8960_keypad_init(void);
 extern void msm8930_keypad_init(void);
-extern void panel_backlight_on(void);
+extern void panel_backlight_on_mitwo(unsigned int on);
+extern void panel_backlight_on_mitwoa(unsigned int on);
 
 static unsigned mmc_sdc_base[] =
     { MSM_SDC1_BASE, MSM_SDC2_BASE, MSM_SDC3_BASE, MSM_SDC4_BASE };
@@ -306,6 +308,7 @@ void target_uart_init(void)
 	case LINUX_MACHTYPE_8064_CDP:
 	case LINUX_MACHTYPE_8064_MTP:
 	case LINUX_MACHTYPE_8064_LIQUID:
+	case LINUX_MACHTYPE_8064_MITWO:
 		uart_dm_init(7, 0x16600000, 0x16640000);
 		break;
 
@@ -431,8 +434,11 @@ void target_detect(struct board_data *board)
 		case HW_PLATFORM_BTS:
 			target_id = LINUX_MACHTYPE_8064_EP;
 			break;
+		case HW_PLATFORM_OEM:
+			target_id = LINUX_MACHTYPE_8064_MITWO;
+			break;
 		default:
-			target_id = LINUX_MACHTYPE_8064_CDP;
+			target_id = LINUX_MACHTYPE_8064_MTP;
 		}
 	} else {
 		dprintf(CRITICAL, "platform (%d) is not identified.\n",
@@ -488,6 +494,12 @@ int target_cont_splash_screen()
 	switch(board_platform_id())
 	{
 	case MSM8960:
+	case APQ8064:
+		/* Splash screen and continuous splash screen feature is not
+		 * supported on 8960 Liquid target. But kernel display driver
+		 * crashes on Liquid if display clocks are disabled. Until that is
+		 * fixed, assume this feature is enabled for Liquid also.
+		 */
 	case MSM8960AB:
 	case APQ8060AB:
 	case MSM8260AB:

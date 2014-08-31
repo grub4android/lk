@@ -1,4 +1,5 @@
-/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
+ /* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+ *
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +10,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Foundation nor the names of its
+ *     * Neither the name of Linux Foundation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -26,27 +27,40 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef _TARGET_MSM8960_DISPLAY_H
-#define _TARGET_MSM8960_DISPLAY_H
 
-#define MIPI_FB_ADDR  0x89000000
+#ifndef __TARGET_BOARD_H
+#define __TARGET_BOARD_H
 
-/* Toshiba MDT61 Mipi Panel */
-/* Unique to this panel, display width is 800, image is 600 */
-#define TSH_MDT61_DISPLAY_WIDTH      800
-#define TSH_MDT61_MIPI_FB_WIDTH      (TSH_MDT61_DISPLAY_WIDTH - 200)
-#define TSH_MDT61_MIPI_FB_HEIGHT     1024
 
-#define MIPI_HSYNC_PULSE_WIDTH       8
-#define MIPI_HSYNC_BACK_PORCH_DCLK   16
-#define MIPI_HSYNC_FRONT_PORCH_DCLK  23
+/* 8960 */
+#define LINUX_MACHTYPE_8960_SIM     3230
+#define LINUX_MACHTYPE_8960_RUMI3   3231
+#define LINUX_MACHTYPE_8960_CDP     3396
+#define LINUX_MACHTYPE_8960_MTP     3397
+#define LINUX_MACHTYPE_8960_FLUID   3398
+#define LINUX_MACHTYPE_8960_APQ     3399
+#define LINUX_MACHTYPE_8960_LIQUID  3535
 
-#define MIPI_VSYNC_PULSE_WIDTH       2
-#define MIPI_VSYNC_BACK_PORCH_LINES  2
-#define MIPI_VSYNC_FRONT_PORCH_LINES 7
+/* 8627 */
+#define LINUX_MACHTYPE_8627_CDP     3861
+#define LINUX_MACHTYPE_8627_MTP     3862
 
-extern int mipi_dsi_phy_init(struct mipi_dsi_panel_config *);
-extern void mdp_setup_mdt61_video_dsi_config(void);
-extern void config_mdt61_dsi_video_mode(void);
+/* 8930 */
+#define LINUX_MACHTYPE_8930_CDP     3727
+#define LINUX_MACHTYPE_8930_MTP     3728
+#define LINUX_MACHTYPE_8930_FLUID   3729
+#define LINUX_MACHTYPE_8930_EVT     4558
+
+/* 8064 */
+#define LINUX_MACHTYPE_8064_SIM     3572
+#define LINUX_MACHTYPE_8064_RUMI3   3679
+#define LINUX_MACHTYPE_8064_CDP     3948
+#define LINUX_MACHTYPE_8064_MTP     3949
+#define LINUX_MACHTYPE_8064_LIQUID  3951
+#define LINUX_MACHTYPE_8064_MPQ_CDP 3993
+#define LINUX_MACHTYPE_8064_MPQ_HRD 3994
+#define LINUX_MACHTYPE_8064_MPQ_DTV 3995
+#define LINUX_MACHTYPE_8064_EP      3996
+#define LINUX_MACHTYPE_8064_MPQ_DMA 4511
 
 #endif

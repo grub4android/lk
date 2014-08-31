@@ -81,4 +81,5 @@ void msm8960_keypad_gpio_init();
 void msm8930_keypad_gpio_init();
 void pmic8921_gpio_set(uint32_t gpio, uint32_t level);
 uint32_t pmic8921_gpio_get(uint32_t gpio);
+
 #endif
