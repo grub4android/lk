@@ -43,6 +43,8 @@ struct device_info
 	bool is_tampered;
 	bool charger_screen_enabled;
 	char display_panel[MAX_PANEL_ID_LEN];
+	char caf_reserved[100];
+	bool force_fastboot;
 };
 
 #endif

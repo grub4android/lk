@@ -204,6 +204,7 @@ char charger_screen_enabled[MAX_RSP_SIZE];
 char sn_buf[13];
 char display_panel_buf[MAX_PANEL_BUF_SIZE];
 char panel_display_mode[MAX_RSP_SIZE];
+char force_fastboot[MAX_RSP_SIZE];
 
 extern int emmc_recovery_init(void);
 
@@ -1525,6 +1526,8 @@ void read_device_info_mmc(device_info *dev)
 		info->is_unlocked = 0;
 		info->is_tampered = 0;
 		info->charger_screen_enabled = 0;
+		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
+		info->force_fastboot = 0;
 
 		write_device_info_mmc(info);
 	}
@@ -1597,6 +1600,10 @@ void read_device_info_flash(device_info *dev)
 		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
 		info->is_unlocked = 0;
 		info->is_tampered = 0;
+		info->charger_screen_enabled = 0;
+		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
+		info->force_fastboot = 0;
+
 		write_device_info_flash(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
@@ -2330,6 +2337,22 @@ void cmd_oem_disable_charger_screen(const char *arg, void *data, unsigned size)
 	fastboot_okay("");
 }
 
+void cmd_oem_enable_force_fastboot(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Enabling forcing fastboot\n");
+	device.force_fastboot = 1;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
+void cmd_oem_disable_force_fastboot(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Disabling cforcing fastboot\n");
+	device.force_fastboot = 0;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
 void cmd_oem_select_display_panel(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Selecting display panel %s\n", arg);
@@ -2360,6 +2383,8 @@ void cmd_oem_devinfo(const char *arg, void *data, unsigned sz)
 	snprintf(response, sizeof(response), "\tCharger screen enabled: %s", (device.charger_screen_enabled ? "true" : "false"));
 	fastboot_info(response);
 	snprintf(response, sizeof(response), "\tDisplay panel: %s", (device.display_panel));
+	fastboot_info(response);
+	snprintf(response, sizeof(response), "\tForcing fastboot: %s", (device.force_fastboot ? "true" : "false"));
 	fastboot_info(response);
 	fastboot_okay("");
 }
@@ -2605,6 +2630,10 @@ void aboot_fastboot_register_commands(void)
 			cmd_oem_disable_charger_screen);
 	fastboot_register("oem select-display-panel",
 			cmd_oem_select_display_panel);
+	fastboot_register("oem enable-forcing-fastboot",
+			cmd_oem_enable_force_fastboot);
+	fastboot_register("oem disable-forcing-fastboot",
+			cmd_oem_disable_force_fastboot);
 	/* publish variables and their values */
 	fastboot_publish("product",  TARGET(BOARD));
 	fastboot_publish("kernel",   "lk");
@@ -2632,6 +2661,11 @@ void aboot_fastboot_register_commands(void)
 			device.display_panel);
 	fastboot_publish("display-panel",
 			(const char *) panel_display_mode);
+
+	snprintf(force_fastboot, MAX_RSP_SIZE, "%d",
+			device.force_fastboot);
+	fastboot_publish("forcing-fastboot",
+			(const char *) force_fastboot);
 }
 
 void aboot_init(const struct app_descriptor *app)
@@ -2712,6 +2746,9 @@ void aboot_init(const struct app_descriptor *app)
 		dual_boot_sign = DUALBOOT_BOOT_SECOND;
 	}
 #endif
+
+	if (device.force_fastboot)
+		boot_into_fastboot = true;
 
 	if (!boot_into_fastboot)
 	{
