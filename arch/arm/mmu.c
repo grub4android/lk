@@ -60,6 +60,22 @@ void arm_mmu_map_section(addr_t paddr, addr_t vaddr, uint flags)
 	arm_invalidate_tlb();
 }
 
+static void arm_mmu_map_grub_region(void)
+{
+	uint32_t sections = 32;
+	addr_t paddress = GRUB_LOADING_ADDRESS;
+	addr_t vaddress = paddress;
+	uint32_t flags = MMU_MEMORY_TYPE_NORMAL_WRITE_THROUGH | MMU_MEMORY_AP_READ_WRITE;
+
+	while (sections--) {
+		arm_mmu_map_section(paddress +
+				    sections * MB,
+				    vaddress +
+				    sections * MB,
+				    flags);
+	}
+}
+
 void arm_mmu_init(void)
 {
 	int i;
@@ -82,6 +98,7 @@ void arm_mmu_init(void)
 	}
 
 	platform_init_mmu_mappings();
+	arm_mmu_map_grub_region();
 
 	/* set up the translation table base */
 	arm_write_ttbr((uint32_t)tt);
