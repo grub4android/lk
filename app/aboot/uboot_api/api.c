@@ -579,6 +579,7 @@ static int API_display_fb_flush(va_list ap)
 {
 #if TARGET_MSM8960_ARIES
 	trigger_mdp_dsi();
+	mdelay(10);
 #endif
 	return 0;
 }
