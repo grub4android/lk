@@ -1460,7 +1460,6 @@ void fakeread_device_info(device_info *dev)
 BUF_DMA_ALIGN(info_buf, BOOT_IMG_MAX_PAGE_SIZE);
 void write_device_info_mmc(device_info *dev)
 {
-#if !BOOT_2NDSTAGE
 	struct device_info *info = (void*) info_buf;
 	unsigned long long ptn = 0;
 	unsigned long long size;
@@ -1468,7 +1467,11 @@ void write_device_info_mmc(device_info *dev)
 	uint32_t blocksize;
 	uint8_t lun = 0;
 
+#if BOOT_2NDSTAGE
+	index = partition_get_index("boot");
+#else
 	index = partition_get_index("aboot");
+#endif
 	ptn = partition_get_offset(index);
 	if(ptn == 0)
 	{
@@ -1489,21 +1492,21 @@ void write_device_info_mmc(device_info *dev)
 		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
 		return;
 	}
-#endif
 }
 
 void read_device_info_mmc(device_info *dev)
 {
-#if BOOT_2NDSTAGE
-	fakeread_device_info(dev);
-#else
 	struct device_info *info = (void*) info_buf;
 	unsigned long long ptn = 0;
 	unsigned long long size;
 	int index = INVALID_PTN;
 	uint32_t blocksize;
 
+#if BOOT_2NDSTAGE
+	index = partition_get_index("boot");
+#else
 	index = partition_get_index("aboot");
+#endif
 	ptn = partition_get_offset(index);
 	if(ptn == 0)
 	{
@@ -1532,7 +1535,6 @@ void read_device_info_mmc(device_info *dev)
 		write_device_info_mmc(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
-#endif
 }
 
 void write_device_info_flash(device_info *dev)
