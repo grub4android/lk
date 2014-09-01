@@ -13,6 +13,8 @@ endif
 
 ifeq ($(ENABLE_2NDSTAGE_BOOT),1)
 DEFINES += BOOT_2NDSTAGE=1
+
+OBJS += $(LOCAL_DIR)/2ndstage_tools.o
 endif
 
 OBJS += \

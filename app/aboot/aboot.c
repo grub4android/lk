@@ -64,6 +64,10 @@
 #include <dev_tree.h>
 #endif
 
+#if BOOT_2NDSTAGE
+#include "2ndstage_tools.h"
+#endif
+
 #include "image_verify.h"
 #include "recovery.h"
 #include "bootimg.h"
@@ -517,6 +521,15 @@ unsigned char *update_cmdline(const char * cmdline)
 		free(boot_dev_buf);
 
 	dprintf(INFO, "cmdline: %s\n", cmdline_final);
+
+#if BOOT_2NDSTAGE
+	char *extended_cmdline = sndstage_extend_cmdline((char*)cmdline_final);
+	free(cmdline_final);
+	cmdline_final = (unsigned char*)extended_cmdline;
+
+	dprintf(INFO, "cmdline_extended: %s\n", cmdline_final);
+#endif
+
 	return cmdline_final;
 }
 
