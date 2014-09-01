@@ -32,8 +32,11 @@
 #include <smem.h>
 #include <baseband.h>
 #include <arch/arm.h>
+
+#if DEVICE_TREE
 #include <dev_tree.h>
 #include <libfdt.h>
+#endif
 
 static struct board_data board = {UNKNOWN,
 	0,
@@ -43,9 +46,6 @@ static struct board_data board = {UNKNOWN,
 	BASEBAND_MSM,
 	{{PMIC_IS_INVALID, 0}, {PMIC_IS_INVALID, 0}, {PMIC_IS_INVALID, 0}},
 };
-
-static struct original_atags_info original_atags_info = {{},0,0,0,};
-static bool has_original_atags_info = 0;
 
 static void platform_detect()
 {
@@ -154,6 +154,9 @@ static void platform_detect()
 }
 
 #if BOOT_2NDSTAGE
+static struct original_atags_info original_atags_info = {{},0,0,0,};
+static bool has_original_atags_info = 0;
+
 #if DEVICE_TREE
 struct dt_entry_v1
 {

@@ -170,7 +170,7 @@ static char target_boot_params[64];
 /* Assuming unauthorized kernel image by default */
 static int auth_kernel_img = 0;
 
-static device_info device = {DEVICE_MAGIC, 0, 0, 0, 0};
+static device_info device = {DEVICE_MAGIC, 0, 0, 0, {0}, {0}, 0};
 
 struct atag_ptbl_entry
 {
@@ -1743,7 +1743,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 
 	hdr = (struct boot_img_hdr *)data;
 
-	if(strcmp(hdr->name, "GRUB")==0) {
+	if(strcmp((const char*)hdr->name, "GRUB")==0) {
 		grub_load_from_sideload(data);
 		fastboot_okay("");
 		return;
