@@ -2698,6 +2698,10 @@ void aboot_init(const struct app_descriptor *app)
 	dprintf(SPEW, "Display Init: Done\n");
 #endif
 
+#if BOOT_2NDSTAGE
+	dprintf(INFO, "Original ATAGS: %p\n", original_atags);
+#endif
+
 	/* initialize uboot api */
 	api_init();
 
