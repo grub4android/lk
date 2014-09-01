@@ -53,6 +53,7 @@ enum {
 	API_DISPLAY_FB_GET,
 	API_DISPLAY_FB_FLUSH,
 	API_INPUT_GETKEY,
+	API_BOOT_UPDATE_ADDRESSES,
 	API_BOOT_CREATE_TAGS,
 	API_BOOT_PREPARE,
 	API_MAXCALL
@@ -142,6 +143,7 @@ struct tags_info {
 	unsigned ramdisk_size;
 	void* dt;
 	unsigned dt_size;
+	unsigned int page_size;
 };
 
 #endif /* _API_PUBLIC_H_ */

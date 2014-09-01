@@ -27,13 +27,21 @@
 #include <mipi_dsi.h>
 #include <api_public.h>
 
+#if DEVICE_TREE
+#include <libfdt.h>
+#include <dev_tree.h>
+#endif
+
 #include "api_private.h"
 #include "../grub.h"
+#include "../bootimg.h"
 
 extern unsigned int calculate_crc32(unsigned char *buffer, int len);
 extern unsigned char *update_cmdline(const char * cmdline);
 extern void generate_atags(unsigned *ptr, const char *cmdline,
                     void *ramdisk, unsigned ramdisk_size);
+extern int check_aboot_addr_range_overlap(uint32_t start, uint32_t size);
+extern void update_ker_tags_rdisk_addr(struct boot_img_hdr *hdr, bool is_arm64);
 
 
 
@@ -610,19 +618,83 @@ static int API_input_getkey(va_list ap)
 /*
  * pseudo signature:
  *
+ * void API_boot_update_addresses(struct tag_info *info, int is_arm64)
+ */
+static int API_boot_update_addresses(va_list ap)
+{
+	struct boot_img_hdr *hdr = va_arg(ap, struct boot_img_hdr *);
+	int is_arm64 = va_arg(ap, int);
+
+	update_ker_tags_rdisk_addr(hdr, is_arm64);
+	return 0;
+}
+
+
+#if DEVICE_TREE
+static int copy_dtb(struct tags_info *info)
+{
+	struct dt_table *table;
+	struct dt_entry dt_entry;
+	uint32_t dt_hdr_size;
+
+	if(info->dt_size != 0) {
+		/* offset now point to start of dt.img */
+		table = (struct dt_table*)(info->dt);
+
+		if (dev_tree_validate(table, info->page_size, &dt_hdr_size) != 0) {
+			dprintf(CRITICAL, "ERROR: Cannot validate Device Tree Table \n");
+			return -1;
+		}
+		/* Find index of device tree within device tree table */
+		if(dev_tree_get_entry_info(table, &dt_entry) != 0){
+			dprintf(CRITICAL, "ERROR: Getting device tree address failed\n");
+			return -1;
+		}
+
+		/* Validate and Read device device tree in the "tags_add */
+		if (check_aboot_addr_range_overlap((uint32_t)info->tags_addr, dt_entry.size))
+		{
+			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+			return -1;
+		}
+
+		/* Read device device tree in the "tags_add */
+		memmove((void*) info->tags_addr,
+				info->dt +  dt_entry.offset,
+				dt_entry.size);
+	} else
+		return -1;
+
+	/* Everything looks fine. Return success. */
+	return 0;
+}
+#endif
+
+/*
+ * pseudo signature:
+ *
  * int API_boot_create_tags(struct tag_info *info)
  */
 static int API_boot_create_tags(va_list ap)
 {
 	struct tags_info *info = va_arg(ap, struct tags_info *);
+	unsigned char *final_cmdline = update_cmdline(info->cmdline);
 
 #if DEVICE_TREE
 	if(info->dt_size>0) {
-		dprintf(CRITICAL, "DT is not imlemented yet.\n");
-		return API_EINVAL;
+		// copy dtb to final destination
+		if(copy_dtb(info)) {
+			dprintf(CRITICAL, "Couldn't find DTB.\n");
+			return API_EINVAL;
+		}
+
+		// Update the Device Tree
+		if(update_device_tree(info->tags_addr, (const char *)final_cmdline, info->ramdisk, info->ramdisk_size)) {
+			dprintf(CRITICAL, "ERROR: Updating Device Tree Failed\n");
+			return API_EINVAL;
+		}
 	}
 #else
-	unsigned char *final_cmdline = update_cmdline(info->cmdline);
 	generate_atags(info->tags_addr, (const char*)final_cmdline, info->ramdisk, info->ramdisk_size);
 #endif
 
@@ -730,6 +802,7 @@ void api_init(void)
 	calls_table[API_DISPLAY_FB_GET] = &API_display_fb_get;
 	calls_table[API_DISPLAY_FB_FLUSH] = &API_display_fb_flush;
 	calls_table[API_INPUT_GETKEY] = &API_input_getkey;
+	calls_table[API_BOOT_UPDATE_ADDRESSES] = &API_boot_update_addresses;
 	calls_table[API_BOOT_CREATE_TAGS] = &API_boot_create_tags;
 	calls_table[API_BOOT_PREPARE] = &API_boot_prepare;
 	calls_no = API_MAXCALL;

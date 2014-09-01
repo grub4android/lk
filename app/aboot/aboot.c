@@ -212,7 +212,7 @@ extern int emmc_recovery_init(void);
 extern int fastboot_trigger(void);
 #endif
 
-static void update_ker_tags_rdisk_addr(struct boot_img_hdr *hdr, bool is_arm64)
+void update_ker_tags_rdisk_addr(struct boot_img_hdr *hdr, bool is_arm64)
 {
 	/* overwrite the destination of specified for the project */
 #ifdef ABOOT_IGNORE_BOOT_HEADER_ADDRS
