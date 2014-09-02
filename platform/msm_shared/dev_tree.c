@@ -440,12 +440,12 @@ static int platform_dt_match(struct dt_entry *cur_dt_entry, uint32_t target_vari
 	*/
 
 #if BOOT_2NDSTAGE
-	struct original_atags_info *atags_info = board_get_original_atags_info();
-	if(atags_info==NULL) {
-		dprintf(CRITICAL, "%s: atags_info is NULL!\n", __func__);
+	if(!board_has_original_atags_info()) {
+		dprintf(CRITICAL, "%s: no original ATAGS found!\n", __func__);
 		return 1;
 	}
 
+	struct original_atags_info *atags_info = board_get_original_atags_info();
 	platform_id = atags_info->platform_id;
 	target_variant_id = atags_info->variant_id;
 	soc_version = atags_info->soc_rev;
@@ -793,6 +793,7 @@ int update_device_tree(void *fdt, const char *cmdline,
 {
 	int ret = 0;
 	uint32_t offset;
+	int i;
 
 	/* Check the device tree header */
 	ret = fdt_check_header(fdt);
@@ -864,8 +865,114 @@ int update_device_tree(void *fdt, const char *cmdline,
 		}
 	}
 
+	/* Add chosen props from original ATAG's */
+	struct original_atags_info* info = board_get_original_atags_info();
+	if(info!=NULL) {
+		for(i=info->num_chosen_props-1; i>=0; i--) {
+			if(!strcmp("bootargs", info->chosen_props[i].name)) continue;
+			if(!strcmp("linux,initrd-start", info->chosen_props[i].name)) continue;
+			if(!strcmp("linux,initrd-end", info->chosen_props[i].name)) continue;
+	
+			fdt_setprop(fdt, offset, info->chosen_props[i].name, info->chosen_props[i].data, info->chosen_props[i].len);
+		}
+	}
+
 	fdt_pack(fdt);
 
 	return ret;
 }
 
+#if BOOT_2NDSTAGE
+int parse_original_devtree(void *fdt) {
+	int ret = 0;
+	int len = 0;
+	uint32_t offset = 0;
+	const char* str_prop = NULL;
+	int min_plat_id_len = DT_ENTRY_V1_SIZE;
+	int prop;
+	struct original_atags_info* info = board_get_original_atags_info();
+
+	/* Check the device tree header */
+	ret = fdt_check_header(fdt);
+	if (ret)
+	{
+		dprintf(CRITICAL, "Invalid device tree header \n");
+		return ret;
+	}
+
+	/* Get offset of the chosen node */
+	ret = fdt_path_offset(fdt, "/chosen");
+	if (ret < 0)
+	{
+		dprintf(CRITICAL, "Could not find chosen node.\n");
+		return ret;
+	}
+	offset = ret;
+
+	/* backup chosen properties */
+	info->chosen_props = NULL;
+	info->num_chosen_props = 0;
+	prop = fdt_first_property_offset(fdt, offset);
+	for(;;) {
+		if(prop<0) break;
+
+		// get prop info
+		const char *name;
+		const void *data = fdt_getprop_by_offset(fdt, prop, &name, &len);
+		
+		// backup prop
+		info->chosen_props = realloc(info->chosen_props, ++info->num_chosen_props*sizeof(struct original_fdt_property));
+		info->chosen_props[info->num_chosen_props-1].data = malloc(len);
+		memcpy(info->chosen_props[info->num_chosen_props-1].data, data, len);
+		info->chosen_props[info->num_chosen_props-1].name = name?strdup(name):NULL;
+		info->chosen_props[info->num_chosen_props-1].len = len;
+
+		// next prop
+		prop = fdt_next_property_offset(fdt, prop);
+	}
+
+	/* store cmdline */
+	str_prop = (const char *)fdt_getprop(fdt, offset, "bootargs", &len);
+	if (str_prop && len>0)
+	{
+		info->cmdline = strdup(str_prop);
+	}
+
+	/* Get offset of the root node */
+	ret = fdt_path_offset(fdt, "/");
+	if (ret < 0) {
+		dprintf(CRITICAL, "Could not find root node.\n");
+		return ret;
+	}
+	offset = ret;
+
+	/* Find the board-id prop from DTB , if board-id is present then
+	 * the DTB is version 2 */
+	str_prop = (const char *)fdt_getprop(fdt, offset, "qcom,board-id", &len);
+	if (str_prop)
+	{
+		// TODO support it
+		dprintf(CRITICAL, "DTB version 2 is not supported!\n");
+		return -1;
+	}
+
+	/* Get the msm-id prop from DTB */
+	str_prop = (const char *)fdt_getprop(fdt, offset, "qcom,msm-id", &len);
+	if (!str_prop || len <= 0) {
+		dprintf(CRITICAL, "qcom,msm-id entry not found\n");
+		return -1;
+	}
+	else if (len % min_plat_id_len) {
+		dprintf(CRITICAL, "qcom,msm-id in device tree is (%d) not a multiple of (%d)\n",
+			len, min_plat_id_len);
+		return -1;
+	}
+
+	/* store id's */
+	info->platform_id = fdt32_to_cpu(((const struct dt_entry_v1 *)str_prop)->platform_id);
+	info->variant_id = fdt32_to_cpu(((const struct dt_entry_v1 *)str_prop)->variant_id);
+	info->soc_rev = fdt32_to_cpu(((const struct dt_entry_v1 *)str_prop)->soc_rev);
+
+	return 0;
+}
+#endif

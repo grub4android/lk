@@ -2713,6 +2713,7 @@ void aboot_init(const struct app_descriptor *app)
 
 #if BOOT_2NDSTAGE
 	dprintf(INFO, "Original ATAGS: %p\n", original_atags);
+	board_parse_original_atags();
 #endif
 
 	/* initialize uboot api */

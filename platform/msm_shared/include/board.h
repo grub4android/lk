@@ -33,6 +33,10 @@
 
 #include <smem.h>
 
+#if DEVICE_TREE
+#include <dev_tree.h>
+#endif
+
 #define LINUX_MACHTYPE_UNKNOWN 0
 #define BOARD_SOC_VERSION2     0x20000
 #define MAX_PMIC_DEVICES       SMEM_MAX_PMIC_DEVICES
@@ -85,17 +89,6 @@ struct board_data {
 	uint32_t platform_hlos_subtype;
 };
 
-#if BOOT_2NDSTAGE
-struct original_atags_info {
-	char cmdline[2048];
-	uint32_t platform_id;
-	uint32_t variant_id;
-	uint32_t soc_rev;
-};
-
-struct original_atags_info* board_get_original_atags_info(void);
-#endif
-
 void board_init();
 void target_detect(struct board_data *);
 void target_baseband_detect(struct board_data *);
@@ -122,5 +115,26 @@ uint32_t board_hlos_subtype(void);
 enum subtype_ddr {
        SUBTYPE_512MB = 1,
 };
+
+#if BOOT_2NDSTAGE
+struct original_atags_info {
+	char* cmdline;
+	uint32_t platform_id;
+	uint32_t variant_id;
+	uint32_t soc_rev;
+#if DEVICE_TREE
+	struct original_fdt_property* chosen_props;
+	uint32_t num_chosen_props;
+#endif
+};
+
+// parsed atag info
+struct original_atags_info* board_get_original_atags_info(void);
+int board_has_original_atags_info(void);
+void board_parse_original_atags(void);
+
+// original tags
+extern void* original_atags;
+#endif
 
 #endif

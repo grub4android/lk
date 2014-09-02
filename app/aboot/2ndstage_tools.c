@@ -94,9 +94,7 @@ static void add_nameval_to_cmdline(struct nameval *nv, char **cmdline, int *len)
 	*len = new_len;
 }
 
-char* sndstage_extend_cmdline(char* cmdline)
-{
-	
+char* sndstage_extend_cmdline(char* cmdline) {
 	struct nameval *nv_orig = NULL;
 	struct nameval *nv_bootimg = NULL;
 	int num_orig = 0;
