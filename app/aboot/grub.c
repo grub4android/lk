@@ -265,21 +265,28 @@ int grub_load_from_sideload(void* data) {
 
 int grub_boot(void)
 {
+	void (*entry)(unsigned, unsigned, unsigned*) = (void*)GRUB_LOADING_ADDRESS;
+
 	// load grub into RAM
 #ifdef GRUB_BOOT_PARTITION
 	if(grub_load_from_mmc()) {
-		dprintf(CRITICAL, "%s: failed to load grub from mmc, trying tar now.\n", __func__);
-#else
-	{
-#endif
-		if(grub_load_from_tar()) {
-			dprintf(CRITICAL, "%s: failed to load grub from tar.\n", __func__);
-			return -1;
-		}
+		dprintf(CRITICAL, "%s: failed to load grub from mmc.\n", __func__);
 	}
+	else goto boot;
+#endif
 
+#if !BOOT_2NDSTAGE
+	if(grub_load_from_tar()) {
+		dprintf(CRITICAL, "%s: failed to load grub from tar.\n", __func__);
+	}
+	else goto boot;
+#endif
+
+	dprintf(CRITICAL, "%s: Couldn't find grub at any known location!\n", __func__);
+	return -1;
+
+boot:
 	// BOOT !
-	void (*entry)(unsigned, unsigned, unsigned*) = (void*)GRUB_LOADING_ADDRESS;
 	dprintf(INFO, "booting GRUB @ %p\n", entry);
 	entry(0, board_machtype(), NULL);
 	
