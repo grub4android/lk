@@ -219,14 +219,14 @@ static int grub_sideload_handler(void *data)
 	void* local_ramdisk_addr = local_kernel_addr + kernel_size;
 
 	// Load ramdisk & kernel
-	memmove((void*) BASE_ADDR, local_ramdisk_addr, hdr->ramdisk_size);
 	memmove((void*) hdr->kernel_addr, local_kernel_addr, hdr->kernel_size);
+	memmove((void*) hdr->ramdisk_addr, local_ramdisk_addr, hdr->ramdisk_size);
 
 	// use ramdisk
 	if(hdr->ramdisk_size>0) {
 		// prepare block api
 		priv.index = 0;
-		priv.ptn = BASE_ADDR;
+		priv.ptn = (unsigned) hdr->ramdisk_addr;
 		priv.is_ramdisk = 1;
 		tio.blksz = BLOCK_SIZE;
 		tio.lba = hdr->ramdisk_size;
@@ -245,7 +245,7 @@ static int grub_sideload_handler(void *data)
 
 	// BOOT !
 	void (*entry)(unsigned, unsigned, unsigned*) = (void*)hdr->kernel_addr;
-	dprintf(INFO, "booting GRUB from sideload @ %p\n", entry);
+	dprintf(INFO, "booting GRUB from sideload @ %p ramdisk @ %p\n", entry, hdr->ramdisk_addr);
 	entry(0, board_machtype(), NULL);
 
 	return 0;
