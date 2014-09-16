@@ -34,7 +34,11 @@
 
 void target_display_init(const char *panel_name)
 {
+#ifdef DISPLAY_2NDSTAGE_FBADDR
+	uint32_t fb_addr = DISPLAY_2NDSTAGE_FBADDR;
+#else
 	uint32_t fb_addr = MIPI_FB_ADDR;
+#endif
 
 	struct fbcon_config *config = NULL;
 	config = (struct fbcon_config*)malloc(sizeof(struct fbcon_config));
@@ -51,4 +55,7 @@ void target_display_init(const char *panel_name)
 	fbcon_setup(config);
 	display_image_on_screen();
 
+#if TARGET_MSM8960_ARIES
+	trigger_mdp_dsi();
+#endif
 }
