@@ -100,6 +100,8 @@
 
 #define MIPI_DSI_BASE                         (0x04700000)
 #define REG_DSI(off)                          (MIPI_DSI_BASE + (off))
+#define MIPI_DSI0_BASE              (MIPI_DSI_BASE)
+#define MIPI_DSI1_BASE              (MIPI_DSI_BASE)
 #define DSI0_PHY_BASE               MIPI_DSI_BASE
 #define DSI1_PHY_BASE               MIPI_DSI_BASE
 #define DSI0_PLL_BASE               MIPI_DSI_BASE
@@ -110,6 +112,8 @@
 #define DSIPHY_CTRL_BASE                      (0x470)
 #define DSIPHY_PLL_BASE                       (0x200)
 #define DSIPHY_STRENGTH_BASE                  (0x480)
+
+#define INT_CTRL                    0x10C
 
 /* Range 0 - 4 */
 #define DSIPHY_REGULATOR_CTRL(x) REG_DSI(DSIPHY_REGULATOR_BASE + (x) * 4)
