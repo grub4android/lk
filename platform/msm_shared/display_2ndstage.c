@@ -28,21 +28,9 @@
  */
 
 #include <debug.h>
-#include <smem.h>
-#include <err.h>
-#include <msm_panel.h>
+#include <dev/fbcon.h>
 #include <mipi_dsi.h>
-#include <pm8x41.h>
-#include <pm8x41_wled.h>
-#include <board.h>
-#include <mdp5.h>
-#include <scm.h>
-#include <platform/gpio.h>
-#include <platform/iomap.h>
 #include <target/display.h>
-
-#include "include/panel.h"
-#include "include/display_resource.h"
 
 void target_display_init(const char *panel_name)
 {
