@@ -47,6 +47,39 @@ struct dt_entry_v1
 	uint32_t size;
 };
 
+#if BOOT_2NDSTAGE
+static uint32_t sndstage_platform_id(void) {
+	struct original_atags_info *atags_info = board_get_original_atags_info();
+	if(atags_info==NULL) {
+		return 0;
+	}
+
+	return atags_info->platform_id;
+}
+
+static uint32_t sndstage_soc_version(void) {
+	struct original_atags_info *atags_info = board_get_original_atags_info();
+	if(atags_info==NULL) {
+		return 0;
+	}
+
+	return atags_info->soc_rev;
+}
+
+static uint32_t sndstage_hardware_id(void) {
+	struct original_atags_info *atags_info = board_get_original_atags_info();
+	if(atags_info==NULL) {
+		return 0;
+	}
+
+	return atags_info->variant_id;
+}
+
+#define board_platform_id sndstage_platform_id
+#define board_soc_version sndstage_soc_version
+#define board_hardware_id sndstage_hardware_id
+#endif
+
 static struct dt_mem_node_info mem_node;
 static int platform_dt_absolute_match(struct dt_entry *cur_dt_entry, struct dt_entry_node *dt_list);
 static struct dt_entry *platform_dt_match_best(struct dt_entry_node *dt_list);
