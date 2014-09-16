@@ -195,10 +195,11 @@ struct msm_panel_info {
 	uint32_t type;
 	uint32_t wait_cycle;
 	uint32_t clk_rate;
-	uint32_t rotation;
+	uint32_t orientation;
 	/*  Select pipe type for handoff */
 	uint32_t pipe_type;
 	char     lowpowerstop;
+	char     lcd_reg_en;
 
 	struct lcd_panel_info lcd;
 	struct lcdc_panel_info lcdc;
@@ -224,7 +225,7 @@ struct msm_fb_panel_data {
 	int rotate;
 
 	/* function entry chain */
-	int (*power_func) (int enable);
+	int (*power_func) (int enable, struct msm_panel_info *);
 	int (*clk_func) (int enable);
 	int (*bl_func) (int enable);
 	int (*pll_clk_func) (int enable, struct msm_panel_info *);

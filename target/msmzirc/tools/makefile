@@ -2,7 +2,7 @@
 
 APPSBOOTOUT_DIR  := $(BUILDDIR)
 
-ABOOTMBN := emmc_appsboot.mbn
+ABOOTMBN := appsboot.mbn
 APPSBOOTHEADER: $(ABOOTMBN)
 
 $(ABOOTMBN): $(OUTELF_STRIP)

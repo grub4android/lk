@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
  * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@
 struct board_pmic_data {
 	uint32_t pmic_type;
 	uint32_t pmic_version;
+	uint32_t pmic_target;
 };
 
 /* 8960 */
@@ -80,6 +81,7 @@ struct board_pmic_data {
 
 struct board_data {
 	uint32_t platform;
+	uint32_t foundry_id;
 	uint32_t platform_version;
 	uint32_t platform_hw;
 	uint32_t platform_subtype;
@@ -101,6 +103,7 @@ uint32_t board_soc_version();
 uint32_t board_hardware_subtype(void);
 uint32_t board_get_ddr_subtype(void);
 uint32_t board_hlos_subtype(void);
+uint32_t board_pmic_target(uint8_t num_ent);
 
 /* DDR Subtype Macros
  * Determine the DDR Size on the device and define
@@ -137,4 +140,5 @@ void board_parse_original_atags(void);
 extern void* original_atags;
 #endif
 
+uint32_t board_foundry_id(void);
 #endif

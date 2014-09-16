@@ -1215,6 +1215,10 @@ int mdss_dsi_video_mode_config(uint16_t disp_width,
 
 	writel(0x02020202, ctl_base + INT_CTRL);
 
+	/* For 8916/8939, enable DSI timing double buffering */
+	if (readl(ctl_base) == DSI_HW_REV_103_1)
+		writel(0x1, ctl_base + TIMING_DB_MODE);
+
 	writel(((disp_width + hsync_porch0_bp) << 16) | hsync_porch0_bp,
 			ctl_base + VIDEO_MODE_ACTIVE_H);
 
@@ -1241,6 +1245,10 @@ int mdss_dsi_video_mode_config(uint16_t disp_width,
 	writel(0 << 16 | 0, ctl_base + VIDEO_MODE_VSYNC);
 
 	writel(vsync_width << 16 | 0, ctl_base + VIDEO_MODE_VSYNC_VPOS);
+
+	/* For 8916/8939, flush the DSI timing registers */
+	if (readl(ctl_base) == DSI_HW_REV_103_1)
+		writel(0x1, ctl_base + TIMING_FLUSH);
 
 	writel(0x0, ctl_base + EOT_PACKET_CTRL);
 
@@ -1302,6 +1310,8 @@ int mdss_dsi_config(struct msm_fb_panel_data *panel)
 		dprintf(CRITICAL, "dsi host init error\n");
 		goto error;
 	}
+
+	mdss_dsi_phy_contention_detection(&mipi_pinfo, DSI0_PHY_BASE);
 
 	if (panel->pre_init_func) {
 		ret = panel->pre_init_func();
@@ -1577,13 +1587,12 @@ int mipi_dsi_off(struct msm_panel_info *pinfo)
 		mdelay(10);
 		writel(0x0001, DSI_SOFT_RESET);
 		writel(0x0000, DSI_SOFT_RESET);
-		writel(0x1115501, DSI_INT_CTRL);
 		writel(0, DSI_CTRL);
 	}
 
-	writel(0x1115501, DSI_INT_CTRL);
+	writel(0x1115501, MIPI_DSI0_BASE + INT_CTRL);
 	if (pinfo->mipi.broadcast)
-		writel(0x1115501, DSI_INT_CTRL + 0x600);
+		writel(0x1115501, MIPI_DSI1_BASE + INT_CTRL);
 
 	return NO_ERROR;
 }

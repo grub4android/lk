@@ -61,6 +61,35 @@ static struct gpio_pin edp_hpd_gpio = {	/* input */
   "msmgpio", 103, 3, 0, 0, 1
 };
 
+/* gpio name, id, strength, direction, pull, state. */
+static struct gpio_pin hdmi_cec_gpio = {        /* CEC */
+  "msmgpio", 31, 0, 2, 3, 1
+};
+
+static struct gpio_pin hdmi_ddc_clk_gpio = {   /* DDC CLK */
+  "msmgpio", 32, 0, 2, 3, 1
+};
+
+static struct gpio_pin hdmi_ddc_data_gpio = {  /* DDC DATA */
+  "msmgpio", 33, 0, 2, 3, 1
+};
+
+static struct gpio_pin hdmi_hpd_gpio = {       /* HPD, input */
+  "msmgpio", 34, 7, 0, 1, 1
+};
+
+static struct gpio_pin hdmi_mux_lpm_gpio = {       /* MUX LPM */
+  "msmgpio", 27, 0, 2, 0, 0
+};
+
+static struct gpio_pin hdmi_mux_en_gpio = {       /* MUX EN */
+  "msmgpio", 83, 3, 2, 3, 1
+};
+
+static struct gpio_pin hdmi_mux_sel_gpio = {       /* MUX SEL */
+  "msmgpio", 85, 0, 0, 1, 1
+};
+
 /*---------------------------------------------------------------------------*/
 /* LDO configuration                                                         */
 /*---------------------------------------------------------------------------*/
@@ -106,6 +135,7 @@ static const uint32_t panel_physical_ctrl[] = {
 #define DISPLAY_CMDLINE_PREFIX " mdss_mdp.panel="
 
 #define MIPI_FB_ADDR  0x03200000
+#define HDMI_FB_ADDR  0x05200000
 
 #define MIPI_HSYNC_PULSE_WIDTH       12
 #define MIPI_HSYNC_BACK_PORCH_DCLK   32

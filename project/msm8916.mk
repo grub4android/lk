@@ -6,7 +6,12 @@ TARGET := msm8916
 
 MODULES += app/aboot
 
+ifeq ($(TARGET_BUILD_VARIANT),user)
+DEBUG := 0
+else
 DEBUG := 1
+endif
+
 EMMC_BOOT := 1
 
 #DEFINES += WITH_DEBUG_DCC=1
@@ -26,7 +31,7 @@ DEFINES += ABOOT_FORCE_RAMDISK_ADDR=0x82000000
 DEFINES += ABOOT_FORCE_TAGS_ADDR=0x81E00000
 
 #Enable the feature of long press power on
-DEFINES += LONG_PRESS_POWER_ON=0
+DEFINES += LONG_PRESS_POWER_ON=1
 
 #Disable thumb mode
 ENABLE_THUMB := false
@@ -48,3 +53,6 @@ endif
 ifeq ($(ENABLE_PON_VIB_SUPPORT),true)
 DEFINES += PON_VIB_SUPPORT=1
 endif
+
+#enable user force reset feature
+DEFINES += USER_FORCE_RESET_SUPPORT=1

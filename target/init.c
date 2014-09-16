@@ -69,6 +69,11 @@ __WEAK void reboot_device(unsigned reboot_reason)
 {
 }
 
+__WEAK uint32_t is_user_force_reset(void)
+{
+	return 0;
+}
+
 __WEAK int set_download_mode(enum dload_mode mode)
 {
 	return -1;
@@ -186,6 +191,11 @@ __WEAK bool target_warm_boot(void)
 __WEAK uint32_t target_get_hlos_subtype(void)
 {
 	return 0;
+}
+
+/* Initialize crypto parameters */
+__WEAK void target_crypto_init_params()
+{
 }
 
 /* Return 1 if vol_up pressed */

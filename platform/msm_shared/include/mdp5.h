@@ -78,6 +78,7 @@
 #define MDSS_MDP_HW_REV_102    MDSS_MDP_REV(1, 2, 0) /* 8974 v2.0 */
 #define MDSS_MDP_HW_REV_102_1  MDSS_MDP_REV(1, 2, 1) /* 8974 v3.0 (Pro) */
 #define MDSS_MDP_HW_REV_103    MDSS_MDP_REV(1, 3, 0) /* 8084 v1.0 */
+#define MDSS_MDP_HW_REV_105    MDSS_MDP_REV(1, 5, 0) /* 8994 v1.0 */
 #define MDSS_MDP_HW_REV_106    MDSS_MDP_REV(1, 6, 0) /* 8916 v1.0 */
 #define MDSS_MDP_HW_REV_108    MDSS_MDP_REV(1, 8, 0) /* 8939 v1.0 */
 #define MDSS_MDP_HW_REV_200    MDSS_MDP_REV(2, 0, 0) /* 8092 v1.0 */
@@ -96,6 +97,7 @@
 
 #define MDP_INTF_0_TIMING_ENGINE_EN             REG_MDP(0x12500)
 #define MDP_INTF_1_TIMING_ENGINE_EN             REG_MDP(0x12700)
+#define MDP_INTF_3_TIMING_ENGINE_EN             REG_MDP(0x12B00)
 
 #define MDP_CTL_0_BASE                          REG_MDP(0x600)
 #define MDP_CTL_1_BASE                          REG_MDP(0x700)
@@ -116,6 +118,7 @@
 #define MDP_INTF_0_BASE                         REG_MDP(0x12500)
 #define MDP_INTF_1_BASE                         REG_MDP(0x12700)
 #define MDP_INTF_2_BASE                         REG_MDP(0x12900)
+#define MDP_INTF_3_BASE                         REG_MDP(0x12B00)
 
 #define MDP_HSYNC_CTL                           0x08
 #define MDP_VSYNC_PERIOD_F0                     0x0C
@@ -147,9 +150,14 @@
 #define MMSS_MDP_SMP_ALLOC_W_BASE               REG_MDP(0x0180)
 #define MMSS_MDP_SMP_ALLOC_R_BASE               REG_MDP(0x0230)
 
+/* source pipe opmode bits for flip */
+#define MDSS_MDP_OP_MODE_FLIP_UD                BIT(14)
+#define MDSS_MDP_OP_MODE_FLIP_LR                BIT(13)
+
 #define MDP_QOS_REMAPPER_CLASS_0                REG_MDP(0x02E0)
 #define MDP_QOS_REMAPPER_CLASS_1                REG_MDP(0x02E4)
 
+#define VBIF_VBIF_QOS_REMAP_00                  REG_MDP(0xC8020)
 #define VBIF_VBIF_DDR_FORCE_CLK_ON              REG_MDP(0x24004)
 #define VBIF_VBIF_DDR_OUT_MAX_BURST             REG_MDP(0x240D8)
 #define VBIF_VBIF_DDR_ARB_CTRL                  REG_MDP(0x240F0)

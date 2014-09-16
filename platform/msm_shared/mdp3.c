@@ -211,3 +211,18 @@ int mdp_edp_off(void)
 {
 	return NO_ERROR;
 }
+
+int mdss_hdmi_config(struct msm_panel_info *pinfo, struct fbcon_config *fb)
+{
+	return NO_ERROR;
+}
+
+int mdss_hdmi_on(void)
+{
+	return NO_ERROR;
+}
+
+int mdss_hdmi_off(void)
+{
+	return NO_ERROR;
+}

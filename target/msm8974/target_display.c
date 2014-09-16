@@ -279,7 +279,7 @@ int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
 	return NO_ERROR;
 }
 
-int target_ldo_ctrl(uint8_t enable)
+int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 {
 	uint32_t ldocounter = 0;
 	uint32_t pm8x41_ldo_base = 0x13F00;
@@ -382,7 +382,7 @@ bool target_display_panel_node(char *panel_name, char *pbuf, uint16_t buf_size)
 		buf_size -= LK_OVERRIDE_PANEL_LEN;
 		strlcat(pbuf, HDMI_CONTROLLER_STRING, buf_size);
 	} else {
-		ret = gcdb_display_cmdline_arg(pbuf, buf_size);
+		ret = gcdb_display_cmdline_arg(panel_name, pbuf, buf_size);
 	}
 
 	return ret;
@@ -399,16 +399,16 @@ void target_display_init(const char *panel_name)
 
 	panel_name += strspn(panel_name, " ");
 
-	if (!strcmp(panel_name, NO_PANEL_CONFIG)) {
-		dprintf(INFO, "Skip panel configuration\n");
+	if ((!strcmp(panel_name, NO_PANEL_CONFIG))
+			|| (!strcmp(panel_name, SIM_VIDEO_PANEL))
+			|| (!strcmp(panel_name, SIM_DUALDSI_VIDEO_PANEL))) {
+		dprintf(INFO, "Selected panel: %s\nSkip panel configuration",
+								panel_name);
 		return;
-	}
-
-	if (!strcmp(panel_name, HDMI_PANEL_NAME)) {
+	} else if (!strcmp(panel_name, HDMI_PANEL_NAME)) {
 		dprintf(INFO, "%s: HDMI is primary\n", __func__);
 		return;
 	}
-
 	switch (hw_id) {
 	case HW_PLATFORM_LIQUID:
 		edp_panel_init(&(panel.panel_info));

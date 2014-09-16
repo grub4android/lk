@@ -237,6 +237,11 @@ void *heap_alloc(size_t size, unsigned int alignment)
 	if (alignment & (alignment - 1))
 		return NULL;
 
+	if(size > (size + sizeof(struct alloc_struct_begin)))
+	{
+		dprintf(CRITICAL, "invalid input size\n");
+		return NULL;
+	}
 	// we always put a size field + base pointer + magic in front of the allocation
 	size += sizeof(struct alloc_struct_begin);
 #if DEBUG_HEAP
@@ -258,6 +263,11 @@ void *heap_alloc(size_t size, unsigned int alignment)
 			alignment = 16;
 
 		// add alignment for worst case fit
+		if(size > (size + alignment))
+		{
+			dprintf(CRITICAL, "invalid input alignment\n");
+			return NULL;
+		}
 		size += alignment;
 	}
 

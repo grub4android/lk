@@ -233,7 +233,7 @@ int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
 	return NO_ERROR;
 }
 
-int target_ldo_ctrl(uint8_t enable)
+int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 {
 	uint32_t ldocounter = 0;
 	uint32_t pm8x41_ldo_base = 0x13F00;
@@ -285,6 +285,121 @@ int target_display_pre_on()
 	writel(0x000000A4, VBIF_VBIF_ABIT_SHORT_CONF);
 	writel(0x00003FFF, VBIF_VBIF_GATE_OFF_WRREQ_EN);
 	writel(0x00000003, VBIF_VBIF_DDR_RND_RBN_QOS_ARB);
+
+	return NO_ERROR;
+}
+
+int target_hdmi_panel_clock(uint8_t enable, struct msm_panel_info *pinfo)
+{
+	uint32_t ret;
+
+	dprintf(SPEW, "%s: target_panel_clock\n", __func__);
+
+	if (enable) {
+		mdp_gdsc_ctrl(enable);
+		mmss_bus_clock_enable();
+		mdp_clock_enable();
+		ret = restore_secure_cfg(SECURE_DEVICE_MDSS);
+		if (ret) {
+			dprintf(CRITICAL,
+				"%s: Failed to restore MDP security configs",
+				__func__);
+			mdp_clock_disable();
+			mmss_bus_clock_disable();
+			mdp_gdsc_ctrl(0);
+			return ret;
+		}
+
+		hdmi_phy_reset();
+		hdmi_pll_config();
+		hdmi_vco_enable();
+		hdmi_clk_enable();
+	} else if(!target_cont_splash_screen()) {
+		/* Disable clocks if continuous splash off */
+		hdmi_clk_disable();
+		hdmi_vco_disable();
+		mdp_clock_disable();
+		mmss_bus_clock_disable();
+		mdp_gdsc_ctrl(enable);
+	}
+
+	return NO_ERROR;
+}
+
+static void target_hdmi_mvs_enable(bool enable)
+{
+	struct pm8x41_mvs mvs;
+	mvs.base = PM8x41_MVS1_BASE;
+
+	if (enable)
+		pm8x41_enable_mvs(&mvs, MVS_ENABLE);
+	else
+		pm8x41_enable_mvs(&mvs, MVS_DISABLE);
+}
+
+static void target_hdmi_vreg_enable(bool enable)
+{
+	struct pm8x41_mpp mpp;
+	mpp.base = PM8x41_MMP3_BASE;
+
+	if (enable) {
+		mpp.mode = MPP_HIGH;
+		mpp.vin = MPP_VIN2;
+		pm8x41_config_output_mpp(&mpp);
+		pm8x41_enable_mpp(&mpp, MPP_ENABLE);
+	} else {
+		pm8x41_enable_mpp(&mpp, MPP_DISABLE);
+	}
+}
+
+int target_hdmi_regulator_ctrl(bool enable)
+{
+	target_hdmi_mvs_enable(enable);
+	target_hdmi_vreg_enable(enable);
+
+	return 0;
+}
+
+int target_hdmi_gpio_ctrl(bool enable)
+{
+	gpio_tlmm_config(hdmi_cec_gpio.pin_id, 1,	/* gpio 31, CEC */
+		hdmi_cec_gpio.pin_direction, hdmi_cec_gpio.pin_pull,
+		hdmi_cec_gpio.pin_strength, hdmi_cec_gpio.pin_state);
+
+	gpio_tlmm_config(hdmi_ddc_clk_gpio.pin_id, 1,	/* gpio 32, DDC CLK */
+		hdmi_ddc_clk_gpio.pin_direction, hdmi_ddc_clk_gpio.pin_pull,
+		hdmi_ddc_clk_gpio.pin_strength, hdmi_ddc_clk_gpio.pin_state);
+
+
+	gpio_tlmm_config(hdmi_ddc_data_gpio.pin_id, 1,	/* gpio 33, DDC DATA */
+		hdmi_ddc_data_gpio.pin_direction, hdmi_ddc_data_gpio.pin_pull,
+		hdmi_ddc_data_gpio.pin_strength, hdmi_ddc_data_gpio.pin_state);
+
+	gpio_tlmm_config(hdmi_hpd_gpio.pin_id, 1,	/* gpio 34, HPD */
+		hdmi_hpd_gpio.pin_direction, hdmi_hpd_gpio.pin_pull,
+		hdmi_hpd_gpio.pin_strength, hdmi_hpd_gpio.pin_state);
+
+	gpio_set(hdmi_cec_gpio.pin_id,      hdmi_cec_gpio.pin_direction);
+	gpio_set(hdmi_ddc_clk_gpio.pin_id,  hdmi_ddc_clk_gpio.pin_direction);
+	gpio_set(hdmi_ddc_data_gpio.pin_id, hdmi_ddc_data_gpio.pin_direction);
+	gpio_set(hdmi_hpd_gpio.pin_id,      hdmi_hpd_gpio.pin_direction);
+
+	/* MUX */
+	gpio_tlmm_config(hdmi_mux_lpm_gpio.pin_id, 0,   /* gpio 27 MUX LPM */
+		hdmi_mux_lpm_gpio.pin_direction, hdmi_mux_lpm_gpio.pin_pull,
+		hdmi_mux_lpm_gpio.pin_strength, hdmi_mux_lpm_gpio.pin_state);
+
+	gpio_tlmm_config(hdmi_mux_en_gpio.pin_id, 0,    /* gpio 83 MUX EN */
+		hdmi_mux_en_gpio.pin_direction, hdmi_mux_en_gpio.pin_pull,
+		hdmi_mux_en_gpio.pin_strength, hdmi_mux_en_gpio.pin_state);
+
+	gpio_tlmm_config(hdmi_mux_sel_gpio.pin_id, 0,   /* gpio 85 MUX SEL */
+		hdmi_mux_sel_gpio.pin_direction, hdmi_mux_sel_gpio.pin_pull,
+		hdmi_mux_sel_gpio.pin_strength, hdmi_mux_sel_gpio.pin_state);
+
+	gpio_set(hdmi_mux_lpm_gpio.pin_id, hdmi_mux_lpm_gpio.pin_direction);
+	gpio_set(hdmi_mux_en_gpio.pin_id,  hdmi_mux_en_gpio.pin_direction);
+	gpio_set(hdmi_mux_sel_gpio.pin_id, hdmi_mux_sel_gpio.pin_direction);
 
 	return NO_ERROR;
 }
@@ -371,7 +486,7 @@ bool target_display_panel_node(char *panel_name, char *pbuf, uint16_t buf_size)
 
 	if (!strcmp(panel_name, HDMI_PANEL_NAME)) {
 		if (buf_size < (prefix_string_len + LK_OVERRIDE_PANEL_LEN +
-				HDMI_CONTROLLER_STRING)) {
+				strlen(HDMI_CONTROLLER_STRING))) {
 			dprintf(CRITICAL, "command line argument is greater than buffer size\n");
 			return false;
 		}
@@ -382,7 +497,7 @@ bool target_display_panel_node(char *panel_name, char *pbuf, uint16_t buf_size)
 		buf_size -= LK_OVERRIDE_PANEL_LEN;
 		strlcat(pbuf, HDMI_CONTROLLER_STRING, buf_size);
 	} else {
-		ret = gcdb_display_cmdline_arg(pbuf, buf_size);
+		ret = gcdb_display_cmdline_arg(panel_name, pbuf, buf_size);
 	}
 
 	return ret;
@@ -394,20 +509,21 @@ void target_display_init(const char *panel_name)
 
 	panel_name += strspn(panel_name, " ");
 
-	if (!strcmp(panel_name, NO_PANEL_CONFIG)) {
-		dprintf(INFO, "Skip panel configuration\n");
+	if ((!strcmp(panel_name, NO_PANEL_CONFIG))
+			|| (!strcmp(panel_name, SIM_VIDEO_PANEL))
+			|| (!strcmp(panel_name, SIM_DUALDSI_VIDEO_PANEL))) {
+		dprintf(INFO, "Selected panel: %s\nSkip panel configuration\n",
+								panel_name);
 		return;
-	}
-
-	if (!strcmp(panel_name, HDMI_PANEL_NAME)) {
+	} else if (!strcmp(panel_name, HDMI_PANEL_NAME)) {
 		dprintf(INFO, "%s: HDMI is primary\n", __func__);
+		mdss_hdmi_display_init(MDP_REV_50, HDMI_FB_ADDR);
 		return;
 	}
 
 	ret = gcdb_display_init(panel_name, MDP_REV_50, MIPI_FB_ADDR);
-	if (ret) {
+	if (ret)
 		msm_display_off();
-	}
 }
 
 void target_display_shutdown(void)

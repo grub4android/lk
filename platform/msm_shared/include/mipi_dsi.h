@@ -80,6 +80,9 @@
 #define MIPI_DSI_MRPS       0x04	/* Maximum Return Packet Size */
 #define MIPI_DSI_REG_LEN    16	/* 4 x 4 bytes register */
 
+#define TIMING_FLUSH		     0x1E4
+#define TIMING_DB_MODE		     0x1E8
+
 #define DSI_HW_REV_103_1		0x10030001	/* 8936/8939 */
 
 #define DTYPE_GEN_WRITE2 0x23	/* 4th Byte is 0x80 */
@@ -656,6 +659,7 @@ struct mdss_dsi_phy_ctrl {
 	char bistCtrl[6];
 	char laneCfg[45];
 	enum dsi_reg_mode regulator_mode;
+	int is_pll_20nm;
 };
 
 typedef struct mdss_dsi_pll_config {
@@ -672,6 +676,15 @@ typedef struct mdss_dsi_pll_config {
 	uint8_t   pclk_m;
 	uint8_t   pclk_n;
 	uint8_t   pclk_d;
+
+	/* pll 20nm */
+	uint32_t  dec_start;
+	uint32_t  frac_start;
+	uint32_t  lock_comp;
+	uint8_t  hr_oclk2;
+	uint8_t  hr_oclk3;
+	uint8_t  lp_div_mux;
+	uint8_t  ndiv;
 };
 
 struct mipi_dsi_cmd {
@@ -2139,6 +2152,8 @@ int mipi_config(struct msm_fb_panel_data *panel);
 int mdss_dsi_config(struct msm_fb_panel_data *panel);
 int mdss_dsi_phy_init(struct mipi_dsi_panel_config *,
 		uint32_t ctl_base, uint32_t phy_base);
+void mdss_dsi_phy_contention_detection(struct mipi_dsi_panel_config *,
+				uint32_t phy_base);
 
 int mdss_dsi_video_mode_config(uint16_t disp_width,
 	uint16_t disp_height,
