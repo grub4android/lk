@@ -75,15 +75,13 @@ ifeq ($(PLATFORM),msm8x60)
 			$(LOCAL_DIR)/mdp4.o \
 			$(LOCAL_DIR)/certificate.o \
 			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/hdmi.o \
 			$(LOCAL_DIR)/interrupts.o \
 			$(LOCAL_DIR)/timer.o \
 			$(LOCAL_DIR)/nand.o
 endif
 
 ifeq ($(PLATFORM),msm8960)
-	OBJS += $(LOCAL_DIR)/hdmi.o \
-			$(LOCAL_DIR)/mipi_dsi.o \
+	OBJS += $(LOCAL_DIR)/mipi_dsi.o \
 			$(LOCAL_DIR)/i2c_qup.o \
 			$(LOCAL_DIR)/uart_dm.o \
 			$(LOCAL_DIR)/qgic.o \
