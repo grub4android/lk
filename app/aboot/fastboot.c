@@ -394,6 +394,22 @@ void fastboot_info(const char *reason)
 	usb_if.usb_write(response, strlen(response));
 }
 
+void fastboot_write(void *data, unsigned len)
+{
+	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (!data)
+		return;
+
+	snprintf(response, MAX_RSP_SIZE, "PRNT");
+	memcpy(response+4, data, len);
+
+	usb_if.usb_write(response, len+4);
+}
+
 void fastboot_fail(const char *reason)
 {
 	fastboot_ack("FAIL", reason);

@@ -2558,6 +2558,27 @@ void cmd_oem_lk_log(const char *arg, void *data, unsigned sz)
 }
 #endif
 
+void cmd_oem_screenshot(const char *arg, void *unused, unsigned sz)
+{
+	struct fbcon_config* config = fbcon_display();
+	char *data = config->base;
+	unsigned size = config->width*config->height*config->bpp/8;
+	unsigned chunk_size = MAX_RSP_SIZE-4;
+	unsigned pos = 0;
+
+	for(pos=0; pos<size; pos+=chunk_size) {
+		int local_sz = chunk_size;
+
+		// for the end of the framebuffer
+		if(pos+local_sz>size)
+			local_sz = size-pos;
+
+		fastboot_write(&data[pos], local_sz);
+	}
+
+	fastboot_okay("");
+}
+
 void cmd_preflash(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
@@ -2768,6 +2789,7 @@ void aboot_fastboot_register_commands(void)
 #if WITH_DEBUG_LOG_BUF
 	fastboot_register("oem lk_log",        cmd_oem_lk_log);
 #endif
+	fastboot_register("oem screenshot",    cmd_oem_screenshot);
 	fastboot_register("preflash",          cmd_preflash);
 	fastboot_register("oem enable-charger-screen",
 			cmd_oem_enable_charger_screen);
