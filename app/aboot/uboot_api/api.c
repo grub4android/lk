@@ -75,7 +75,9 @@ static int API_getc(va_list ap)
 	if ((c = (int *)va_arg(ap, uint32_t)) == NULL)
 		return API_EINVAL;
 
+#if WITH_DEBUG_UART
 	*c = uart_getc(0, 0);
+#endif
 	return 0;
 }
 
@@ -93,7 +95,10 @@ static int API_tstc(va_list ap)
 
 #if WITH_DEBUG_UART
 	*t = uart_tstc(0);
+#else
+	*t = 0;
 #endif
+
 	return 0;
 }
 
