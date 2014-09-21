@@ -150,6 +150,10 @@ static const char *baseband_dsda2   = " androidboot.baseband=dsda2";
 static const char *baseband_sglte2  = " androidboot.baseband=sglte2";
 static const char *warmboot_cmdline = " qpnp-power-on.warm_boot=1";
 
+#if BOOT_2NDSTAGE
+static const char *sndstage_cmdline = " multiboot.2ndstage=1";
+#endif
+
 #if WITH_XIAOMI_DUALBOOT
 /* keep them same length */
 static const char *boot0_cmdline = " syspart=system ";
@@ -291,6 +295,10 @@ unsigned char *update_cmdline(const char * cmdline)
 	 * it should be there in any case
 	 */
 	cmdline_len += strlen(boot0_cmdline);
+#endif
+
+#if BOOT_2NDSTAGE
+	cmdline_len += strlen(sndstage_cmdline);
 #endif
 
 	if(target_use_signed_kernel() && auth_kernel_img) {
@@ -436,6 +444,12 @@ unsigned char *update_cmdline(const char * cmdline)
 			if (have_cmdline) --dst;
 			while ((*dst++ = *src++));
 		}
+#endif
+
+#if BOOT_2NDSTAGE
+		src = sndstage_cmdline;
+		if (have_cmdline) --dst;
+		while ((*dst++ = *src++));
 #endif
 
 		if(target_use_signed_kernel() && auth_kernel_img) {
