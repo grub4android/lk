@@ -613,6 +613,9 @@ static int keymap[MAX_KEYS];
  */
 static int API_input_getkey(va_list ap)
 {
+	// small delay to prevent unwanted keypresses
+	mdelay(50);
+
 	CHECK_AND_REPORT_KEY(KEY_UP, target_volume_up());
 	CHECK_AND_REPORT_KEY(KEY_DOWN, target_volume_down());
 	CHECK_AND_REPORT_KEY(KEY_RIGHT, target_power_key());
