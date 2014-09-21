@@ -1536,6 +1536,34 @@ void fakeread_device_info(device_info *dev)
 }
 #endif
 
+static int validate_device_info(struct device_info *info)
+{
+	if (memcmp(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE))
+	{
+		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
+		info->is_unlocked = 0;
+		info->is_tampered = 0;
+		info->charger_screen_enabled = 0;
+		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
+		info->force_fastboot = 0;
+
+		return 1;
+	}
+
+	if(info->is_unlocked !=0 && info->is_unlocked!=1)
+		info->is_unlocked = 0;
+	if(info->is_tampered !=0 && info->is_tampered!=1)
+		info->is_tampered = 0;
+	if(info->charger_screen_enabled !=0 && info->charger_screen_enabled!=1)
+		info->charger_screen_enabled = 0;
+	if(info->force_fastboot !=0 && info->force_fastboot!=1)
+		info->force_fastboot = 0;
+	if(!isprint(info->display_panel[0]) && !info->display_panel[0]=='\0')
+		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
+
+	return 1;
+}
+
 BUF_DMA_ALIGN(info_buf, BOOT_IMG_MAX_PAGE_SIZE);
 void write_device_info_mmc(device_info *dev)
 {
@@ -1602,15 +1630,8 @@ void read_device_info_mmc(device_info *dev)
 		return;
 	}
 
-	if (memcmp(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE))
+	if (validate_device_info(info))
 	{
-		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
-		info->is_unlocked = 0;
-		info->is_tampered = 0;
-		info->charger_screen_enabled = 0;
-		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
-		info->force_fastboot = 0;
-
 		write_device_info_mmc(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
@@ -1676,15 +1697,8 @@ void read_device_info_flash(device_info *dev)
 			return;
 	}
 
-	if (memcmp(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE))
+	if (validate_device_info(info))
 	{
-		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
-		info->is_unlocked = 0;
-		info->is_tampered = 0;
-		info->charger_screen_enabled = 0;
-		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
-		info->force_fastboot = 0;
-
 		write_device_info_flash(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
