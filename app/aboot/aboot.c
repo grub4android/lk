@@ -2415,11 +2415,12 @@ void cmd_flash(const char *arg, void *data, unsigned sz)
 void cmd_continue(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
-	fastboot_stop();
 
 	// try to boot GRUB
 	if(grub_boot())
 		return;
+
+	fastboot_stop();
 
 	if (target_is_emmc_boot())
 	{
