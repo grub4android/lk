@@ -217,8 +217,6 @@ static char cmd27[8] = {
 	0x02, 0x00, 0x29, 0xc0, 0x35, 0x00, 0xff, 0xff,
 };
 
-static char config_MADCTL[4] = {0x36, 0x00, 0x15, 0x80};
-
 static struct mipi_dsi_cmd nt35510_panel_cmd_mode_cmds[] = {
 	{sizeof(cmd0), cmd0},
 	{sizeof(cmd1), cmd1},

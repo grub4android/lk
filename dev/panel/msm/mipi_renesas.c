@@ -27,6 +27,7 @@
  *
  */
 
+#include <mipi_dsi.h>
 #include "mipi_renesas.h"
 
 
