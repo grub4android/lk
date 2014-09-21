@@ -297,7 +297,9 @@ ifeq ($(PLATFORM),msm7x27a)
 			$(LOCAL_DIR)/display.o \
 			$(LOCAL_DIR)/mipi_dsi_phy.o \
 			$(LOCAL_DIR)/mdp_lcdc.o \
-			$(LOCAL_DIR)/spi.o
+			$(LOCAL_DIR)/spi.o \
+			$(LOCAL_DIR)/scm.o \
+			$(LOCAL_DIR)/board.o
 endif
 
 ifeq ($(PLATFORM),msm7k)

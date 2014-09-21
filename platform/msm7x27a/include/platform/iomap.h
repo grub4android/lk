@@ -65,6 +65,13 @@
 #define MIPI_DSI_BASE                         (0xA1100000)
 #define DSI_PHY_SW_RESET                      (0xA1100128)
 #define REG_DSI(off)                          (MIPI_DSI_BASE + (off))
+#define MIPI_DSI0_BASE              (MIPI_DSI_BASE)
+#define MIPI_DSI1_BASE              (MIPI_DSI_BASE)
+#define DSI0_PHY_BASE               MIPI_DSI_BASE
+#define DSI1_PHY_BASE               MIPI_DSI_BASE
+#define DSI0_PLL_BASE               MIPI_DSI_BASE
+#define DSI1_PLL_BASE               MIPI_DSI_BASE
+
 #define MDP_BASE                              (0xAA200000)
 #define REG_MDP(off)                          (MDP_BASE + (off))
 #define DSIPHY_REGULATOR_BASE                 (0x2CC)
@@ -72,6 +79,8 @@
 #define DSIPHY_CTRL_BASE                      (0x290)
 #define DSIPHY_PLL_BASE                       (0x200)
 #define DSIPHY_STRENGTH_BASE                  (0x2A0)
+
+#define INT_CTRL                    0x10C
 
 /* Range 0 - 4 */
 #define DSIPHY_REGULATOR_CTRL(x) REG_DSI(DSIPHY_REGULATOR_BASE + (x) * 4)
