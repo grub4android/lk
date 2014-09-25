@@ -2900,6 +2900,8 @@ void aboot_init(const struct app_descriptor *app)
 	/* initialize uboot api */
 	api_init();
 
+	nand_log_init();
+
 
 	target_serialno((unsigned char *) sn_buf);
 	dprintf(SPEW,"serial number: %s\n",sn_buf);

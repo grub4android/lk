@@ -38,6 +38,9 @@
 #include <dev/uart.h>
 #include <platform/timer.h>
 #include <platform.h>
+#include "mmc.h"
+#include <partition_parser.h>
+#include <string.h>
 
 #if PON_VIB_SUPPORT
 #include <vibrator.h>
@@ -86,13 +89,28 @@ static struct lk_log log = {
 	},
 	.data = {0}
 };
+static int nand_log_initialized = 0;
+static unsigned long long nand_log_ptn = 0;
+static unsigned long long nand_log_size = 0;
+int nand_log_enable = 0;
 
 static void log_putc(char c)
 {
+	static int first = 1;
 	log.data[log.header.idx++] = c;
 	log.header.size_written++;
 	if (unlikely(log.header.idx >= log.header.max_size))
 		log.header.idx = 0;
+
+	if(!nand_log_initialized) return;
+	if(log.header.size_written>nand_log_size) return;
+	//if(!nand_log_enable) return;
+
+	// copy full log
+	if(mmc_write(nand_log_ptn, log.header.size_written, (void *)log.data))
+	{
+		return;
+	}
 }
 char* lk_log_getbuf(void) {
     return log.data;
@@ -159,4 +177,23 @@ void platform_halt(void)
 	}
 	dprintf(CRITICAL, "HALT: spinning forever...\n");
 	for (;;) ;
+}
+
+void nand_log_init(void) {
+	int index = INVALID_PTN;
+
+	index = partition_get_index("logo");
+
+	nand_log_ptn = partition_get_offset(index);
+	if(nand_log_ptn == 0)
+	{
+		dprintf(CRITICAL, "unable to get nand_log partition!\n");
+		return;
+	}
+
+	nand_log_size = partition_get_size(index);
+	printf("nand_Log_size=%d\n", (size_t)nand_log_size);
+	nand_log_initialized = 1;
+
+
 }
