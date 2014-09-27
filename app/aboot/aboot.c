@@ -2668,6 +2668,23 @@ struct fbimage* splash_screen_flash()
 			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
 			return NULL;
 		}
+
+#if DISPLAY_USE_BGR
+		unsigned i;
+		for(i=0; i<(logo->header.width*fb_display->height); i++) {
+			int r,g,b;
+			char* color = (char*) base + i*3;
+
+			r = color[0];
+			g = color[1];
+			b = color[2];
+
+			color[0] = b;
+			color[1] = g;
+			color[2] = r;
+		}
+#endif
+
 		logo->image = base;
 	}
 
@@ -2716,6 +2733,22 @@ struct fbimage* splash_screen_mmc()
 			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
 			return NULL;
 		}
+
+#if DISPLAY_USE_BGR
+		unsigned i;
+		for(i=0; i<(logo->header.width*fb_display->height); i++) {
+			int r,g,b;
+			char* color = (char*) base + i*3;
+
+			r = color[0];
+			g = color[1];
+			b = color[2];
+
+			color[0] = b;
+			color[1] = g;
+			color[2] = r;
+		}
+#endif
 
 		logo->image = base;
 	}
