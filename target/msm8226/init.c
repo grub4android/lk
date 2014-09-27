@@ -303,11 +303,6 @@ void target_detect(struct board_data *board)
 	*/
 }
 
-bool target_is_cdp_qvga()
-{
-	return board_hardware_subtype() == HW_PLATFORM_SUBTYPE_QVGA;
-}
-
 /* Detect the modem type */
 void target_baseband_detect(struct board_data *board)
 {
