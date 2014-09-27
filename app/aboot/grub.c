@@ -60,6 +60,7 @@ int grub_has_tar(void) {
 
 #ifdef GRUB_BOOT_PARTITION
 #define GRUB_MOUNTPOINT "/"GRUB_BOOT_PARTITION"/"
+#define GRUB_PATH GRUB_BOOT_PATH_PREFIX"boot/grub"
 #define HAS_FLAG(m, mask)	(((m) & mask) == mask)
 #define ALLOW_BOOT(m) ( \
 	S_ISREG((m)) \
@@ -113,7 +114,7 @@ static int grub_load_from_mmc(void) {
 	uint32_t bytes_read;
 	int ret = 0, allow = 0;
 
-	dprintf(INFO, "%s: part=[%s]\n", __func__, GRUB_BOOT_PARTITION);
+	dprintf(INFO, "%s: part=[%s] path=[%s]\n", __func__, GRUB_BOOT_PARTITION, GRUB_PATH);
 
 	// create ext4 device
 	struct ext4_blockdev* mmcdev = ext4_mmcdev_get(GRUB_BOOT_PARTITION);
@@ -137,16 +138,16 @@ static int grub_load_from_mmc(void) {
 	}
 
 	// check permissions of crucial files
-	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT"boot/grub/core.img", &allow)==EOK && !allow)
+	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT GRUB_PATH "/core.img", &allow)==EOK && !allow)
 		return -1;
-	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT"boot/grub/grub.cfg", &allow)==EOK && !allow)
+	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT GRUB_PATH "/grub.cfg", &allow)==EOK && !allow)
 		return -1;
-	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT"boot/grub/grubenv", &allow)==EOK && !allow)
+	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT GRUB_PATH "/grubenv", &allow)==EOK && !allow)
 		return -1;
 	dprintf(INFO, "Permissions are good\n");
 
 	// open file
-	ret = ext4_fopen(&f, GRUB_MOUNTPOINT"boot/grub/core.img", "rb");
+	ret = ext4_fopen(&f, GRUB_MOUNTPOINT GRUB_PATH "/core.img", "rb");
 	if(ret != EOK){
 		dprintf(CRITICAL, "ext4_fopen ERROR = %d\n", ret);
 		return -1;
