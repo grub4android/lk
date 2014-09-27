@@ -415,7 +415,7 @@ struct fbimage* splash_screen_flash(void)
 	dprintf(CRITICAL, "ERROR: Partition table not found\n");
 	return NULL;
 	}
-	ptn = ptable_msm_find(ptable, "splash");
+	ptn = ptable_msm_find(ptable, SPLASH_PARTITION_NAME);
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: splash Partition not found\n");
 		return NULL;
@@ -458,7 +458,7 @@ struct fbimage* splash_screen_mmc(void)
 	struct fbcon_config *fb_display = NULL;
 	struct fbimage *logo = &logo_header;
 
-	index = partition_get_index("splash");
+	index = partition_get_index(SPLASH_PARTITION_NAME);
 	if (index == 0) {
 		dprintf(CRITICAL, "ERROR: splash Partition table not found\n");
 		return NULL;
