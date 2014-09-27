@@ -14,6 +14,7 @@ DEFINES += WITH_DEBUG_UART=1
 DEFINES += WITH_DEBUG_LOG_BUF=1
 #DEFINES += WITH_DEBUG_FBCON=1
 DEFINES += WITH_XIAOMI_DUALBOOT=1
+SPLASH_PARTITION_NAME:=\"logo\"
 
 #Disable thumb mode
 #TODO: The gold linker has issues generating correct
