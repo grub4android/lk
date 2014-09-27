@@ -19,6 +19,12 @@ DEFINES += BOOT_2NDSTAGE=1
 OBJS += $(LOCAL_DIR)/2ndstage_tools.o
 endif
 
+ifneq ($(SPLASH_PARTITION_NAME),)
+CFLAGS += -DSPLASH_PARTITION_NAME=$(SPLASH_PARTITION_NAME)
+else
+CFLAGS += -DSPLASH_PARTITION_NAME=\"splash\"
+endif
+
 OBJS += \
 	$(LOCAL_DIR)/aboot.o \
 	$(LOCAL_DIR)/fastboot.o \
