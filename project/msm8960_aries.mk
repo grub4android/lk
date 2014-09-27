@@ -1,4 +1,4 @@
-# top level project rules for the msm8960_virtio project
+# top level project rules for the msm8960_aries project
 #
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
@@ -14,7 +14,7 @@ DEFINES += WITH_DEBUG_UART=1
 DEFINES += WITH_DEBUG_LOG_BUF=1
 #DEFINES += WITH_DEBUG_FBCON=1
 DEFINES += WITH_XIAOMI_DUALBOOT=1
-SPLASH_PARTITION_NAME:=\"logo\"
+SPLASH_PARTITION_NAME := \"logo\"
 
 #Disable thumb mode
 #TODO: The gold linker has issues generating correct
