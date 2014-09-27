@@ -46,6 +46,7 @@ struct device_info
 	char display_panel[MAX_PANEL_ID_LEN];
 	char caf_reserved[100];
 	bool force_fastboot;
+	bool use_splash_partition;
 };
 
 #endif

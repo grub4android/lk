@@ -215,6 +215,7 @@ char sn_buf[13];
 char display_panel_buf[MAX_PANEL_BUF_SIZE];
 char panel_display_mode[MAX_RSP_SIZE];
 char force_fastboot[MAX_RSP_SIZE];
+char use_splash_partition[MAX_RSP_SIZE];
 
 extern int emmc_recovery_init(void);
 
@@ -1546,6 +1547,7 @@ static int validate_device_info(struct device_info *info)
 		info->charger_screen_enabled = 0;
 		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
 		info->force_fastboot = 0;
+		info->use_splash_partition = 0;
 
 		return 1;
 	}
@@ -1558,6 +1560,8 @@ static int validate_device_info(struct device_info *info)
 		info->charger_screen_enabled = 0;
 	if(info->force_fastboot !=0 && info->force_fastboot!=1)
 		info->force_fastboot = 0;
+	if(info->use_splash_partition !=0 && info->use_splash_partition!=1)
+		info->use_splash_partition = 0;
 	if(!isprint(info->display_panel[0]) && !info->display_panel[0]=='\0')
 		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
 
@@ -2499,6 +2503,22 @@ void cmd_oem_disable_force_fastboot(const char *arg, void *data, unsigned size)
 	fastboot_okay("");
 }
 
+void cmd_oem_enable_use_splash_partition(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Enabling using splash partition\n");
+	device.use_splash_partition = 1;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
+void cmd_oem_disable_use_splash_partition(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Disabling using splash partition\n");
+	device.use_splash_partition = 0;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
 void cmd_oem_select_display_panel(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Selecting display panel %s\n", arg);
@@ -2557,6 +2577,8 @@ void cmd_oem_devinfo(const char *arg, void *data, unsigned sz)
 	snprintf(response, sizeof(response), "\tDisplay panel: %s", (device.display_panel));
 	fastboot_info(response);
 	snprintf(response, sizeof(response), "\tForcing fastboot: %s", (device.force_fastboot ? "true" : "false"));
+	fastboot_info(response);
+	snprintf(response, sizeof(response), "\tUsing splash partition: %s", (device.use_splash_partition ? "true" : "false"));
 	fastboot_info(response);
 	fastboot_okay("");
 }
@@ -2759,6 +2781,9 @@ struct fbimage* splash_screen_mmc()
 
 struct fbimage* fetch_image_from_partition()
 {
+	if (!device.use_splash_partition)
+		return NULL;
+
 	if (target_is_emmc_boot()) {
 		return splash_screen_mmc();
 	} else {
@@ -2863,6 +2888,10 @@ void aboot_fastboot_register_commands(void)
 			cmd_oem_enable_force_fastboot);
 	fastboot_register("oem disable-forcing-fastboot",
 			cmd_oem_disable_force_fastboot);
+	fastboot_register("oem enable-using-splash-partition",
+			cmd_oem_enable_use_splash_partition);
+	fastboot_register("oem disable-using-splash-partition",
+			cmd_oem_disable_use_splash_partition);
 	/* publish variables and their values */
 	fastboot_publish("product",  TARGET(BOARD));
 	fastboot_publish("kernel",   "lk");
@@ -2895,6 +2924,11 @@ void aboot_fastboot_register_commands(void)
 			device.force_fastboot);
 	fastboot_publish("forcing-fastboot",
 			(const char *) force_fastboot);
+
+	snprintf(use_splash_partition, MAX_RSP_SIZE, "%d",
+			device.use_splash_partition);
+	fastboot_publish("using-splash-partition",
+			(const char *) use_splash_partition);
 }
 
 void aboot_init(const struct app_descriptor *app)
