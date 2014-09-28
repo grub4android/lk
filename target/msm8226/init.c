@@ -172,7 +172,13 @@ int target_volume_up()
 uint32_t target_volume_down()
 {
 	/* Volume down button tied in with PMIC RESIN. */
-	return pm8x41_resin_status();
+	//return pm8x41_resin_status();
+	return pm8x41_v2_resin_status();
+}
+
+int target_power_key(void)
+{
+	return pm8x41_get_pwrkey_is_pressed();
 }
 
 int target_power_key(void)
@@ -301,11 +307,6 @@ void target_detect(struct board_data *board)
 	/*
 	* already fill the board->target on board.c
 	*/
-}
-
-bool target_is_cdp_qvga()
-{
-	return board_hardware_subtype() == HW_PLATFORM_SUBTYPE_QVGA;
 }
 
 /* Detect the modem type */

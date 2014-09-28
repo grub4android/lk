@@ -48,7 +48,9 @@
 #include "include/panel_nt35596_1080p_video.h"
 #include "include/panel_nt35521_720p_video.h"
 #include "include/panel_ssd2080m_720p_video.h"
+#include "include/panel_auo_720p_video.h"
 #include "include/panel_jdi_1080p_video.h"
+#include "include/panel_sharp_720p_video.h"
 #include "include/panel_nt35590_qvga_cmd.h"
 
 #define DISPLAY_MAX_PANEL_DETECTION 2
@@ -67,7 +69,9 @@ NT35596_1080P_VIDEO_PANEL,
 HX8394A_720P_VIDEO_PANEL,
 NT35521_720P_VIDEO_PANEL,
 SSD2080M_720P_VIDEO_PANEL,
+AUO_720P_VIDEO_PANEL,
 JDI_1080P_VIDEO_PANEL,
+SHARP_720P_VIDEO_PANEL,
 NT35590_QVGA_CMD_PANEL,
 UNKNOWN_PANEL
 };
@@ -84,7 +88,9 @@ static struct panel_list supp_panels[] = {
 	{"hx8394a_720p_video", HX8394A_720P_VIDEO_PANEL},
 	{"nt35521_720p_video", NT35521_720P_VIDEO_PANEL},
 	{"ssd2080m_720p_video", SSD2080M_720P_VIDEO_PANEL},
+	{"auo_720p_video", AUO_720P_VIDEO_PANEL},
 	{"jdi_1080p_video", JDI_1080P_VIDEO_PANEL},
+	{"sharp_720p_video", SHARP_720P_VIDEO_PANEL},
 	{"nt35590_qvga_cmd", NT35590_QVGA_CMD_PANEL},
 };
 
@@ -279,6 +285,25 @@ static int init_panel_data(struct panel_struct *panelstruct,
 				nt35596_1080p_video_timings, TIMING_SIZE);
 		pinfo->mipi.signature = NT35596_1080P_VIDEO_SIGNATURE;
 		break;
+	case AUO_720P_VIDEO_PANEL:
+		panelstruct->paneldata    = &auo_720p_video_panel_data;
+		panelstruct->panelres     = &auo_720p_video_panel_res;
+		panelstruct->color        = &auo_720p_video_color;
+		panelstruct->videopanel   = &auo_720p_video_video_panel;
+		panelstruct->commandpanel = &auo_720p_video_command_panel;
+		panelstruct->state        = &auo_720p_video_state;
+		panelstruct->laneconfig   = &auo_720p_video_lane_config;
+		panelstruct->paneltiminginfo
+			= &auo_720p_video_timing_info;
+		panelstruct->panelresetseq
+			= &auo_720p_video_panel_reset_seq;
+		panelstruct->backlightinfo = &auo_720p_video_backlight;
+		pinfo->mipi.panel_cmds     = auo_720p_video_on_command;
+		pinfo->mipi.num_of_panel_cmds
+			= AUO_720P_VIDEO_ON_COMMAND;
+		memcpy(phy_db->timing,
+			auo_720p_video_timings, TIMING_SIZE);
+		break;
 	case JDI_1080P_VIDEO_PANEL:
 		panelstruct->paneldata    = &jdi_1080p_video_panel_data;
 		panelstruct->paneldata->panel_with_enable_gpio = 1;
@@ -299,6 +324,25 @@ static int init_panel_data(struct panel_struct *panelstruct,
 			= JDI_1080P_VIDEO_ON_COMMAND;
 		memcpy(phy_db->timing,
 			jdi_1080p_video_timings, TIMING_SIZE);
+		break;
+	case SHARP_720P_VIDEO_PANEL:
+		panelstruct->paneldata    = &sharp_720p_video_panel_data;
+		panelstruct->panelres     = &sharp_720p_video_panel_res;
+		panelstruct->color        = &sharp_720p_video_color;
+		panelstruct->videopanel   = &sharp_720p_video_video_panel;
+		panelstruct->commandpanel = &sharp_720p_video_command_panel;
+		panelstruct->state        = &sharp_720p_video_state;
+		panelstruct->laneconfig   = &sharp_720p_video_lane_config;
+		panelstruct->paneltiminginfo
+			= &sharp_720p_video_timing_info;
+		panelstruct->panelresetseq
+			= &sharp_720p_video_panel_reset_seq;
+		panelstruct->backlightinfo = &sharp_720p_video_backlight;
+		pinfo->mipi.panel_cmds     = sharp_720p_video_on_command;
+		pinfo->mipi.num_of_panel_cmds
+			= SHARP_720P_VIDEO_ON_COMMAND;
+		memcpy(phy_db->timing,
+			sharp_720p_video_timings, TIMING_SIZE);
 		break;
 	case NT35590_QVGA_CMD_PANEL:
 		panelstruct->paneldata    = &nt35590_qvga_cmd_panel_data;
@@ -336,6 +380,14 @@ uint32_t oem_panel_max_auto_detect_panels()
 {
         return target_panel_auto_detect_enabled() ?
                         DISPLAY_MAX_PANEL_DETECTION : 0;
+}
+
+static bool is_sharp_panel(void)
+{
+	gpio_tlmm_config(34, 0, 0, 0, 3u, 0);
+	gpio_set_dir(34, 0);
+	mdelay(3);
+	return gpio_status(34);
 }
 
 static uint32_t auto_pan_loop = 0;
@@ -392,11 +444,10 @@ int oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 				}
 				auto_pan_loop++;
 			}
-			else {
-				dprintf(CRITICAL, "Not supported device, target_id=%x\n"
-									, target_id);
-				return PANEL_TYPE_UNKNOWN;
-			}
+			else if (is_sharp_panel())
+				panel_id = SHARP_720P_VIDEO_PANEL;
+			else
+				panel_id = AUO_720P_VIDEO_PANEL;
 		}
 		break;
 	case HW_PLATFORM_MTP:

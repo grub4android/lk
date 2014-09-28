@@ -1560,7 +1560,7 @@ static int validate_device_info(struct device_info *info)
 		info->charger_screen_enabled = 0;
 	if(info->force_fastboot !=0 && info->force_fastboot!=1)
 		info->force_fastboot = 0;
-	if(info->use_splash_partition !=0 && info->use_splash_partition!=1)
+	if(info->use_splash_partition != 0 && info->use_splash_partition != 1)
 		info->use_splash_partition = 0;
 	if(!isprint(info->display_panel[0]) && !info->display_panel[0]=='\0')
 		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);

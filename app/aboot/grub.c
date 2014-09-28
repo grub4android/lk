@@ -60,7 +60,7 @@ int grub_has_tar(void) {
 
 #ifdef GRUB_BOOT_PARTITION
 #define GRUB_MOUNTPOINT "/"GRUB_BOOT_PARTITION"/"
-#define GRUB_PATH GRUB_BOOT_PATH_PREFIX"boot/grub"
+#define GRUB_PATH GRUB_BOOT_PATH_PREFIX "boot/grub"
 #define HAS_FLAG(m, mask)	(((m) & mask) == mask)
 #define ALLOW_BOOT(m) ( \
 	S_ISREG((m)) \
