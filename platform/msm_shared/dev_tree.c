@@ -1332,6 +1332,7 @@ int update_device_tree(void *fdt, const char *cmdline,
 		}
 	}
 
+#if BOOT_2NDSTAGE
 	/* Add chosen props from original ATAG's */
 	struct original_atags_info* info = board_get_original_atags_info();
 	if(info!=NULL) {
@@ -1343,6 +1344,7 @@ int update_device_tree(void *fdt, const char *cmdline,
 			fdt_setprop(fdt, offset, info->chosen_props[i].name, info->chosen_props[i].data, info->chosen_props[i].len);
 		}
 	}
+#endif
 
 	fdt_pack(fdt);
 
