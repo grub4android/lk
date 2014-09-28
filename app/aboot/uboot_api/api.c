@@ -477,7 +477,7 @@ static int API_env_get(va_list ap)
 	if(strcmp("grub_bootdev", name)==0)
 		grub_get_bootdev(value);
 	else if(strcmp("grub_bootpath", name)==0)
-		*value = "/boot/grub";
+		grub_get_bootpath(value);
 	else {
 		dprintf(INFO, "%s: %s\n", __func__, name);
 		*value = NULL;

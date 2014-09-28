@@ -53,6 +53,11 @@ void grub_get_bootdev(char **value) {
 	*value = grub_bootdev;
 }
 
+static char* grub_bootpath = NULL;
+void grub_get_bootpath(char **value) {
+	*value = grub_bootpath;
+}
+
 static int grub_found_tar = 0;
 int grub_has_tar(void) {
 	return grub_found_tar;
@@ -179,6 +184,7 @@ static int grub_load_from_mmc(void) {
 	char buf[20];
 	sprintf(buf, "hd0,%u", index+1);
 	grub_bootdev = strdup(buf);
+	grub_bootpath = strdup(GRUB_BOOT_PATH_PREFIX "boot/grub");
 
 	dprintf(INFO, "Loaded GRUB from MMC\n");
 	return 0;
@@ -206,6 +212,7 @@ static int grub_load_from_tar(void) {
 	}
 
 	grub_bootdev = strdup("hd1");
+	grub_bootpath = strdup("/boot/grub");
 	grub_found_tar = 1;
 
 	dprintf(INFO, "Loaded GRUB from TAR\n");
@@ -233,6 +240,7 @@ static int grub_sideload_handler(void *data)
 		tio.lba = hdr->ramdisk_size;
 		// set bootdev
 		grub_bootdev = strdup("hd1");
+		grub_bootpath = strdup("/boot/grub");
 		grub_found_tar = 1;
 	}
 	else {
@@ -241,8 +249,10 @@ static int grub_sideload_handler(void *data)
 		char buf[20];
 		sprintf(buf, "hd0,%u", index+1);
 		grub_bootdev = strdup(buf);
+		grub_bootpath = strdup(GRUB_BOOT_PATH_PREFIX "boot/grub");
 	}
 	dprintf(INFO, "bootdev: %s\n", grub_bootdev);
+	dprintf(INFO, "bootpath: %s\n", grub_bootpath);
 
 	// BOOT !
 	void (*entry)(unsigned, unsigned, unsigned*) = (void*)hdr->kernel_addr;
