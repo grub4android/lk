@@ -172,7 +172,8 @@ int target_volume_up()
 uint32_t target_volume_down()
 {
 	/* Volume down button tied in with PMIC RESIN. */
-	return pm8x41_resin_status();
+	//return pm8x41_resin_status();
+	return pm8x41_v2_resin_status();
 }
 
 int target_power_key(void)
