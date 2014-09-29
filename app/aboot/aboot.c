@@ -295,7 +295,11 @@ unsigned char *update_cmdline(const char * cmdline)
 	/* bootX_cmdline is a mandatory parameter
 	 * it should be there in any case
 	 */
-	cmdline_len += strlen(boot0_cmdline);
+	int needs_xiaomi_syspart = 0;
+	if(!strstr(cmdline, "syspart=")) {
+		needs_xiaomi_syspart = 1;
+		cmdline_len += strlen(boot0_cmdline);
+	}
 #endif
 
 #if BOOT_2NDSTAGE
@@ -434,16 +438,18 @@ unsigned char *update_cmdline(const char * cmdline)
 		}
 
 #if WITH_XIAOMI_DUALBOOT
-		if (dual_boot_sign == DUALBOOT_BOOT_SECOND) {
-			src = boot1_cmdline;
-			if (have_cmdline) --dst;
-			while ((*dst++ = *src++));
-		} else {
-			if (dual_boot_sign == DUALBOOT_BOOT_NONE)
-				dprintf(CRITICAL, "ERROR: boot and system not chosen\n");
-			src = boot0_cmdline;
-			if (have_cmdline) --dst;
-			while ((*dst++ = *src++));
+		if(needs_xiaomi_syspart) {
+			if (dual_boot_sign == DUALBOOT_BOOT_SECOND) {
+				src = boot1_cmdline;
+				if (have_cmdline) --dst;
+				while ((*dst++ = *src++));
+			} else {
+				if (dual_boot_sign == DUALBOOT_BOOT_NONE)
+					dprintf(CRITICAL, "ERROR: boot and system not chosen\n");
+				src = boot0_cmdline;
+				if (have_cmdline) --dst;
+				while ((*dst++ = *src++));
+			}
 		}
 #endif
 
