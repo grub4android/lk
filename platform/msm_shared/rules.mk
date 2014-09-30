@@ -92,6 +92,7 @@ ifeq ($(PLATFORM),msm8960)
 			$(LOCAL_DIR)/mdp4.o \
 			$(LOCAL_DIR)/crypto4_eng.o \
 			$(LOCAL_DIR)/crypto_hash.o \
+			$(LOCAL_DIR)/dev_tree.o \
 			$(LOCAL_DIR)/certificate.o \
 			$(LOCAL_DIR)/image_verify.o \
 			$(LOCAL_DIR)/scm.o \

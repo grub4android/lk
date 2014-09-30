@@ -26,7 +26,8 @@ MODULES += \
 	dev/pmic/pm8921 \
 	dev/ssbi \
 	lib/ptable \
-	dev/panel/msm
+	dev/panel/msm \
+	lib/libfdt
 
 DEFINES += \
 	MEMSIZE=$(MEMSIZE) \
@@ -49,4 +50,5 @@ endif
 OBJS += \
 	$(LOCAL_DIR)/init.o \
 	$(LOCAL_DIR)/atags.o \
+	$(LOCAL_DIR)/meminfo.o \
 	$(LOCAL_DIR)/keypad.o
