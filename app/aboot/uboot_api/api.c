@@ -702,9 +702,11 @@ static int API_boot_create_tags(va_list ap)
 			return API_EINVAL;
 		}
 	}
-#else
-	generate_atags(info->tags_addr, (const char*)final_cmdline, info->ramdisk, info->ramdisk_size);
+	else
 #endif
+	{
+		generate_atags(info->tags_addr, (const char*)final_cmdline, info->ramdisk, info->ramdisk_size);
+	}
 
 	return 0;
 }

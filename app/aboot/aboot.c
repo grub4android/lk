@@ -644,7 +644,7 @@ void generate_atags(unsigned *ptr, const char *cmdline,
 typedef void entry_func_ptr(unsigned, unsigned, unsigned*);
 void boot_linux(void *kernel, unsigned *tags,
 		const char *cmdline, unsigned machtype,
-		void *ramdisk, unsigned ramdisk_size)
+		void *ramdisk, unsigned ramdisk_size, int use_device_tree)
 {
 	unsigned char *final_cmdline;
 #if DEVICE_TREE
@@ -660,20 +660,24 @@ void boot_linux(void *kernel, unsigned *tags,
 	final_cmdline = update_cmdline((const char*)cmdline);
 
 #if DEVICE_TREE
-	dprintf(INFO, "Updating device tree: start\n");
+	if(use_device_tree) {
+		dprintf(INFO, "Updating device tree: start\n");
 
-	/* Update the Device Tree */
-	ret = update_device_tree((void *)tags, final_cmdline, ramdisk, ramdisk_size);
-	if(ret)
-	{
-		dprintf(CRITICAL, "ERROR: Updating Device Tree Failed \n");
-		ASSERT(0);
+		/* Update the Device Tree */
+		ret = update_device_tree((void *)tags, final_cmdline, ramdisk, ramdisk_size);
+		if(ret)
+		{
+			dprintf(CRITICAL, "ERROR: Updating Device Tree Failed \n");
+			ASSERT(0);
+		}
+		dprintf(INFO, "Updating device tree: done\n");
 	}
-	dprintf(INFO, "Updating device tree: done\n");
-#else
-	/* Generating the Atags */
-	generate_atags(tags, final_cmdline, ramdisk, ramdisk_size);
+	else
 #endif
+	{
+		/* Generating the Atags */
+		generate_atags(tags, final_cmdline, ramdisk, ramdisk_size);
+	}
 
 	free(final_cmdline);
 	/* Perform target specific cleanup */
@@ -1045,11 +1049,16 @@ int boot_linux_from_mmc(void)
 		return -1;
 	}
 
-#ifndef DEVICE_TREE
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size==0)
+#endif
 	{
-		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
-		return -1;
+		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+		{
+			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
+			return -1;
+		}
 	}
 #endif
 
@@ -1070,17 +1079,27 @@ int boot_linux_from_mmc(void)
 		image_addr = (unsigned char *)target_get_scratch_address();
 
 #if DEVICE_TREE
-		dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
-
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
-		}
-#else
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+			dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
 
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
+		}
+#if DEVICE_TREE_FALLBACK
+		else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+		{
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+		}
 #endif
 
 		dprintf(INFO, "Loading boot image (%d): start\n", imagesize_actual);
@@ -1159,7 +1178,9 @@ int boot_linux_from_mmc(void)
 						(void *)hdr->tags_addr);
 			if (!dtb) {
 				dprintf(CRITICAL, "ERROR: Appended Device Tree Blob not found\n");
+#if DEVICE_TREE_FALLBACK
 				return -1;
+#endif
 			}
 		}
 		#endif
@@ -1170,17 +1191,27 @@ int boot_linux_from_mmc(void)
 
 		image_addr = (unsigned char *)target_get_scratch_address();
 #if DEVICE_TREE
-		dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
-
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
-		}
-#else
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+			dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
 
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
+		}
+#if DEVICE_TREE_FALLBACK
+		else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+		{
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+		}
 #endif
 		if (check_aboot_addr_range_overlap(image_addr, imagesize_actual))
 		{
@@ -1254,7 +1285,9 @@ int boot_linux_from_mmc(void)
 						(void *)hdr->tags_addr);
 			if (!dtb) {
 				dprintf(CRITICAL, "ERROR: Appended Device Tree Blob not found\n");
+#if DEVICE_TREE_FALLBACK
 				return -1;
+#endif
 			}
 		}
 		#endif
@@ -1267,7 +1300,7 @@ unified_boot:
 
 	boot_linux((void *)hdr->kernel_addr, (void *)hdr->tags_addr,
 		   (const char *)hdr->cmdline, board_machtype(),
-		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size);
+		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size, hdr->dt_size>0);
 
 	return 0;
 }
@@ -1363,12 +1396,17 @@ int boot_linux_from_flash(void)
 		return -1;
 	}
 
-#ifndef DEVICE_TREE
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size==0)
+#endif
+	{
 		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
 		{
 			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 			return -1;
 		}
+	}
 #endif
 
 	/* Authenticate Kernel */
@@ -1378,16 +1416,27 @@ int boot_linux_from_flash(void)
 		offset = 0;
 
 #if DEVICE_TREE
-		dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
-
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, hdr->dt_size))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
+			dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
+
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, hdr->dt_size))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
 		}
-#else
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+#if DEVICE_TREE_FALLBACK
+		else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+		{
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+		}
 #endif
 
 		dprintf(INFO, "Loading boot image (%d): start\n", imagesize_actual);
@@ -1417,14 +1466,19 @@ int boot_linux_from_flash(void)
 		memmove((void*) hdr->kernel_addr, (char *)(image_addr + page_size), hdr->kernel_size);
 		memmove((void*) hdr->ramdisk_addr, (char *)(image_addr + page_size + kernel_actual), hdr->ramdisk_size);
 #if DEVICE_TREE
-		/* Validate and Read device device tree in the "tags_add */
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_entry.size))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
-		}
+			/* Validate and Read device device tree in the "tags_add */
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_entry.size))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
 
-		memmove((void*) hdr->tags_addr, (char *)(image_addr + page_size + kernel_actual + ramdisk_actual), hdr->dt_size);
+			memmove((void*) hdr->tags_addr, (char *)(image_addr + page_size + kernel_actual + ramdisk_actual), hdr->dt_size);
+		}
 #endif
 
 		/* Make sure everything from scratch address is read before next step!*/
@@ -1526,7 +1580,7 @@ continue_boot:
 
 	boot_linux((void *)hdr->kernel_addr, (void *)hdr->tags_addr,
 		   (const char *)hdr->cmdline, board_machtype(),
-		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size);
+		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size, hdr->dt_size>0);
 
 	return 0;
 }
@@ -1905,15 +1959,26 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	}
 
 #if DEVICE_TREE
-	/* find correct dtb and copy it to right location */
-	ret = copy_dtb(data);
-
-	dtb_copied = !ret ? 1 : 0;
-#else
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size>0)
+#endif
 	{
-		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
-		return;
+		/* find correct dtb and copy it to right location */
+		ret = copy_dtb(data);
+
+		dtb_copied = !ret ? 1 : 0;
+	}
+#if DEVICE_TREE_FALLBACK
+	else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+	{
+		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+		{
+			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
+			return;
+		}
 	}
 #endif
 
@@ -1922,28 +1987,37 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	memmove((void*) hdr->kernel_addr, ptr + page_size, hdr->kernel_size);
 
 #if DEVICE_TREE
-	/*
-	 * If dtb is not found look for appended DTB in the kernel.
-	 * If appended dev tree is found, update the atags with
-	 * memory address to the DTB appended location on RAM.
-	 * Else update with the atags address in the kernel header
-	 */
-	if (!dtb_copied) {
-		void *dtb;
-		dtb = dev_tree_appended((void *)hdr->kernel_addr, hdr->kernel_size,
-					(void *)hdr->tags_addr);
-		if (!dtb) {
-			fastboot_fail("dtb not found");
-			return;
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size>0)
+#endif
+	{
+		/*
+		 * If dtb is not found look for appended DTB in the kernel.
+		 * If appended dev tree is found, update the atags with
+		 * memory address to the DTB appended location on RAM.
+		 * Else update with the atags address in the kernel header
+		 */
+		if (!dtb_copied) {
+			void *dtb;
+			dtb = dev_tree_appended((void *)hdr->kernel_addr, hdr->kernel_size,
+						(void *)hdr->tags_addr);
+			if (!dtb) {
+				fastboot_fail("dtb not found");
+				return;
+			}
 		}
 	}
+#if DEVICE_TREE_FALLBACK
+	else
 #endif
-
-#ifndef DEVICE_TREE
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
 	{
-		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
-		return;
+		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+		{
+			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
+			return;
+		}
 	}
 #endif
 
@@ -1952,7 +2026,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 
 	boot_linux((void*) hdr->kernel_addr, (void*) hdr->tags_addr,
 		   (const char*) hdr->cmdline, board_machtype(),
-		   (void*) hdr->ramdisk_addr, hdr->ramdisk_size);
+		   (void*) hdr->ramdisk_addr, hdr->ramdisk_size, hdr->dt_size>0);
 }
 
 void cmd_erase(const char *arg, void *data, unsigned sz)
