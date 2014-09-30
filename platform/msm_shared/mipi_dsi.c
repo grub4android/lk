@@ -520,7 +520,7 @@ int
 config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 		    unsigned short img_width, unsigned short img_height,
 		    unsigned short dst_format,
-		    unsigned short traffic_mode, unsigned short datalane_num)
+		    unsigned short traffic_mode, unsigned short datalane_num, int rgb_swap)
 {
 	unsigned char DST_FORMAT;
 	unsigned char TRAFIC_MODE;
@@ -571,7 +571,10 @@ config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 
 	writel(0x02020202, DSI_INT_CTRL);
 
-	writel(0x00100000 | DST_FORMAT, DSI_COMMAND_MODE_MDP_CTRL);
+	int data = 0x00100000;
+	data |= ((rgb_swap & 0x07) << 16);
+	writel(data | DST_FORMAT, DSI_COMMAND_MODE_MDP_CTRL);
+
 	writel((img_width * ystride + 1) << 16 | 0x0039,
 	       DSI_COMMAND_MODE_MDP_STREAM0_CTRL);
 	writel((img_width * ystride + 1) << 16 | 0x0039,
@@ -624,7 +627,8 @@ void mipi_dsi_cmd_trigger(struct msm_fb_panel_data *pdata)
 	mdelay(50);
 	config_dsi_cmd_mode(display_wd, display_ht, image_wd, image_ht,
 			dst_format, traffic_mode,
-			num_of_lanes /* num_of_lanes */ );
+			num_of_lanes, /* num_of_lanes */
+			pinfo->mipi.rgb_swap);
 
 }
 #endif
