@@ -30,6 +30,52 @@
 #ifndef _TARGET_MSM8960_ARIES_DISPLAY_H
 #define _TARGET_MSM8960_ARIES_DISPLAY_H
 
+/*---------------------------------------------------------------------------*/
+/* HEADER files                                                              */
+/*---------------------------------------------------------------------------*/
+#include <display_resource.h>
+
+/*---------------------------------------------------------------------------*/
+/* GPIO configuration                                                        */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* LDO configuration                                                         */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Target Physical configuration                                             */
+/*---------------------------------------------------------------------------*/
+
+static const uint32_t panel_strength_ctrl[] = {
+  0xff, 0x00, 0x06, 0x00
+};
+
+static const char panel_bist_ctrl[] = {
+  0x00, 0x00, 0xb1, 0xff, 0x00, 0x00
+};
+
+static const uint32_t panel_regulator_settings[] = {
+  0x03, 0x0a, 0x04, 0x00, 0x20
+};
+
+static const char panel_lane_config[] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x97,
+  0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x01, 0x97,
+  0x00, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x01, 0x97,
+  0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x01, 0x97,
+  0x00, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xbb
+};
+
+static const uint32_t panel_physical_ctrl[] = {
+  0x5f, 0x00, 0x00, 0x10
+};
+
+/*---------------------------------------------------------------------------*/
+/* Other Configuration                                                       */
+/*---------------------------------------------------------------------------*/
+#define DISPLAY_CMDLINE_PREFIX " mdp.panel="
+
 #define MIPI_FB_ADDR  0x89000000
 
 /* Toshiba MDT61 Mipi Panel */
@@ -47,9 +93,5 @@
 #define MIPI_VSYNC_PULSE_WIDTH       2
 #define MIPI_VSYNC_BACK_PORCH_LINES  2
 #define MIPI_VSYNC_FRONT_PORCH_LINES 7
-
-extern int mipi_dsi_phy_init(struct mipi_dsi_panel_config *);
-extern void mdp_setup_mdt61_video_dsi_config(void);
-extern void config_mdt61_dsi_video_mode(void);
 
 #endif

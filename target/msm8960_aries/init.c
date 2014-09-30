@@ -488,27 +488,40 @@ void target_baseband_detect(struct board_data *board)
 	board->baseband = baseband;
 }
 
+static uint8_t splash_override;
+
 /* Returns 1 if target supports continuous splash screen. */
 int target_cont_splash_screen()
 {
+	uint8_t splash_screen = 0;
+	if(!splash_override) {
 	switch(board_platform_id())
-	{
-	case MSM8960:
-	case APQ8064:
-		/* Splash screen and continuous splash screen feature is not
-		 * supported on 8960 Liquid target. But kernel display driver
-		 * crashes on Liquid if display clocks are disabled. Until that is
-		 * fixed, assume this feature is enabled for Liquid also.
-		 */
-	case MSM8960AB:
-	case APQ8060AB:
-	case MSM8260AB:
-	case MSM8660AB:
-		return 1;
-
-	default:
-		return 0;
+		{
+		case MSM8960:
+		case APQ8064:
+			/* Splash screen and continuous splash screen feature is not
+			 * supported on 8960 Liquid target. But kernel display driver
+			 * crashes on Liquid if display clocks are disabled. Until that is
+			 * fixed, assume this feature is enabled for Liquid also.
+			 */
+		case MSM8960AB:
+		case APQ8060AB:
+		case MSM8260AB:
+		case MSM8660AB:
+			dprintf(SPEW, "Target_cont_splash=1\n");
+			splash_screen = 1;
+			break;
+		default:
+			dprintf(SPEW, "Target_cont_splash=0\n");
+			splash_screen = 0;
+		}
 	}
+	return splash_screen;
+}
+
+void target_force_cont_splash_disable(uint8_t override)
+{
+	splash_override = override;
 }
 
 void apq8064_ext_3p3V_enable()

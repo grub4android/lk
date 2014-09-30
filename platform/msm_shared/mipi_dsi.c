@@ -369,40 +369,10 @@ int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 		dsb();
 		ret += dsi_cmd_dma_trigger_for_panel();
 		dsb();
-#if TARGET_MSM8960_ARIES
-		if (count == sizeof(cmd_delay)/sizeof(int)) {
-			if (i < (sizeof(cmd_delay)/sizeof(int)))
-				mdelay(cmd_delay[i]);
-			else
-				mdelay(100);
-		}
-
-		if (count == sizeof(cmd_delay_lgd)/sizeof(int)) {
-			if (i < (sizeof(cmd_delay_lgd)/sizeof(int)))
-				mdelay(cmd_delay_lgd[i]);
-			else
-				mdelay(100);
-		}
-
-		if (count == sizeof(cmd_delay_auo)/sizeof(int)) {
-			if (i < (sizeof(cmd_delay_auo)/sizeof(int)))
-				mdelay(cmd_delay_auo[i]);
-			else
-				mdelay(100);
-		}
-
-		if (count == sizeof(cmd_delay_jdi)/sizeof(int)) {
-			if (i < (sizeof(cmd_delay_jdi)/sizeof(int)))
-				mdelay(cmd_delay_jdi[i]);
-			else
-				mdelay(100);
-		}
-#else
 		if (cm->wait)
 			mdelay(cm->wait);
 		else
 			udelay(80);
-#endif
 
 		cm++;
 	}
@@ -489,30 +459,7 @@ static uint32_t mipi_novatek_manufacture_id(void)
 	char *rp = rec_buf;
 	uint32_t *lp, data;
 
-#if TARGET_MSM8960_ARIES
-	mipi_dsi_cmds_tx(&novatek_panel_max_packet_cmd, 1);
 	mipi_dsi_cmds_tx(&novatek_panel_manufacture_id_cmd, 1);
-	mipi_dsi_cmds_rx(&rp, 2);
-#else
-	mipi_dsi_cmds_tx(&novatek_panel_manufacture_id_cmd, 1);
-	mipi_dsi_cmds_rx(&rp, 3);
-#endif
-
-	lp = (uint32_t *) rp;
-	data = (uint32_t) * lp;
-	data = ntohl(data);
-	data = data >> 8;
-	return data;
-}
-
-#if TARGET_MSM8960_ARIES
-static uint32_t mipi_novatek_manufacture_id0(void)
-{
-	char rec_buf[24];
-	char *rp = rec_buf;
-	uint32_t *lp, data;
-
-	mipi_dsi_cmds_tx(&novatek_panel_manufacture_id0_cmd, 1);
 	mipi_dsi_cmds_rx(&rp, 3);
 
 	lp = (uint32_t *) rp;
@@ -521,7 +468,6 @@ static uint32_t mipi_novatek_manufacture_id0(void)
 	data = data >> 8;
 	return data;
 }
-#endif
 
 int mdss_dsi_host_init(struct mipi_dsi_panel_config *pinfo, uint32_t
 		dual_dsi, uint32_t broadcast)
@@ -626,61 +572,6 @@ int mdss_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo, uint32_t
 }
 
 #if TARGET_MSM8960_ARIES
-int mipi_dsi_panel_initialize_prepare(struct mipi_dsi_panel_config *pinfo)
-{
-	unsigned char DMA_STREAM1 = 0;	// for mdp display processor path
-	unsigned char EMBED_MODE1 = 1;	// from frame buffer
-	unsigned char POWER_MODE2 = 1;	// from frame buffer
-	unsigned char PACK_TYPE1 = 1;	// long packet
-	unsigned char VC1 = 0;
-	unsigned char DT1 = 0;	// non embedded mode
-	unsigned short WC1 = 0;	// for non embedded mode only
-	int status = 0;
-	unsigned char DLNx_EN;
-
-	switch (pinfo->num_of_lanes) {
-	default:
-	case 1:
-		DLNx_EN = 1;	// 1 lane
-		break;
-	case 2:
-		DLNx_EN = 3;	// 2 lane
-		break;
-	case 3:
-		DLNx_EN = 7;	// 3 lane
-		break;
-	case 4:
-		DLNx_EN = 0x0F;	/* 4 lanes */
-		break;
-	}
-
-	writel(0x0001, DSI_SOFT_RESET);
-	writel(0x0000, DSI_SOFT_RESET);
-
-	writel((0 << 16) | 0x3f, DSI_CLK_CTRL);	/* Turn on all DSI Clks */
-	writel(DMA_STREAM1 << 8 | 0x04, DSI_TRIG_CTRL);	// reg 0x80 dma trigger: sw
-	// trigger 0x4; dma stream1
-
-	writel(0 << 30 | DLNx_EN << 4 | 0x105, DSI_CTRL);	// reg 0x00 for this
-	// build
-	writel(EMBED_MODE1 << 28 | POWER_MODE2 << 26
-	       | PACK_TYPE1 << 24 | VC1 << 22 | DT1 << 16 | WC1,
-	       DSI_COMMAND_MODE_DMA_CTRL);
-
-	return status;
-}
-
-int mipi_dsi_panel_initialize_cmds(struct mipi_dsi_panel_config *pinfo)
-{
-	int status = 0;
-
-	if (pinfo->panel_cmds)
-		status = mipi_dsi_cmds_tx(pinfo->panel_cmds,
-					  pinfo->num_of_panel_cmds);
-
-	return status;
-}
-
 void trigger_mdp_dsi(void)
 {
 	dsb();
@@ -1032,13 +923,6 @@ void mipi_dsi_cmd_trigger(struct msm_fb_panel_data *pdata)
 			num_of_lanes /* num_of_lanes */ );
 
 }
-
-void panel_manu_id_detection(void)
-{
-	mipi_dsi_cmd_bta_sw_trigger();
-	manu_id = mipi_novatek_manufacture_id();
-	manu_id0 = mipi_novatek_manufacture_id0();
-}
 #endif
 
 void mipi_dsi_shutdown(void)
@@ -1140,40 +1024,15 @@ int mipi_config(struct msm_fb_panel_data *panel)
 
 	mipi_dsi_phy_init(&mipi_pinfo);
 
-#if TARGET_MSM8960_ARIES
-	ret += mipi_dsi_panel_initialize_prepare(&mipi_pinfo);
-
-	if (board_target_id() == LINUX_MACHTYPE_8064_MITWO || (board_target_id() == LINUX_MACHTYPE_8064_MTP)) {
-		if (panel_id_detection()) {
-			mipi_pinfo.panel_cmds = hitachi_panel_cmd_mode_cmds;
-			mipi_pinfo.num_of_panel_cmds = ARRAY_SIZE(hitachi_panel_cmd_mode_cmds);
-		} else {
-			mipi_pinfo.panel_cmds = sharp_panel_cmd_mode_cmds;
-			mipi_pinfo.num_of_panel_cmds = ARRAY_SIZE(sharp_panel_cmd_mode_cmds);
-		}
-	} else {
-		panel_manu_id_detection();
-		if ((manu_id) && (manu_id0)) {
-			mipi_pinfo.panel_cmds = lgd_panel_cmd_mode_cmds;
-			mipi_pinfo.num_of_panel_cmds = ARRAY_SIZE(lgd_panel_cmd_mode_cmds);
-		}
-		if ((manu_id)&& !manu_id0) {
-			mipi_pinfo.panel_cmds = auo_panel_cmd_mode_cmds;
-			mipi_pinfo.num_of_panel_cmds = ARRAY_SIZE(auo_panel_cmd_mode_cmds);
-		}
-		if (manu_id == 0x60 && manu_id0 == 0x141304) {
-			mipi_pinfo.panel_cmds = jdi_panel_cmd_mode_cmds;
-			mipi_pinfo.num_of_panel_cmds = ARRAY_SIZE(jdi_panel_cmd_mode_cmds);
-		}
-	}
-
-	ret += mipi_dsi_panel_initialize_cmds(&mipi_pinfo);
-#else
 	ret += mipi_dsi_panel_initialize(&mipi_pinfo);
-#endif
 
 	if (pinfo->rotate && panel->rotate)
 		pinfo->rotate();
+
+#if DISPLAY_MIPI_PANEL_RENESAS_HT
+	mipi_dsi_cmd_trigger(panel);
+	mdelay(34);
+#endif
 
 	return ret;
 }

@@ -1,6 +1,7 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
 INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
+INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/include
 
 PLATFORM := msm8960
 
@@ -28,6 +29,7 @@ MODULES += \
 	dev/ssbi \
 	lib/ptable \
 	dev/panel/msm \
+	dev/gcdb/display \
 	lib/libfdt
 
 DEFINES += \
@@ -52,4 +54,5 @@ OBJS += \
 	$(LOCAL_DIR)/init.o \
 	$(LOCAL_DIR)/../msm8960/atags.o \
 	$(LOCAL_DIR)/../msm8960/meminfo.o \
-	$(LOCAL_DIR)/keypad.o
+	$(LOCAL_DIR)/keypad.o \
+	$(LOCAL_DIR)/oem_panel.o

@@ -315,7 +315,7 @@ void fbcon_putImage(struct fbimage *fbimg, bool flag)
 
 	fbcon_flush();
 
-#if defined(DISPLAY_MIPI_PANEL_NOVATEK_BLUE) || defined(DISPLAY_MIPI_PANEL_RENESAS_HT)
+#if defined(DISPLAY_MIPI_PANEL_NOVATEK_BLUE)
 	if(is_cmd_mode_enabled())
         mipi_dsi_cmd_mode_trigger();
 #endif
