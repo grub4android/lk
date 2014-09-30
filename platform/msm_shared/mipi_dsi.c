@@ -41,7 +41,6 @@
 #include <platform/timer.h>
 #include <err.h>
 #include <msm_panel.h>
-#include <board.h>
 
 extern void mdp_disable(void);
 extern int mipi_dsi_cmd_config(struct fbcon_config mipi_fb_cfg,
@@ -54,47 +53,6 @@ extern void mdp_start_dma(void);
 #define MIPI_DSI1_BASE MIPI_DSI_BASE
 #endif
 
-static uint32_t manu_id;
-static uint32_t manu_id0;
-
-#elif DISPLAY_MIPI_PANEL_RENESAS
-static struct fbcon_config mipi_fb_cfg = {
-	.height = REN_MIPI_FB_HEIGHT,
-	.width = REN_MIPI_FB_WIDTH,
-	.stride = REN_MIPI_FB_WIDTH,
-	.format = FB_FORMAT_RGB888,
-	.bpp = 24,
-	.update_start = NULL,
-	.update_done = NULL,
-};
-
-struct mipi_dsi_panel_config renesas_panel_info = {
-	.mode = MIPI_VIDEO_MODE,
-	.num_of_lanes = 2,
-	.dsi_phy_config = &mipi_dsi_renesas_panel_phy_ctrl,
-	.panel_cmds = renesas_panel_video_mode_cmds,
-	.num_of_panel_cmds = ARRAY_SIZE(renesas_panel_video_mode_cmds),
-	.lane_swap = 1,
-};
-#elif DISPLAY_MIPI_PANEL_RENESAS_HT
-static struct fbcon_config mipi_fb_cfg = {
-	.height = REN_MIPI_FB_HEIGHT,
-	.width = REN_MIPI_FB_WIDTH,
-	.stride = REN_MIPI_FB_WIDTH,
-	.format = FB_FORMAT_RGB888,
-	.bpp = 24,
-	.update_start = NULL,
-	.update_done = NULL,
-};
-
-struct mipi_dsi_panel_config renesas_panel_info = {
-	.mode = MIPI_CMD_MODE,
-	.num_of_lanes = 4,
-	.dsi_phy_config = &mipi_dsi_renesas_panel_phy_ctrl,
-	.panel_cmds = renesas_panel_cmd_mode_cmds,
-	.num_of_panel_cmds = ARRAY_SIZE(renesas_panel_cmd_mode_cmds),
-	.lane_swap = 1,
-};
 static struct fbcon_config mipi_fb_cfg = {
 	.height = 0,
 	.width = 0,
@@ -109,14 +67,6 @@ static int cmd_mode_status = 0;
 void secure_writel(uint32_t, uint32_t);
 uint32_t secure_readl(uint32_t);
 
-#elif DISPLAY_MIPI_PANEL_RENESAS
-	if (machine_is_7x25a()) {
-		renesas_panel_info.num_of_lanes = 1;
-		mipi_fb_cfg.height = REN_MIPI_FB_HEIGHT_HVGA;
-	}
-	return &renesas_panel_info;
-#elif DISPLAY_MIPI_PANEL_RENESAS_HT
-	return &renesas_panel_info;
 static uint32_t response_value = 0;
 
 uint32_t mdss_dsi_read_panel_signature(uint32_t panel_signature)
@@ -325,7 +275,6 @@ int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 			mdelay(cm->wait);
 		else
 			udelay(80);
-
 		cm++;
 	}
 	return ret;
@@ -507,17 +456,6 @@ int mdss_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo, uint32_t
 	return status;
 }
 
-#if TARGET_MSM8960_ARIES
-void trigger_mdp_dsi(void)
-{
-	dsb();
-	mdp_start_dma();
-	mdelay(10);
-	dsb();
-	writel(0x1, DSI_CMD_MODE_MDP_SW_TRIGGER);
-}
-#endif
-
 int mipi_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo)
 {
 	uint8_t DMA_STREAM1 = 0;	// for mdp display processor path
@@ -568,8 +506,99 @@ int mipi_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo)
 	return status;
 }
 
-
 #if TARGET_MSM8960_ARIES
+void trigger_mdp_dsi(void)
+{
+	dsb();
+	mdp_start_dma();
+	mdelay(10);
+	dsb();
+	writel(0x1, DSI_CMD_MODE_MDP_SW_TRIGGER);
+}
+
+int
+config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
+		    unsigned short img_width, unsigned short img_height,
+		    unsigned short dst_format,
+		    unsigned short traffic_mode, unsigned short datalane_num)
+{
+	unsigned char DST_FORMAT;
+	unsigned char TRAFIC_MODE;
+	unsigned char DLNx_EN;
+	// video mode data ctrl
+	int status = 0;
+	unsigned char interleav = 0;
+	unsigned char ystride = 0x03;
+	// disable mdp first
+
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000002, DSI_CLK_CTRL);
+	writel(0x00000006, DSI_CLK_CTRL);
+	writel(0x0000000e, DSI_CLK_CTRL);
+	writel(0x0000001e, DSI_CLK_CTRL);
+	writel(0x0000003e, DSI_CLK_CTRL);
+
+	writel(0x13ff3fe0, DSI_ERR_INT_MASK0);
+
+	// writel(0, DSI_CTRL);
+
+	// writel(0, DSI_ERR_INT_MASK0);
+
+	DST_FORMAT = 8;		// RGB888
+	dprintf(SPEW, "DSI_Cmd_Mode - Dst Format: RGB888\n");
+
+	switch (datalane_num) {
+	default:
+	case 1:
+		DLNx_EN = 1;
+		break;
+	case 2:
+		DLNx_EN = 3;
+		break;
+	case 3:
+		DLNx_EN = 7;
+		break;
+	case 4:
+		DLNx_EN = 0xF;
+		break;
+	}
+
+	TRAFIC_MODE = 0;	// non burst mode with sync pulses
+	dprintf(SPEW, "Traffic mode: non burst mode with sync pulses\n");
+
+	writel(0x02020202, DSI_INT_CTRL);
+
+	writel(0x00100000 | DST_FORMAT, DSI_COMMAND_MODE_MDP_CTRL);
+	writel((img_width * ystride + 1) << 16 | 0x0039,
+	       DSI_COMMAND_MODE_MDP_STREAM0_CTRL);
+	writel((img_width * ystride + 1) << 16 | 0x0039,
+	       DSI_COMMAND_MODE_MDP_STREAM1_CTRL);
+	writel(img_height << 16 | img_width,
+	       DSI_COMMAND_MODE_MDP_STREAM0_TOTAL);
+	writel(img_height << 16 | img_width,
+	       DSI_COMMAND_MODE_MDP_STREAM1_TOTAL);
+	writel(0xEE, DSI_CAL_STRENGTH_CTRL);
+	writel(0x80000000, DSI_CAL_CTRL);
+	writel(0x40, DSI_TRIG_CTRL);
+	writel(0x13c2c, DSI_COMMAND_MODE_MDP_DCS_CMD_CTRL);
+	writel(interleav << 30 | 0 << 24 | 0 << 20 | DLNx_EN << 4 | 0x105,
+	       DSI_CTRL);
+	mdelay(10);
+	writel(0x14000000, DSI_COMMAND_MODE_DMA_CTRL);
+	writel(0x10000000, DSI_MISR_CMD_CTRL);
+	writel(0x13ff3fe0, DSI_ERR_INT_MASK0);
+	writel(0x1, DSI_EOT_PACKET_CTRL);
+	// writel(0x0, MDP_OVERLAYPROC0_START);
+
+	trigger_mdp_dsi();
+
+	status = 1;
+	return status;
+}
+
 void mipi_dsi_cmd_trigger(struct msm_fb_panel_data *pdata)
 {
 	struct msm_panel_info *pinfo = NULL;
@@ -598,6 +627,8 @@ void mipi_dsi_cmd_trigger(struct msm_fb_panel_data *pdata)
 			num_of_lanes /* num_of_lanes */ );
 
 }
+#endif
+
 void mipi_dsi_shutdown(void)
 {
 	if(!target_cont_splash_screen())
@@ -651,7 +682,7 @@ int mipi_config(struct msm_fb_panel_data *panel)
 	if (pinfo->rotate && panel->rotate)
 		pinfo->rotate();
 
-#if DISPLAY_MIPI_PANEL_RENESAS_HT
+#if TARGET_MSM8960_ARIES
 	mipi_dsi_cmd_trigger(panel);
 	mdelay(34);
 #endif
