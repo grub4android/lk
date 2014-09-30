@@ -705,7 +705,9 @@ static int API_boot_create_tags(va_list ap)
 	else
 #endif
 	{
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
 		generate_atags(info->tags_addr, (const char*)final_cmdline, info->ramdisk, info->ramdisk_size);
+#endif
 	}
 
 	return 0;

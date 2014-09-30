@@ -675,8 +675,10 @@ void boot_linux(void *kernel, unsigned *tags,
 	else
 #endif
 	{
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
 		/* Generating the Atags */
 		generate_atags(tags, final_cmdline, ramdisk, ramdisk_size);
+#endif
 	}
 
 	free(final_cmdline);
