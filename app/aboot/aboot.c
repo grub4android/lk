@@ -1180,7 +1180,7 @@ int boot_linux_from_mmc(void)
 						(void *)hdr->tags_addr);
 			if (!dtb) {
 				dprintf(CRITICAL, "ERROR: Appended Device Tree Blob not found\n");
-#if DEVICE_TREE_FALLBACK
+#if !DEVICE_TREE_FALLBACK
 				return -1;
 #endif
 			}
@@ -1287,7 +1287,7 @@ int boot_linux_from_mmc(void)
 						(void *)hdr->tags_addr);
 			if (!dtb) {
 				dprintf(CRITICAL, "ERROR: Appended Device Tree Blob not found\n");
-#if DEVICE_TREE_FALLBACK
+#if !DEVICE_TREE_FALLBACK
 				return -1;
 #endif
 			}
