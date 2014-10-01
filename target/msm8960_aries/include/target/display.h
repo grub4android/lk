@@ -48,27 +48,18 @@
 /*---------------------------------------------------------------------------*/
 
 static const uint32_t panel_strength_ctrl[] = {
-  0xff, 0x00, 0x06, 0x00
 };
 
 static const char panel_bist_ctrl[] = {
-  0x00, 0x00, 0xb1, 0xff, 0x00, 0x00
 };
 
 static const uint32_t panel_regulator_settings[] = {
-  0x03, 0x0a, 0x04, 0x00, 0x20
 };
 
 static const char panel_lane_config[] = {
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x97,
-  0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x01, 0x97,
-  0x00, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x01, 0x97,
-  0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x01, 0x97,
-  0x00, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xbb
 };
 
 static const uint32_t panel_physical_ctrl[] = {
-  0x5f, 0x00, 0x00, 0x10
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,14 +68,6 @@ static const uint32_t panel_physical_ctrl[] = {
 #define DISPLAY_CMDLINE_PREFIX " mdp.panel="
 
 #define MIPI_FB_ADDR  0x89000000
-
-/* Toshiba MDT61 Mipi Panel */
-/* Unique to this panel, display width is 800, image is 600 */
-#define TSH_MDT61_DISPLAY_WIDTH      800
-#define TSH_MDT61_MIPI_FB_WIDTH      (TSH_MDT61_DISPLAY_WIDTH - 200)
-#define TSH_MDT61_MIPI_FB_HEIGHT     1024
-#define REN_MIPI_FB_WIDTH		720
-#define REN_MIPI_FB_HEIGHT		1280
 
 #define MIPI_HSYNC_PULSE_WIDTH       8
 #define MIPI_HSYNC_BACK_PORCH_DCLK   16
