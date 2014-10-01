@@ -141,7 +141,7 @@ int target_panel_clock(uint8_t enable, struct msm_panel_info *pinfo)
 	return 0;
 }
 
-int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
+static int target_panel_reset_mi2(uint8_t enable, struct panel_reset_sequence *resetseq,
 						struct msm_panel_info *pinfo)
 {
 	int ret = NO_ERROR;
@@ -173,7 +173,47 @@ int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
 	return ret;
 }
 
-int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
+static int target_panel_reset_mi2a(uint8_t enable, struct panel_reset_sequence *resetseq,
+						struct msm_panel_info *pinfo)
+{
+	if (enable) {
+		/* Pull DISP_RST_N high to get panel out of reset */
+		struct pm8921_gpio gpio43_param = {
+			.direction = PM_GPIO_DIR_OUT,
+			.output_buffer = 0,
+			.output_value = 1,
+			.pull = PM_GPIO_PULL_UP_30,
+			.vin_sel = 2,
+			.out_strength = PM_GPIO_STRENGTH_HIGH,
+			.function = PM_GPIO_FUNC_PAIRED,
+			.inv_int_pol = 0,
+			.disable_pin = 0,
+		};
+		pm8921_gpio_config(PM_GPIO(43), &gpio43_param);
+		mdelay(5);
+	}
+
+	return 0;
+}
+
+int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
+						struct msm_panel_info *pinfo)
+{
+	uint32_t target_id = board_target_id();
+
+	switch (target_id) {
+	case LINUX_MACHTYPE_8064_MTP:
+	case LINUX_MACHTYPE_8064_MITWO:
+		return target_panel_reset_mi2(enable, resetseq, pinfo);
+	case LINUX_MACHTYPE_8960_CDP:
+	case LINUX_MACHTYPE_8960_MITWOA:
+		return target_panel_reset_mi2a(enable, resetseq, pinfo);
+	default:
+		return 0;
+	}
+}
+
+int target_ldo_ctrl_mi2(uint8_t enable, struct msm_panel_info *pinfo)
 {
 	if (enable) {
 		/* Set and enabale LDO2 1.2V for  VDDA_MIPI_DSI0/1_PLL */
@@ -196,6 +236,41 @@ int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 	}
 
 	return 0;
+}
+
+int target_ldo_ctrl_mi2a(uint8_t enable, struct msm_panel_info *pinfo)
+{
+	if (enable) {
+		/* Turn on LDO8 for lcd1 mipi vdd */
+		pm8921_ldo_set_voltage(LDO_8, LDO_VOLTAGE_3_0V);
+
+		pm8921_ldo_set_voltage(LDO_29, LDO_VOLTAGE_1_8V);
+		/* Turn on LDO23 for lcd1 mipi vddio */
+		pm8921_ldo_set_voltage(LDO_23, LDO_VOLTAGE_1_8V);
+
+		/* Turn on LDO2 for vdda_mipi_dsi */
+		pm8921_ldo_set_voltage(LDO_2, LDO_VOLTAGE_1_2V);
+
+		mdelay(3);
+	}
+
+	return 0;
+}
+
+int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
+{
+	uint32_t target_id = board_target_id();
+
+	switch (target_id) {
+	case LINUX_MACHTYPE_8064_MTP:
+	case LINUX_MACHTYPE_8064_MITWO:
+		return target_ldo_ctrl_mi2(enable, pinfo);
+	case LINUX_MACHTYPE_8960_CDP:
+	case LINUX_MACHTYPE_8960_MITWOA:
+		return target_ldo_ctrl_mi2a(enable, pinfo);
+	default:
+		return 0;
+	}
 }
 
 bool target_display_panel_node(char *panel_name, char *pbuf, uint16_t buf_size)
