@@ -258,6 +258,7 @@ int mipi_dsi_on();
 int mipi_dsi_off(struct msm_panel_info *pinfo);
 int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count);
 int mipi_dsi_cmds_rx(char **rp, int len);
+int mipi_dsi_cmd_bta_sw_trigger(void);
 
 #if TARGET_MSM8960_ARIES
 void trigger_mdp_dsi(void);

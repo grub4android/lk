@@ -28,6 +28,7 @@
  *
  */
 #include <debug.h>
+#include <err.h>
 #include <msm_panel.h>
 #include <mipi_dsi.h>
 #include <dev/pm8921.h>
@@ -44,11 +45,29 @@
 
 #define PM8921_GPIO_LCD_DCDC_EN         11
 #define PM8921_GPIO_PANEL_RESET         25
-#define PM8921_GPIO_PANEL_ID            12
 
 #define PM8921_GPIO_BL_LED_EN_MITWOA           22
 #define PM8921_GPIO_BL_LED_EN_MITWO           13
 #define LM3530_I2C_ADDR                 (0x38)
+
+static struct mipi_dsi_phy_ctrl dsi_cmd_mode_phy_db = {
+	/* regulator */
+	.regulator = {0x03, 0x0a, 0x04, 0x00, 0x20},
+	/* timing */
+	.timing = {0xb3, 0x8c, 0x1d, 0x00, 0x20, 0x94, 0x20, 0x8e,
+		0x20, 0x03, 0x04},
+	/* phy ctrl */
+	.ctrl = {0x5f, 0x00, 0x00, 0x10},
+	/* strength */
+	.strength = {0xff, 0x00, 0x06, 0x00},
+	/* pll control */
+	.pll = {0x0,
+	0xc1, 0x01, 0x1a,
+	0x00, 0x50, 0x48, 0x63,
+	0x71, 0x0f, 0x03,
+	0x00, 0x14, 0x03, 0x00, 0x02,
+	0x00, 0x20, 0x00, 0x01, 0x00},
+};
 
 static void panel_backlight_on_mitwoa(unsigned int on)
 {
@@ -107,25 +126,6 @@ int target_backlight_ctrl(struct backlight *bl, uint8_t enable)
 	return 0;
 }
 
-static struct mipi_dsi_phy_ctrl dsi_cmd_mode_phy_db = {
-	/* regulator */
-	.regulator = {0x03, 0x0a, 0x04, 0x00, 0x20},
-	/* timing */
-	.timing = {0xb3, 0x8c, 0x1d, 0x00, 0x20, 0x94, 0x20, 0x8e,
-		0x20, 0x03, 0x04},
-	/* phy ctrl */
-	.ctrl = {0x5f, 0x00, 0x00, 0x10},
-	/* strength */
-	.strength = {0xff, 0x00, 0x06, 0x00},
-	/* pll control */
-	.pll = {0x0,
-	0xc1, 0x01, 0x1a,
-	0x00, 0x50, 0x48, 0x63,
-	0x71, 0x0f, 0x03,
-	0x00, 0x14, 0x03, 0x00, 0x02,
-	0x00, 0x20, 0x00, 0x01, 0x00},
-};
-
 int target_panel_clock(uint8_t enable, struct msm_panel_info *pinfo)
 {
 	if (enable) {
@@ -135,6 +135,7 @@ int target_panel_clock(uint8_t enable, struct msm_panel_info *pinfo)
 		mmss_clock_disable();
 	}
 
+	// HACK: we don't have autopll
 	pinfo->mipi.dsi_phy_db = &dsi_cmd_mode_phy_db;
 
 	return 0;
@@ -143,28 +144,14 @@ int target_panel_clock(uint8_t enable, struct msm_panel_info *pinfo)
 int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
 						struct msm_panel_info *pinfo)
 {
-	return 0;
-}
-
-int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
-{
-	unsigned int lcd_id_det = 2;
+	int ret = NO_ERROR;
 	if (enable) {
-		/* Set and enabale LDO2 1.2V for  VDDA_MIPI_DSI0/1_PLL */
-		pm8921_ldo_set_voltage(LDO_2, LDO_VOLTAGE_1_2V);
-
 		mi_display_gpio_init();
 
 		/* Initial condition */
 		pmic8921_gpio_set(PM8921_GPIO_PANEL_RESET, 0);
 		pmic8921_gpio_set(PM8921_GPIO_LCD_DCDC_EN, 0);
-		pm8921_ldo_clear_voltage(LDO_23);
 		mdelay(8);
-
-		/* Enable LVS7 */
-		pm8921_low_voltage_switch_enable(lvs_7);
-		pm8921_ldo_set_voltage(LDO_23, LDO_VOLTAGE_1_8V);
-		mdelay(10);
 
 		/* Enable VSP VSN */
 		pmic8921_gpio_set(PM8921_GPIO_LCD_DCDC_EN, 1);
@@ -174,16 +161,35 @@ int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 		pmic8921_gpio_set(PM8921_GPIO_PANEL_RESET, 1);
 		mdelay(3);
 
-		lcd_id_det = pmic8921_gpio_get(PM8921_GPIO_PANEL_ID);
+	} else if(!target_cont_splash_screen()) {
+		/* Reset down */
+		pmic8921_gpio_set(PM8921_GPIO_PANEL_RESET, 0);
+
+		/* Disable VSP VSN */
+		pmic8921_gpio_set(PM8921_GPIO_LCD_DCDC_EN, 0);
+		mdelay(8);
+	}
+
+	return ret;
+}
+
+int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
+{
+	if (enable) {
+		/* Set and enabale LDO2 1.2V for  VDDA_MIPI_DSI0/1_PLL */
+		pm8921_ldo_set_voltage(LDO_2, LDO_VOLTAGE_1_2V);
+		mdelay(8);
+
+		/* Initial condition */
+		pm8921_ldo_clear_voltage(LDO_23);
+		mdelay(8);
+
+		/* Enable LVS7 */
+		pm8921_low_voltage_switch_enable(lvs_7);
+		pm8921_ldo_set_voltage(LDO_23, LDO_VOLTAGE_1_8V);
+		mdelay(10);
 	} else {
 		if (!target_cont_splash_screen()) {
-			/* Reset down */
-			pmic8921_gpio_set(PM8921_GPIO_PANEL_RESET, 0);
-
-			/* Disable VSP VSN */
-			pmic8921_gpio_set(PM8921_GPIO_LCD_DCDC_EN, 0);
-			mdelay(8);
-
 			/* Disable 1V8 */
 			pm8921_ldo_clear_voltage(LDO_23);
 		}

@@ -336,7 +336,7 @@ int mipi_dsi_cmds_rx(char **rp, int len)
 	return len;
 }
 
-static int mipi_dsi_cmd_bta_sw_trigger(void)
+int mipi_dsi_cmd_bta_sw_trigger(void)
 {
 	uint32_t data;
 	int cnt = 0;

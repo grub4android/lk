@@ -83,6 +83,14 @@ static char hitachi_720p_cmd_on_cmd2[] = {
 	0x3F, 0x00, 0x00, 0x10, 0x10, 0x3F, 0x3F, 0x3F,
 	0x3F, 0xFF, 0xFF, 0xFF };
 
+static char sharp_720p_cmd_on_cmd2[] = {
+	0x21, 0x00, 0x29, 0xC0,
+	0xCA, 0x01, 0x80, 0x8A, 0x8C, 0xC8, 0x8C, 0x80,
+	0x8C, 0x18, 0x3F, 0x14, 0xFF, 0x0A, 0x4A, 0x37,
+	0xA0, 0x55, 0xF8, 0x0C, 0x0C, 0x20, 0x10, 0x3F,
+	0x3F, 0x00, 0x00, 0x10, 0x10, 0x3F, 0x3F, 0x3F,
+	0x3F, 0xFF, 0xFF, 0xFF
+};
 
 static char hitachi_720p_cmd_on_cmd3[] = {
 0xB0, 0x03, 0x23, 0x80, };
@@ -143,6 +151,21 @@ static struct mipi_dsi_cmd hitachi_720p_cmd_on_command[] = {
 };
 #define HITACHI_720P_CMD_ON_COMMAND 12
 
+static struct mipi_dsi_cmd sharp_720p_cmd_on_command[] = {
+{ 0x4 , hitachi_720p_cmd_on_cmd0, 120},
+{ 0x4 , hitachi_720p_cmd_on_cmd1, 0},
+{ 0x28 , sharp_720p_cmd_on_cmd2, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd3, 0},
+{ 0x8 , hitachi_720p_cmd_on_cmd4, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd5, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd6, 0},
+{ 0xc , hitachi_720p_cmd_on_cmd7, 0},
+{ 0xc , hitachi_720p_cmd_on_cmd8, 20},
+{ 0x4 , hitachi_720p_cmd_on_cmd9, 20},
+{ 0x4 , hitachi_720p_cmd_on_cmd10, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd11, 20}
+};
+#define SHARP_720P_CMD_ON_COMMAND 12
 
 static char hitachi_720p_cmdoff_cmd0[] = {
 0x28, 0x00, 0x05, 0x80 };
@@ -155,8 +178,8 @@ static char hitachi_720p_cmdoff_cmd1[] = {
 
 
 static struct mipi_dsi_cmd hitachi_720p_cmd_off_command[] = {
-{ 0x4 , hitachi_720p_cmdoff_cmd0},
-{ 0x4 , hitachi_720p_cmdoff_cmd1}
+{ 0x4 , hitachi_720p_cmdoff_cmd0, 0},
+{ 0x4 , hitachi_720p_cmdoff_cmd1, 0}
 };
 #define HITACHI_720P_CMD_OFF_COMMAND 2
 
