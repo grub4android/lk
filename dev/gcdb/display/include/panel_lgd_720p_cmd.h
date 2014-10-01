@@ -46,7 +46,7 @@
 /*---------------------------------------------------------------------------*/
 
 static struct panel_config lgd_720p_cmd_panel_data = {
-  "qcom,mdss_dsi_lgd_720p_cmd", "dsi:0:", "qcom,mdss-dsi-panel",
+  "qcom,mipi_dsi_lgd_720p_cmd", "dsi:0:", "qcom,mipi-dsi-panel",
   10, 1, "DISPLAY_1", 0, 384000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
 };
 
