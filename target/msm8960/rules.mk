@@ -1,6 +1,7 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
 INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
+INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/include
 
 PLATFORM := msm8960
 
@@ -19,14 +20,13 @@ KEYS_USE_GPIO_KEYPAD := 1
 DEFINES += DISPLAY_SPLASH_SCREEN=1
 DEFINES += DISPLAY_TYPE_MIPI=1
 DEFINES += DISPLAY_TYPE_HDMI=0
-DEFINES += DISPLAY_USE_BGR=1
 
 MODULES += \
 	dev/keys \
 	dev/pmic/pm8921 \
 	dev/ssbi \
 	lib/ptable \
-	dev/panel/msm \
+	dev/gcdb/display \
 	lib/libfdt
 
 DEFINES += \
@@ -51,4 +51,5 @@ OBJS += \
 	$(LOCAL_DIR)/init.o \
 	$(LOCAL_DIR)/atags.o \
 	$(LOCAL_DIR)/meminfo.o \
-	$(LOCAL_DIR)/keypad.o
+	$(LOCAL_DIR)/keypad.o \
+	$(LOCAL_DIR)/oem_panel.o
