@@ -167,7 +167,10 @@ int led_kp_set( int current,
 	if (rc)
 	{
 		dprintf(CRITICAL, "FAIL pm8921_config_drv_keypad(): rc=%d.\n", rc);
+		return -1;
 	}
+
+	return 0;
 }
 
 /* Configure gpio 26 through lpg2 */

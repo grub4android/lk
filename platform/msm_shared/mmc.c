@@ -2740,6 +2740,8 @@ mmc_wp(unsigned int sector, unsigned int size, unsigned char set_clear_wp)
 	}
 	else
 		return MMC_BOOT_E_FAILURE;
+
+	return rc;
 }
 
 void mmc_wp_test(void)

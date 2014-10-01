@@ -135,6 +135,8 @@ static uint32_t calculate_div3(uint8_t bpp, uint8_t num_of_lanes)
 	}
 
 	pll_data.posdiv3--;	/* Register needs one value less */
+
+	return NO_ERROR;
 }
 
 static uint32_t calculate_dec_frac_start()
@@ -165,6 +167,8 @@ static uint32_t calculate_dec_frac_start()
 
 	dprintf(SPEW, "%s: dec_start=%u dec_frac=%u lock_comp=%u\n", __func__,
 		pll_data.dec_start, pll_data.frac_start, pll_data.lock_comp);
+
+	return NO_ERROR;
 }
 
 static uint32_t calculate_vco_28nm(uint8_t bpp, uint8_t num_of_lanes)

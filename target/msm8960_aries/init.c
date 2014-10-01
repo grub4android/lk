@@ -572,7 +572,7 @@ uint32_t target_volume_down()
 
 int target_power_key(void)
 {
-	int ret = 0;
+	uint8_t ret = 0;
 
 	pm8921_pwrkey_status(&ret);
 	return ret;

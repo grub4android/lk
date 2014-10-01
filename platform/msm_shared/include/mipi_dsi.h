@@ -219,7 +219,7 @@ struct mipi_dsi_panel_config {
 
 static char read_id_a1h_cmd[4] = { 0xA1, 0x00, 0x06, 0xA0 };	/* DTYPE_DCS_READ */
 static struct mipi_dsi_cmd read_ddb_start_cmd =
-	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd};
+	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd, 0};
 
 enum {		/* mipi dsi panel */
 	DSI_VIDEO_MODE,
