@@ -2696,18 +2696,8 @@ void cmd_oem_screenshot(const char *arg, void *unused, unsigned sz)
 	struct fbcon_config* config = fbcon_display();
 	char *data = config->base;
 	unsigned size = config->width*config->height*config->bpp/8;
-	unsigned chunk_size = MAX_RSP_SIZE-4;
-	unsigned pos = 0;
 
-	for(pos=0; pos<size; pos+=chunk_size) {
-		int local_sz = chunk_size;
-
-		// for the end of the framebuffer
-		if(pos+local_sz>size)
-			local_sz = size-pos;
-
-		fastboot_write(&data[pos], local_sz);
-	}
+	fastboot_send_data(data, size);
 
 	fastboot_okay("");
 }

@@ -379,6 +379,21 @@ void fastboot_ack(const char *code, const char *reason)
 
 }
 
+void fastboot_code(const char *code, const char *reason)
+{
+	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (reason == 0)
+		reason = "";
+
+	snprintf(response, MAX_RSP_SIZE, "%s%s", code, reason);
+
+	usb_if.usb_write(response, strlen(response));
+}
+
 void fastboot_info(const char *reason)
 {
 	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
@@ -408,6 +423,27 @@ void fastboot_write(void *data, unsigned len)
 	memcpy(response+4, data, len);
 
 	usb_if.usb_write(response, len+4);
+}
+
+void fastboot_send_data(void *data, unsigned len)
+{
+	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (!data)
+		return;
+
+	// exit command mode
+	fastboot_code("OKAY", "");
+
+	// send header
+	snprintf(response, MAX_RSP_SIZE, "DATA%016x", len);
+	usb_if.usb_write(response, 20);
+
+	// send data
+	usb_if.usb_write(data, len);
 }
 
 void fastboot_fail(const char *reason)
