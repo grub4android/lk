@@ -79,8 +79,10 @@ int ext4_fs_init(struct ext4_fs *fs, struct ext4_blockdev *bdev)
     if(r != EOK)
         return r;
 
+#if !CONFIG_EXT4_READONLY
     if(read_only)
         return ENOTSUP;
+#endif
 
     /* Compute limits for indirect block levels */
     uint32_t blocks_id = bsize / sizeof(uint32_t);
@@ -268,7 +270,9 @@ int ext4_fs_check_features(struct ext4_fs *fs, bool *read_only)
         ext4_dprintf(EXT4_DEBUG_FS,
                 "\nERROR sblock features_incompatible. Unsupported:\n");
         ext4_fs_debug_features_incomp(v);
+#if !CONFIG_EXT4_READONLY
         return ENOTSUP;
+#endif
     }
 
     v = (ext4_get32(&fs->sb, features_incompatible) &
