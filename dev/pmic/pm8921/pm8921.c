@@ -767,4 +767,6 @@ int pm8921_configure_wled(void)
 	pm8921_masked_write(WLED_MOD_CTRL_REG, 0xFF, 0x7f);
 	pm8921_masked_write(WLED_SYNC_REG, WLED_SYNC_MASK,	WLED_SYNC_VAL);
 	pm8921_masked_write(WLED_SYNC_REG, WLED_SYNC_MASK,	WLED_SYNC_RESET_VAL);
+
+	return NO_ERROR;
 }
