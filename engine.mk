@@ -179,6 +179,11 @@ CPPFILT := $(TOOLCHAIN_PREFIX)c++filt
 SIZE := $(TOOLCHAIN_PREFIX)size
 NM := $(TOOLCHAIN_PREFIX)nm
 
+GCC_VER_GTE49 := $(shell echo `$(CC) -dumpversion | cut -f1-2 -d.` \>= 4.9 | sed -e 's/\./*100+/g' | bc )
+ifeq ($(GCC_VER_GTE49),1)
+   GLOBAL_CFLAGS += -fdiagnostics-color=always
+endif
+
 # the logic to compile and link stuff is in here
 include make/build.mk
 
