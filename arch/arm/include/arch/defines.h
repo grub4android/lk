@@ -47,5 +47,16 @@
 #endif
 
 #define IS_CACHE_LINE_ALIGNED(addr)  !((uint32_t) (addr) & (CACHE_LINE - 1))
+
+#if ARM_ISA_ARMV7
+#define dsb() __asm__ volatile ("dsb" : : : "memory");
+#define dmb() __asm__ volatile ("dmb" : : : "memory");
+#define isb() __asm__ volatile ("isb" : : : "memory");
+#elif ARM_ISA_ARMV6
+#define dsb() __asm__ volatile ("mcr p15, 0, %0, c7, c10, 4" : : "r" (0): "memory");
+#define dmb() __asm__ volatile ("mcr p15, 0, %0, c7, c10, 5" : : "r" (0): "memory");
+#define isb() __asm__ volatile ("mcr p15, 0, %0, c7, c5,  4" : : "r" (0): "memory");
+#endif
+
 #endif
 
