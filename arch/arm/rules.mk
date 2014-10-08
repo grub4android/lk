@@ -59,14 +59,13 @@ GLOBAL_DEFINES += \
 	ARM_ISA_ARMv7=1 \
 	ARM_ISA_ARMv7A=1 \
 	ARM_WITH_VFP=1 \
-	ARM_WITH_NEON=1 \
 	ARM_WITH_THUMB=1 \
 	ARM_WITH_THUMB2=1 \
 	ARM_WITH_CACHE=1 \
 	ARM_WITH_L2=1
 GLOBAL_COMPILEFLAGS += -mcpu=$(ARM_CPU)
 HANDLED_CORE := true
-GLOBAL_COMPILEFLAGS += -mfpu=neon -mfloat-abi=softfp
+GLOBAL_COMPILEFLAGS += -mfpu=vfpv3 -mfloat-abi=softfp
 endif
 ifeq ($(ARM_CPU),cortex-a9)
 GLOBAL_DEFINES += \
