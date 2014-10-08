@@ -66,7 +66,7 @@ struct mmu_initial_mapping mmu_initial_mappings[] = {
     { .phys = MEMBASE,
       .virt = KERNEL_BASE,
       .size = MEMSIZE,
-      .flags = 0,
+      .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
       .name = "memory" },
 
     /* Kernel memory */
@@ -98,10 +98,10 @@ struct mmu_initial_mapping mmu_initial_mappings[] = {
       .name = "imem" },
 
     /* identity map to let the boot code run */
-    { .phys = MEMBASE,
+   /* { .phys = MEMBASE,
       .virt = MEMBASE,
       .size = MEMSIZE,
-      .flags = MMU_INITIAL_MAPPING_TEMPORARY },
+      .flags = MMU_INITIAL_MAPPING_TEMPORARY },*/
 
     /* null entry to terminate the list */
     { 0 }
