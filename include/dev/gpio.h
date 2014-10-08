@@ -48,8 +48,10 @@
 /* top 16 bits of the gpio flags are platform specific */
 #define GPIO_PLATFORM_MASK 0xffff0000
 
+#if 0
 int gpio_config(unsigned nr, unsigned flags);
 void gpio_set(unsigned nr, unsigned on);
 int gpio_get(unsigned nr);
+#endif
 
 #endif
