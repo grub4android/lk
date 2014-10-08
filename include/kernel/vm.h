@@ -152,6 +152,8 @@ static inline void *pmm_alloc_kpage(void) { return pmm_alloc_kpages(1, NULL); }
 
 /* physical to virtual */
 void *paddr_to_kvaddr(paddr_t pa);
+/* virtual to physical */
+void *kvaddr_to_paddr(vaddr_t va);
 
 /* virtual allocator */
 typedef struct vmm_aspace {
