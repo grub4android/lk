@@ -18,7 +18,6 @@ GLOBAL_INCLUDES += \
 
 MODULE_DEPS += \
 	dev/fbcon \
-	dev/interrupt/arm_gic \
 	platform/msm_shared
 
 MODULE_SRCS += \

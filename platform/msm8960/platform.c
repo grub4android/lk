@@ -34,7 +34,7 @@
 #include <platform/msm8960.h>
 #include <platform.h>
 #include <platform/msm_shared.h>
-#include <dev/interrupt/arm_gic.h>
+#include <qgic.h>
 #include <uart_dm.h>
 #include <dev/fbcon.h>
 #include <kernel/vm.h>
@@ -118,7 +118,7 @@ static pmm_arena_t sram_arena = {
 void platform_early_init(void)
 {
 	msm_clocks_init();
-    arm_gic_init();
+	qgic_init();
 	platform_init_timer();
 	board_init();
 

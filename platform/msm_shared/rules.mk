@@ -69,8 +69,10 @@ MODULE_SRCS += \
 		$(LOCAL_DIR)/mipi_dsi.c \
 		$(LOCAL_DIR)/i2c_qup.c \
 		$(LOCAL_DIR)/uart_dm.c \
+		$(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/mdp4.c \
 		$(LOCAL_DIR)/scm.c \
+		$(LOCAL_DIR)/interrupts.c \
 		$(LOCAL_DIR)/clock-local.c \
 		$(LOCAL_DIR)/clock.c \
 		$(LOCAL_DIR)/clock_pll.c \
