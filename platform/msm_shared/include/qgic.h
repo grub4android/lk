@@ -62,5 +62,10 @@ struct ihandler {
 };
 
 void qgic_init(void);
+enum handler_return gic_platform_irq(struct arm_iframe *frame);
+status_t gic_unmask_interrupt(unsigned int vector);
+void gic_register_int_handler(unsigned int vector, int_handler func, void *arg);
+status_t gic_mask_interrupt(unsigned int vector);
+void gic_platform_fiq(struct arm_iframe *frame);
 
 #endif
