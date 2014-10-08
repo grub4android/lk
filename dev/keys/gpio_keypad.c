@@ -45,9 +45,11 @@
 #include <platform/iomap.h>
 #include <platform/timer.h>
 #include <platform.h>
+#include <platform/msm_shared.h>
 
 #define LINUX_MACHTYPE_8660_QT      3298
 
+#if 0
 struct gpio_kp {
 	struct gpio_keypad_info *keypad_info;
 	struct timer timer;
@@ -56,6 +58,7 @@ struct gpio_kp {
 	unsigned int some_keys_pressed:2;
 	unsigned long keys_pressed[0];
 };
+#endif
 
 struct gpio_qwerty_kp {
 	struct qwerty_keypad_info *keypad_info;
@@ -67,6 +70,7 @@ struct gpio_qwerty_kp {
 
 static struct gpio_qwerty_kp *qwerty_keypad;
 /* TODO: Support multiple keypads? */
+#if 0
 static struct gpio_kp *keypad;
 
 static void check_output(struct gpio_kp *kp, int out, int polarity)
@@ -181,7 +185,7 @@ void gpio_keypad_init(struct gpio_keypad_info *kpinfo)
 	/* wait for the keypad to complete one full scan */
 	event_wait(&keypad->full_scan);
 }
-
+#endif
 int pm8058_gpio_config(int gpio, struct pm8058_gpio *param)
 {
 	int	rc;
@@ -423,7 +427,7 @@ void ssbi_keypad_init(struct qwerty_keypad_info  *qwerty_kp)
 
     if(mach_id == LINUX_MACHTYPE_8660_QT)
     {
-        mdelay((qwerty_keypad->keypad_info)->settle_time);
+        spin((qwerty_keypad->keypad_info)->settle_time*1000);
 #ifdef QT_8660_KEYPAD_HW_BUG
         timer_set_oneshot(&qwerty_keypad->timer, 0, scan_qt_keypad, NULL);
 #endif
