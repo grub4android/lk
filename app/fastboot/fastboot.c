@@ -41,7 +41,7 @@
 #include <kernel/event.h>
 #include <kernel/vm.h>
 #include <dev/udc.h>
-#include "fastboot.h"
+#include <app/fastboot.h>
 
 #ifdef USB30_SUPPORT
 #include <usb30_udc.h>
@@ -177,6 +177,7 @@ static unsigned download_size;
 #define STATE_ERROR	3
 
 static unsigned fastboot_state = STATE_OFFLINE;
+static unsigned fastboot_initialized = 0;
 
 static void req_complete(struct udc_request *req, unsigned actual, int status)
 {
@@ -367,7 +368,7 @@ oops:
 	return -1;
 }
 
-void fastboot_ack(const char *code, const char *reason)
+static void fastboot_ack(const char *code, const char *reason)
 {
 	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
 
@@ -494,13 +495,17 @@ again:
 	free(buffer);
 }
 
-static int fastboot_handler(void *arg)
+static void fastboot_entry(const struct app_descriptor *app, void *args)
 {
+	if(!fastboot_initialized)
+		return;
+
+	usb_if.udc_start();
+
 	for (;;) {
 		event_wait(&usb_online);
 		fastboot_command_loop();
 	}
-	return 0;
 }
 
 static void fastboot_notify(struct udc_gadget *gadget, unsigned event)
@@ -510,14 +515,13 @@ static void fastboot_notify(struct udc_gadget *gadget, unsigned event)
 	}
 }
 
-int fastboot_init(void *base, unsigned size)
+static void fastboot_init(const struct app_descriptor *app)
 {
 	char sn_buf[13];
-	thread_t *thr;
 	dprintf(INFO, "fastboot_init()\n");
 
-	download_base = base;
-	download_max = size;
+	download_base = target_get_scratch_address();
+	download_max = target_get_max_flash_size();
 
 	/* target specific initialization before going into fastboot. */
 	target_fastboot_init();
@@ -593,16 +597,8 @@ int fastboot_init(void *base, unsigned size)
 	fastboot_register("download:", cmd_download);
 	fastboot_publish("version", "0.5");
 
-	thr = thread_create("fastboot", fastboot_handler, 0, DEFAULT_PRIORITY, 4096);
-	if (!thr)
-	{
-		goto fail_alloc_in;
-	}
-	thread_resume(thr);
-
-	usb_if.udc_start();
-
-	return 0;
+	fastboot_initialized = 1;
+	return;
 
 fail_udc_register:
 	usb_if.udc_request_free(req);
@@ -611,7 +607,8 @@ fail_alloc_req:
 fail_alloc_out:
 	usb_if.udc_endpoint_free(in);
 fail_alloc_in:
-	return -1;
+
+	dprintf(CRITICAL, "Error initializing fastboot!\n");
 }
 
 void fastboot_stop(void)
@@ -619,11 +616,8 @@ void fastboot_stop(void)
 	usb_if.udc_stop();
 }
 
-void aboot_init(const struct app_descriptor *app)
-{
-	fastboot_init((target_get_scratch_address()), target_get_max_flash_size());
-}
-
 APP_START(fastboot)
-	.init = aboot_init,
+	.init = fastboot_init,
+	.entry = fastboot_entry,
+	.stack_size = 4096,
 APP_END
