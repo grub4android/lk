@@ -43,10 +43,6 @@
 #include <msm_panel.h>
 
 extern void mdp_disable(void);
-extern int mipi_dsi_cmd_config(struct fbcon_config mipi_fb_cfg,
-			       unsigned short num_of_lanes);
-extern void mdp_shutdown(void);
-extern void mdp_start_dma(void);
 
 #if (DISPLAY_TYPE_MDSS == 0)
 #define MIPI_DSI0_BASE MIPI_DSI_BASE
@@ -503,30 +499,6 @@ int mipi_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo)
 
 	return status;
 }
-
-#if TARGET_MSM8960
-void mipi_dsi_shutdown(void)
-{
-	if(!target_cont_splash_screen())
-	{
-		mdp_shutdown();
-		writel(0x01010101, DSI_INT_CTRL);
-		writel(0x13FF3BFF, DSI_ERR_INT_MASK0);
-
-		writel(0, DSI_CLK_CTRL);
-		writel(0, DSI_CTRL);
-		writel(0, DSIPHY_PLL_CTRL(0));
-	}
-	else
-	{
-        /* To keep the splash screen displayed till kernel driver takes
-        control, do not turn off the video mode engine and clocks.
-        Only disabling the MIPI DSI IRQs */
-        writel(0x01010101, DSI_INT_CTRL);
-        writel(0x13FF3BFF, DSI_ERR_INT_MASK0);
-	}
-}
-#endif
 
 int mipi_config(struct msm_fb_panel_data *panel)
 {
