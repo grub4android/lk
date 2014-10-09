@@ -11,7 +11,7 @@
  *    notice, this list of conditions and the following disclaimer.
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
+ *    the documentation and/or other materials provided with the 
  *    distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -21,7 +21,7 @@
  * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
  * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
@@ -31,24 +31,45 @@
 #ifndef __DEV_FBCON_H
 #define __DEV_FBCON_H
 
+#include <stdint.h>
+#define LOGO_IMG_OFFSET (12*1024*1024)
+#define LOGO_IMG_MAGIC "SPLASH!!"
+#define LOGO_IMG_MAGIC_SIZE sizeof(LOGO_IMG_MAGIC) - 1
+
+
+struct logo_img_header {
+    unsigned char magic[LOGO_IMG_MAGIC_SIZE]; // "SPLASH!!"
+    uint32_t width; // logo's width, little endian
+    uint32_t height; // logo's height, little endian
+    uint32_t offset;
+    unsigned char reserved[512-20];
+};
+
+struct fbimage {
+	struct logo_img_header  header;
+	void *image;
+};
+
 #define FB_FORMAT_RGB565 0
 #define FB_FORMAT_RGB666 1
 #define FB_FORMAT_RGB666_LOOSE 2
 #define FB_FORMAT_RGB888 3
 
 struct fbcon_config {
-	void        *base;
-	unsigned    width;
-	unsigned    height;
-	unsigned    stride;
-	unsigned    bpp;
-	unsigned    format;
+	void		*base;
+	unsigned	width;
+	unsigned	height;
+	unsigned	stride;
+	unsigned	bpp;
+	unsigned	format;
 
-	void        (*update_start)(void);
-	int     (*update_done)(void);
+	void		(*update_start)(void);
+	int		(*update_done)(void);
 };
 
 void fbcon_setup(struct fbcon_config *cfg);
 void fbcon_putc(char c);
+void fbcon_clear(void);
+struct fbcon_config* fbcon_display(void);
 
 #endif /* __DEV_FBCON_H */

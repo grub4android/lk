@@ -25,6 +25,7 @@
 
 #include <sys/types.h>
 #include <compiler.h>
+#include <dev/fbcon.h>
 
 typedef enum {
     HALT_ACTION_HALT = 0,       // Spin forever.
@@ -81,5 +82,7 @@ void platform_halt(platform_halt_action suggested_action,
 
 /* called during chain loading to make sure drivers and platform is put into a stopped state */
 void platform_quiesce(void);
+
+int platform_get_splash_image(struct fbimage* fbimg, bool* flag);
 
 #endif

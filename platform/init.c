@@ -23,6 +23,7 @@
 #include <err.h>
 #include <debug.h>
 #include <platform.h>
+#include <dev/fbcon.h>
 
 /*
  * default implementations of these routines, if the platform code
@@ -45,3 +46,6 @@ __WEAK void platform_quiesce(void)
 {
 }
 
+__WEAK int platform_get_splash_image(struct fbimage* fbimg, bool* flag) {
+	return ERR_NOT_SUPPORTED;
+}
