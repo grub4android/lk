@@ -2,6 +2,8 @@
  * Copyright (c) 2008, Google Inc.
  * All rights reserved.
  *
+ * Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -30,6 +32,9 @@
 #define __DEV_FBCON_H
 
 #define FB_FORMAT_RGB565 0
+#define FB_FORMAT_RGB666 1
+#define FB_FORMAT_RGB666_LOOSE 2
+#define FB_FORMAT_RGB888 3
 
 struct fbcon_config {
 	void        *base;

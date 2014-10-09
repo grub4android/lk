@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <bits.h>
 #include <debug.h>
+#include <assert.h>
 #include <sdhci.h>
 #include <sdhci_msm.h>
 
@@ -117,7 +118,7 @@ void sdhci_reset(struct sdhci_host *host, uint8_t mask)
 		}
 
 		timeout--;
-		mdelay(1);
+		spin(1000);
 
 	} while(1);
 }
@@ -459,7 +460,7 @@ static uint8_t sdhci_cmd_complete(struct sdhci_host *host, struct mmc_command *c
 		}
 
 		retry++;
-		udelay(1);
+		spin(1);
 		if (retry == SDHCI_MAX_CMD_RETRY) {
 			dprintf(CRITICAL, "Error: Command never completed\n");
 			ret = 1;
@@ -522,7 +523,7 @@ static uint8_t sdhci_cmd_complete(struct sdhci_host *host, struct mmc_command *c
 			}
 
 			retry++;
-			udelay(1);
+			spin(1);
 			if (retry == max_trans_retry) {
 				dprintf(CRITICAL, "Error: Transfer never completed\n");
 				ret = 1;
@@ -763,7 +764,7 @@ uint32_t sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
 
 		if (!present_state)
 			break;
-		udelay(1000);
+		spin(1000);
 		retry++;
 		if (retry == 10) {
 			dprintf(CRITICAL, "Error: CMD or DAT lines were never freed\n");

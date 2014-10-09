@@ -65,6 +65,7 @@ bool target_display_panel_node(char *panel_name, char *pbuf,
 	uint16_t buf_size);
 void target_display_init(const char *panel_name);
 void target_display_shutdown(void);
+uint8_t target_panel_auto_detect_enabled();
 
 uint32_t target_get_boot_device();
 
@@ -75,6 +76,11 @@ target_usb_iface_t * target_usb30_init();
 bool target_is_cdp_qvga();
 uint32_t target_hw_interposer();
 uint32_t target_override_pll();
+uint32_t target_get_hlos_subtype(void);
+uint8_t target_is_edp();
 
 crypto_engine_type board_ce_type(void);
+void target_crypto_init_params();
+void crypto_eng_cleanup(void);
+bool target_use_signed_kernel(void);
 #endif

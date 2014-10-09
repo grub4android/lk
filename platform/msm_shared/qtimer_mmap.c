@@ -38,7 +38,7 @@
 
 static platform_timer_callback timer_callback;
 static void *timer_arg;
-static time_t timer_interval;
+static lk_time_t timer_interval;
 /* time in ms from start of LK. */
 static volatile uint32_t current_time;
 static uint32_t tick_count;
@@ -62,7 +62,7 @@ static enum handler_return qtimer_irq(void *arg)
 /* Programs the Physical Secure Down counter timer.
  * interval : Counter ticks till expiry interrupt is fired.
  */
-void qtimer_set_physical_timer(time_t msecs_interval,
+void qtimer_set_physical_timer(lk_time_t msecs_interval,
 							   platform_timer_callback tmr_callback,
 							   void *tmr_arg)
 {

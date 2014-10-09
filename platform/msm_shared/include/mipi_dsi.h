@@ -258,14 +258,26 @@ int mipi_dsi_off(struct msm_panel_info *pinfo);
 int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count);
 int mipi_dsi_cmds_rx(char **rp, int len);
 int mipi_cmd_trigger();
+int mipi_dsi_phy_init(struct mipi_dsi_panel_config *);
 
 int mdss_hdmi_on(void);
 int mdp_get_revision();
 int mdp_dsi_cmd_off();
 int mdp_dma_on(struct msm_panel_info *pinfo);
+int mdp_dma_off(void);
 int mdss_hdmi_init(void);
 int mdp_dsi_cmd_config(struct msm_panel_info *pinfo,
                 struct fbcon_config *fb);
 int mdss_hdmi_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
+int mdss_dsi_cmd_mode_config(uint16_t disp_width,
+	uint16_t disp_height,
+	uint16_t img_width,
+	uint16_t img_height,
+	uint16_t dst_format,
+	uint8_t ystride,
+	uint8_t lane_en,
+	uint8_t interleav,
+	uint32_t ctl_base);
+int mdss_dsi_cmds_rx(uint32_t **rp, int rp_len, int rdbk_len);
 
 #endif

@@ -26,17 +26,20 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <assert.h>
 #include <libfdt.h>
 #include <dev_tree.h>
-#include <lib/ptable.h>
+#include <lib/ptable_msm.h>
 #include <malloc.h>
 #include <qpic_nand.h>
 #include <stdlib.h>
 #include <string.h>
+#include <target/msm_shared.h>
 #include <platform.h>
 #include <board.h>
 #include <list.h>
 #include <kernel/thread.h>
+#include <kernel/vm.h>
 
 struct dt_entry_v1
 {
@@ -53,10 +56,6 @@ static struct dt_entry *platform_dt_match_best(struct dt_entry_node *dt_list);
 static int update_dtb_entry_node(struct dt_entry_node *dt_list, uint32_t dtb_info);
 extern int target_is_emmc_boot(void);
 extern uint32_t target_dev_tree_mem(void *fdt, uint32_t memory_node_offset);
-/* TODO: This function needs to be moved to target layer to check violations
- * against all the other regions as well.
- */
-extern int check_aboot_addr_range_overlap(uint32_t start, uint32_t size);
 
 /* Returns soc version if platform id and hardware id matches
    otherwise return 0xFFFFFFFF */
@@ -455,7 +454,7 @@ void *dev_tree_appended(void *kernel, uint32_t kernel_size, void *tags)
 			break;
 		dtb_size = fdt_totalsize(&dtb_hdr);
 
-		if (check_aboot_addr_range_overlap(tags, dtb_size)) {
+		if (check_lk_addr_range_overlap(tags, dtb_size)) {
 			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 			return NULL;
 		}

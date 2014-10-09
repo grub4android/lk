@@ -29,6 +29,7 @@
 #include <bam.h>
 #include <reg.h>
 #include <debug.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <arch/ops.h>
 #include <platform.h>
@@ -36,6 +37,7 @@
 #include <platform/iomap.h>
 #include <platform/irqs.h>
 #include <pow2.h>
+#include <kernel/vm.h>
 
 #define HLOS_EE_INDEX          0
 
@@ -199,7 +201,7 @@ int bam_pipe_fifo_init(struct bam_instance *bam,
 	}
 
 	/* Check if fifo start is 8-byte alligned */
-	ASSERT(!((uint32_t)PA((addr_t)bam->pipe[pipe_num].fifo.head & 0x7)));
+	ASSERT(!((uint32_t)kvaddr_to_paddr((addr_t)bam->pipe[pipe_num].fifo.head & 0x7)));
 
 	/* Check if fifo size is a power of 2.
 	 * The circular fifo logic in lk expects this.
@@ -216,7 +218,7 @@ int bam_pipe_fifo_init(struct bam_instance *bam,
 	/* Needs a physical address conversion as we are setting up
 	 * the base of the FIFO for the BAM state machine.
 	 */
-	writel((uint32_t)PA((addr_t)bam->pipe[pipe_num].fifo.head),
+	writel((uint32_t)kvaddr_to_paddr((addr_t)bam->pipe[pipe_num].fifo.head),
 		BAM_P_DESC_FIFO_ADDRn(bam->pipe[pipe_num].pipe_num, bam->base));
 
 	/* Initialize FIFO offset for the first read */

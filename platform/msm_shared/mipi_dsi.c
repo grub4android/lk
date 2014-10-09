@@ -504,6 +504,7 @@ int mipi_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo)
 	return status;
 }
 
+#if TARGET_MSM8960
 void mipi_dsi_shutdown(void)
 {
 	if(!target_cont_splash_screen())
@@ -525,6 +526,7 @@ void mipi_dsi_shutdown(void)
         writel(0x13FF3BFF, DSI_ERR_INT_MASK0);
 	}
 }
+#endif
 
 int mipi_config(struct msm_fb_panel_data *panel)
 {

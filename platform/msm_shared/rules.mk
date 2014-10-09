@@ -210,13 +210,13 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
         $(LOCAL_DIR)/dev_tree.c \
         $(LOCAL_DIR)/scm.c \
         $(LOCAL_DIR)/gpio.c \
-        $(LOCAL_DIR)/certificate.c \
-        $(LOCAL_DIR)/image_verify.c \
-        $(LOCAL_DIR)/crypto_hash.c \
-        $(LOCAL_DIR)/crypto5_eng.c \
-        $(LOCAL_DIR)/crypto5_wrapper.c \
         $(LOCAL_DIR)/dload_util.c \
         $(LOCAL_DIR)/shutdown_detect.c
+#       $(LOCAL_DIR)/certificate.c \
+#       $(LOCAL_DIR)/image_verify.c \
+#       $(LOCAL_DIR)/crypto_hash.c \
+#       $(LOCAL_DIR)/crypto5_eng.c \
+#       $(LOCAL_DIR)/crypto5_wrapper.c
 endif
 
 ifeq ($(PLATFORM),apq8084)

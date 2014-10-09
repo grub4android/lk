@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <bits.h>
 #include <debug.h>
+#include <assert.h>
 #include <mmc.h>
 #include <sdhci.h>
 #include <sdhci_msm.h>
@@ -149,7 +150,7 @@ void sdhci_msm_init(struct sdhci_host *host, struct sdhci_msm_data *config)
 	RMWREG32((config->pwrctl_base + SDCC_MCI_POWER), CORE_SW_RST_START, CORE_SW_RST_WIDTH, 1);
 
 	/* Wait for the core power reset to complete*/
-	 mdelay(1);
+	 spin(1000);
 
 	/* Enable sdhc mode */
 	RMWREG32((config->pwrctl_base + SDCC_MCI_HC_MODE), SDHCI_HC_START_BIT, SDHCI_HC_WIDTH, SDHCI_HC_MODE_EN);
@@ -288,7 +289,7 @@ static uint32_t sdhci_msm_init_dll(struct sdhci_host *host)
 	/* Wait for DLL_LOCK in DLL_STATUS register, wait time 50us */
 	while(!((REG_READ32(host, SDCC_REG_DLL_STATUS)) & SDCC_DLL_LOCK_STAT))
 	{
-		udelay(1);
+		spin(1);
 		timeout--;
 		if (!timeout)
 		{
@@ -349,7 +350,7 @@ static uint32_t sdhci_msm_config_dll(struct sdhci_host *host, uint32_t phase)
 	while(!(REG_READ32(host, SDCC_DLL_CONFIG_REG) & SDCC_DLL_CLK_OUT_EN))
 	{
 		timeout--;
-		udelay(1);
+		spin(1);
 		if (!timeout)
 		{
 			dprintf(CRITICAL, "%s: clk_out_en timed out: %08x\n", __func__, REG_READ32(host, SDCC_DLL_CONFIG_REG));
@@ -489,7 +490,7 @@ static uint32_t sdhci_msm_cm_dll_sdc4_calibration(struct sdhci_host *host)
 	while (!(REG_READ32(host, SDCC_REG_DLL_STATUS) & DDR_DLL_LOCK_JDR))
 	{
 		timeout--;
-		mdelay(1);
+		spin(1000);
 		if (!timeout)
 		{
 			dprintf(CRITICAL, "Error: DLL lock for hs400 operation is not set\n");
@@ -563,10 +564,10 @@ static uint32_t sdhci_msm_cdclp533_calibration(struct sdhci_host *host)
 
 	/* Wait for CALIBRATION_DONE in CDC_STATUS */
 	timeout = CDC_STATUS_TIMEOUT;
-	while (!(REG_READ32(host, SDCC_CSR_CDC_STATUS0) & BIT(0)))
+	while (!(REG_READ32(host, SDCC_CSR_CDC_STATUS0) & BIT(0xFFFFFFFF, 0)))
 	{
 		timeout--;
-		mdelay(1);
+		spin(1000);
 		if (!timeout)
 		{
 			dprintf(CRITICAL, "Error: Calibration done in CDC status not set\n");

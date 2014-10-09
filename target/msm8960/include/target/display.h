@@ -45,7 +45,6 @@
 #define MIPI_VSYNC_BACK_PORCH_LINES  2
 #define MIPI_VSYNC_FRONT_PORCH_LINES 7
 
-extern int mipi_dsi_phy_init(struct mipi_dsi_panel_config *);
 extern void mdp_setup_mdt61_video_dsi_config(void);
 extern void config_mdt61_dsi_video_mode(void);
 

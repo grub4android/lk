@@ -29,10 +29,12 @@
 #include <qpic_nand.h>
 #include <bam.h>
 #include <dev/flash.h>
-#include <lib/ptable.h>
+#include <lib/ptable_msm.h>
 #include <debug.h>
+#include <assert.h>
 #include <string.h>
 #include <malloc.h>
+#include <kernel/vm.h>
 #include <sys/types.h>
 #include <platform.h>
 #include <platform/clock.h>
@@ -100,12 +102,12 @@ qpic_nand_read_reg(uint32_t reg_addr,
 {
 	uint32_t val;
 
-	bam_add_cmd_element(cmd_list_ptr, reg_addr, (uint32_t)PA((addr_t)&val), CE_READ_TYPE);
+	bam_add_cmd_element(cmd_list_ptr, reg_addr, (uint32_t)kvaddr_to_paddr((addr_t)&val), CE_READ_TYPE);
 
 	/* Enqueue the desc for the above command */
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
-					 (unsigned char*)PA((addr_t)cmd_list_ptr),
+					 (unsigned char*)kvaddr_to_paddr((addr_t)cmd_list_ptr),
 					 BAM_CE_SIZE,
 					 BAM_DESC_CMD_FLAG| BAM_DESC_INT_FLAG | flags);
 
@@ -213,7 +215,7 @@ qpic_nand_fetch_id(struct flash_info *flash)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_LOCK_FLAG | BAM_DESC_INT_FLAG |
 					 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG);
 
@@ -414,7 +416,7 @@ onfi_probe_cmd_exec(struct onfi_probe_params *params,
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((addr_t)(uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((addr_t)(uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 desc_flags);
 
 	cmd_list_ptr_start = cmd_list_ptr;
@@ -423,7 +425,7 @@ onfi_probe_cmd_exec(struct onfi_probe_params *params,
 	/* Add Data desc */
 	bam_add_desc(&bam,
 				 DATA_PRODUCER_PIPE_INDEX,
-				 (unsigned char *)PA((addr_t)data_ptr),
+				 (unsigned char *)kvaddr_to_paddr((addr_t)data_ptr),
 				 data_len,
 				 BAM_DESC_INT_FLAG);
 
@@ -465,7 +467,7 @@ qpic_nand_onfi_probe_cleanup(uint32_t vld, uint32_t dev_cmd1)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_UNLOCK_FLAG | BAM_DESC_CMD_FLAG| BAM_DESC_INT_FLAG);
 
 	qpic_nand_wait_for_cmd_exec(1);
@@ -736,7 +738,7 @@ qpic_nand_add_read_n_reset_status_ce(struct cmd_element *start,
 	flash_status_reset = NAND_FLASH_STATUS_RESET;
 	read_status_reset = NAND_READ_STATUS_RESET;
 
-	bam_add_cmd_element(cmd_list_ptr, NAND_FLASH_STATUS, (uint32_t)PA((addr_t)flash_status_read), CE_READ_TYPE);
+	bam_add_cmd_element(cmd_list_ptr, NAND_FLASH_STATUS, (uint32_t)kvaddr_to_paddr((addr_t)flash_status_read), CE_READ_TYPE);
 	cmd_list_ptr++;
 	bam_add_cmd_element(cmd_list_ptr, NAND_FLASH_STATUS, (uint32_t)flash_status_reset, CE_WRITE_TYPE);
 	cmd_list_ptr++;
@@ -786,7 +788,7 @@ qpic_nand_block_isbad_exec(struct cfg_params *params,
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 desc_flags);
 
 	num_desc++;
@@ -794,7 +796,7 @@ qpic_nand_block_isbad_exec(struct cfg_params *params,
 	/* Add Data desc */
 	bam_add_desc(&bam,
 				 DATA_PRODUCER_PIPE_INDEX,
-				 (unsigned char *)PA((addr_t)bad_block),
+				 (unsigned char *)kvaddr_to_paddr((addr_t)bad_block),
 				 4,
 				 BAM_DESC_INT_FLAG);
 
@@ -919,7 +921,7 @@ qpic_nand_blk_erase(uint32_t page)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG | BAM_DESC_INT_FLAG | BAM_DESC_LOCK_FLAG);
 
 	cmd_list_ptr_start = cmd_list_ptr;
@@ -943,7 +945,7 @@ qpic_nand_blk_erase(uint32_t page)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_INT_FLAG | BAM_DESC_CMD_FLAG) ;
 
 	num_desc = 1;
@@ -1001,7 +1003,7 @@ qpic_nand_add_wr_page_cws_cmd_desc(struct cfg_params *cfg,
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_CMD_FLAG | BAM_DESC_LOCK_FLAG);
 
 	num_desc++;
@@ -1019,7 +1021,7 @@ qpic_nand_add_wr_page_cws_cmd_desc(struct cfg_params *cfg,
 		bam_add_one_desc(&bam,
 						 CMD_PIPE_INDEX,
 						 (unsigned char*)cmd_list_ptr_start,
-						 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+						 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 						 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG);
 
 		num_desc++;
@@ -1041,7 +1043,7 @@ qpic_nand_add_wr_page_cws_cmd_desc(struct cfg_params *cfg,
 		bam_add_one_desc(&bam,
 						 CMD_PIPE_INDEX,
 						 (unsigned char*)cmd_list_ptr_start,
-						 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+						 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 						 int_flag | BAM_DESC_CMD_FLAG);
 		num_desc++;
 
@@ -1094,7 +1096,7 @@ qpic_add_wr_page_cws_data_desc(const void *buffer,
 			len = flash.cw_size;
 			flags |= BAM_DESC_EOT_FLAG;
 		}
-		bam_add_one_desc(&bam, DATA_CONSUMER_PIPE_INDEX, (unsigned char*)PA(start), len, flags);
+		bam_add_one_desc(&bam, DATA_CONSUMER_PIPE_INDEX, (unsigned char*)kvaddr_to_paddr(start), len, flags);
 		num_desc++;
 
 		if ((i == (flash.cws_per_page - 1)) && (cfg_mode == NAND_CFG))
@@ -1103,7 +1105,7 @@ qpic_add_wr_page_cws_data_desc(const void *buffer,
 			start = (uint32_t)spareaddr;
 			len = (flash.cws_per_page << 2);
 			flags = BAM_DESC_EOT_FLAG | BAM_DESC_INT_FLAG;
-			bam_add_one_desc(&bam, DATA_CONSUMER_PIPE_INDEX, (unsigned char*)PA(start), len, flags);
+			bam_add_one_desc(&bam, DATA_CONSUMER_PIPE_INDEX, (unsigned char*)kvaddr_to_paddr(start), len, flags);
 			num_desc++;
 		}
 	}
@@ -1423,14 +1425,14 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 			/* Add Data desc */
 			bam_add_one_desc(&bam,
 							 DATA_PRODUCER_PIPE_INDEX,
-							 (unsigned char *)PA((addr_t)buffer),
+							 (unsigned char *)kvaddr_to_paddr((addr_t)buffer),
 							 ud_bytes_in_last_cw,
 							 0);
 			num_data_desc++;
 
 			bam_add_one_desc(&bam,
 							 DATA_PRODUCER_PIPE_INDEX,
-							 (unsigned char *)PA((addr_t)spareaddr),
+							 (unsigned char *)kvaddr_to_paddr((addr_t)spareaddr),
 							 oob_bytes,
 							 BAM_DESC_INT_FLAG);
 			num_data_desc++;
@@ -1442,7 +1444,7 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 			/* Add Data desc */
 			bam_add_one_desc(&bam,
 							 DATA_PRODUCER_PIPE_INDEX,
-							 (unsigned char *)PA((addr_t)buffer),
+							 (unsigned char *)kvaddr_to_paddr((addr_t)buffer),
 							 DATA_BYTES_IN_IMG_PER_CW,
 							 0);
 			num_data_desc++;
@@ -1466,17 +1468,17 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 		bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG);
 		num_cmd_desc++;
 
-		bam_add_cmd_element(cmd_list_ptr, NAND_FLASH_STATUS, (uint32_t)PA((addr_t)&(flash_sts[i])), CE_READ_TYPE);
+		bam_add_cmd_element(cmd_list_ptr, NAND_FLASH_STATUS, (uint32_t)kvaddr_to_paddr((addr_t)&(flash_sts[i])), CE_READ_TYPE);
 
 		cmd_list_temp = cmd_list_ptr;
 
 		cmd_list_ptr++;
 
-		bam_add_cmd_element(cmd_list_ptr, NAND_BUFFER_STATUS, (uint32_t)PA((addr_t)&(buffer_sts[i])), CE_READ_TYPE);
+		bam_add_cmd_element(cmd_list_ptr, NAND_BUFFER_STATUS, (uint32_t)kvaddr_to_paddr((addr_t)&(buffer_sts[i])), CE_READ_TYPE);
 		cmd_list_ptr++;
 
 		if (i == flash.cws_per_page - 1)
@@ -1489,8 +1491,8 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 		/* Enqueue the desc for the above command */
 		bam_add_one_desc(&bam,
 					CMD_PIPE_INDEX,
-					(unsigned char*)PA((addr_t)cmd_list_temp),
-					PA((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_temp),
+					(unsigned char*)kvaddr_to_paddr((addr_t)cmd_list_temp),
+					kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_temp),
 					flags);
 		num_cmd_desc++;
 

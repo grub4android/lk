@@ -120,6 +120,26 @@ void *kvaddr_to_paddr(vaddr_t va)
     return pa;
 }
 
+/* Function to check if the memory address range falls within the aboot
+ * boundaries.
+ * start: Start of the memory region
+ * size: Size of the memory region
+ */
+int check_lk_addr_range_overlap(uint32_t start, uint32_t size)
+{
+	/* Check for boundary conditions. */
+	if ((UINT_MAX - start) < size)
+		return -1;
+
+	/* Check for memory overlap. */
+	if ((start < MEMBASE) && ((start + size) <= MEMBASE))
+		return 0;
+	else if (start >= (MEMBASE + MEMSIZE))
+		return 0;
+	else
+		return -1;
+}
+
 static int cmd_vm(int argc, const cmd_args *argv)
 {
     if (argc < 2) {

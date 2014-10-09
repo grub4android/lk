@@ -155,6 +155,8 @@ void *paddr_to_kvaddr(paddr_t pa);
 /* virtual to physical */
 void *kvaddr_to_paddr(vaddr_t va);
 
+int check_lk_addr_range_overlap(uint32_t start, uint32_t size);
+
 /* virtual allocator */
 typedef struct vmm_aspace {
     struct list_node node;

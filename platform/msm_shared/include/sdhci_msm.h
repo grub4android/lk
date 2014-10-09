@@ -63,35 +63,35 @@
 #define SDCC_HC_REG_DLL_CONFIG_2                 0x1B4
 #define SDCC_HC_REG_DDR_CONFIG                   0x1B8
 
-#define DDR_CAL_EN                               BIT(0)
+#define DDR_CAL_EN                               BIT(0xFFFFFFFF, 0)
 #define DDR_CAL_TIMEOUT_MAX                      50
-#define DDR_DLL_LOCK_JDR                         BIT(11)
-#define PWRSAVE_DLL                              BIT(3)
+#define DDR_DLL_LOCK_JDR                         BIT(0xFFFFFFFF, 11)
+#define PWRSAVE_DLL                              BIT(0xFFFFFFFF, 3)
 #define DDR_CONFIG_VAL                           0x80040853
 
 /* DLL & CDC helper macros */
-#define SDCC_DLL_PWR_SAVE_EN                      BIT(1)
-#define SDCC_DLL_LOCK_STAT                        BIT(7)
-#define SDCC_DLL_EN                               BIT(16)
-#define SDCC_DLL_CDR_EN                           BIT(17)
-#define SDCC_DLL_CLK_OUT_EN                       BIT(18)
-#define SDCC_DLL_CDR_EXT_EN                       BIT(19)
-#define SDCC_DLL_PDN_EN                           BIT(29)
-#define SDCC_DLL_RESET_EN                         BIT(30)
+#define SDCC_DLL_PWR_SAVE_EN                      BIT(0xFFFFFFFF, 1)
+#define SDCC_DLL_LOCK_STAT                        BIT(0xFFFFFFFF, 7)
+#define SDCC_DLL_EN                               BIT(0xFFFFFFFF, 16)
+#define SDCC_DLL_CDR_EN                           BIT(0xFFFFFFFF, 17)
+#define SDCC_DLL_CLK_OUT_EN                       BIT(0xFFFFFFFF, 18)
+#define SDCC_DLL_CDR_EXT_EN                       BIT(0xFFFFFFFF, 19)
+#define SDCC_DLL_PDN_EN                           BIT(0xFFFFFFFF, 29)
+#define SDCC_DLL_RESET_EN                         BIT(0xFFFFFFFF, 30)
 #define SDCC_DLL_CONFIG_MCLK_START                0x18
 #define SDCC_DLL_CONFIG_MCLK_WIDTH                0x3
 #define SDCC_DLL_GRAY_CODE_START                  0x14
 #define SDCC_DLL_GRAY_CODE_WIDTH                  0x4
-#define CMD_DAT_TRACK_SEL                         BIT(0)
-#define CDC_T4_DLY_SEL                            BIT(0)
-#define CDC_SWITCH_BYPASS_OFF                     BIT(0)
-#define CDC_SWITCH_RC_EN                          BIT(1)
-#define START_CDC_TRAFFIC                         BIT(6)
+#define CMD_DAT_TRACK_SEL                         BIT(0xFFFFFFFF, 0)
+#define CDC_T4_DLY_SEL                            BIT(0xFFFFFFFF, 0)
+#define CDC_SWITCH_BYPASS_OFF                     BIT(0xFFFFFFFF, 0)
+#define CDC_SWITCH_RC_EN                          BIT(0xFFFFFFFF, 1)
+#define START_CDC_TRAFFIC                         BIT(0xFFFFFFFF, 6)
 #define FF_CLK_SW_RST_DIS_START                   0xD
 #define FF_CLK_SW_RST_DIS_WIDTH                   0x1
-#define CDC_SW_TRIGGER_FULL_CALIB                 BIT(16)
-#define CDC_HW_AUTO_CAL_EN                        BIT(17)
-#define CDC_TIMER_EN                              BIT(16)
+#define CDC_SW_TRIGGER_FULL_CALIB                 BIT(0xFFFFFFFF, 16)
+#define CDC_HW_AUTO_CAL_EN                        BIT(0xFFFFFFFF, 17)
+#define CDC_TIMER_EN                              BIT(0xFFFFFFFF, 16)
 #define CSR_CDC_ERROR_MASK                        0x7000000
 
 /* SDCC macros for HS400 */
@@ -134,4 +134,5 @@ uint32_t sdhci_msm_execute_tuning(struct sdhci_host *host, struct mmc_card * car
 void sdhci_mode_disable(struct sdhci_host *host);
 /* API: Toggle the bit for clock-data recovery */
 void sdhci_msm_toggle_cdr(struct sdhci_host *host, bool enable);
+void sdhci_msm_set_mci_clk(struct sdhci_host *host);
 #endif

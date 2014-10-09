@@ -236,10 +236,10 @@ static int __clock_lib2_branch_clk_reset(uint32_t bcr_reg, enum clk_reset_action
 
 	switch (action) {
 	case CLK_RESET_ASSERT:
-		reg |= BIT(0);
+		reg |= BIT(0xFFFFFFFF, 0);
 		break;
 	case CLK_RESET_DEASSERT:
-		reg &= ~BIT(0);
+		reg &= ~BIT(0xFFFFFFFF, 0);
 		break;
 	default:
 		ret = 1;

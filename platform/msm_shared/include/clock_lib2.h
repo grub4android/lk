@@ -92,14 +92,14 @@
 	}
 
 /* Branch Clock Bits */
-#define CBCR_BRANCH_ENABLE_BIT  BIT(0)
-#define CBCR_BRANCH_OFF_BIT     BIT(31)
+#define CBCR_BRANCH_ENABLE_BIT  BIT(0xFFFFFFFF, 0)
+#define CBCR_BRANCH_OFF_BIT     BIT(0xFFFFFFFF, 31)
 #define BRANCH_CHECK_MASK       BM(31, 28)
 #define BRANCH_ON_VAL           BVAL(31, 28, 0x0)
 #define BRANCH_NOC_FSM_ON_VAL   BVAL(31, 28, 0x2)
 
 /* Root Clock Bits */
-#define CMD_UPDATE_BIT          BIT(0)
+#define CMD_UPDATE_BIT          BIT(0xFFFFFFFF, 0)
 #define CMD_UPDATE_MASK         1
 
 #define CFG_SRC_DIV_OFFSET      0

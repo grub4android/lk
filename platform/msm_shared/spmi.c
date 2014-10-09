@@ -27,6 +27,8 @@
  */
 
 #include <debug.h>
+#include <assert.h>
+#include <malloc.h>
 #include <reg.h>
 #include <spmi.h>
 #include <bits.h>
@@ -50,7 +52,7 @@ static void spmi_lookup_chnl_number()
 	uint8_t slave_id;
 	uint8_t ppid_address;
 	/* We need a max of sid (4 bits) + pid (8bits) of uint8_t's */
-	uint32_t chnl_tbl_sz = BIT(12) * sizeof(uint8_t);
+	uint32_t chnl_tbl_sz = BIT(0xFFFFFFFF, 12) * sizeof(uint8_t);
 
 	/* Allocate the channel table */
 	chnl_tbl = (uint8_t *) malloc(chnl_tbl_sz);

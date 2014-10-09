@@ -48,5 +48,6 @@ void shutdown_device(void);
 void reboot_device(unsigned);
 int set_download_mode(enum dload_mode mode);
 uint32_t platform_get_smem_base_addr();
+void clock_config_cdc(uint8_t slot);
 #endif
 

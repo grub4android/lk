@@ -107,9 +107,9 @@
 #define MMC_HS400_TIMING                          0x3
 #define MMC_ACCESS_WRITE                          0x3
 #define MMC_SET_BIT                               0x1
-#define MMC_HS_DDR_MODE                           (BIT(2) | BIT(3))
-#define MMC_HS_HS200_MODE                         (BIT(4) | BIT(5))
-#define MMC_HS_HS400_MODE                         (BIT(6) | BIT(7))
+#define MMC_HS_DDR_MODE                           (BIT(0xFFFFFFFF, 2) | BIT(0xFFFFFFFF, 3))
+#define MMC_HS_HS200_MODE                         (BIT(0xFFFFFFFF, 4) | BIT(0xFFFFFFFF, 5))
+#define MMC_HS_HS400_MODE                         (BIT(0xFFFFFFFF, 6) | BIT(0xFFFFFFFF, 7))
 #define MMC_SEC_COUNT4_SHIFT                      24
 #define MMC_SEC_COUNT3_SHIFT                      16
 #define MMC_SEC_COUNT2_SHIFT                      8
@@ -120,11 +120,11 @@
 #define MMC_MAX_CARD_STAT_RETRY                   10000
 #define MMC_RD_BLOCK_LEN                          512
 #define MMC_WR_BLOCK_LEN                          512
-#define MMC_R1_WP_ERASE_SKIP                      BIT(15)
-#define MMC_US_PERM_WP_DIS                        BIT(4)
-#define MMC_US_PWR_WP_DIS                         BIT(3)
-#define MMC_US_PERM_WP_EN                         BIT(2)
-#define MMC_US_PWR_WP_EN                          BIT(0)
+#define MMC_R1_WP_ERASE_SKIP                      BIT(0xFFFFFFFF, 15)
+#define MMC_US_PERM_WP_DIS                        BIT(0xFFFFFFFF, 4)
+#define MMC_US_PWR_WP_DIS                         BIT(0xFFFFFFFF, 3)
+#define MMC_US_PERM_WP_EN                         BIT(0xFFFFFFFF, 2)
+#define MMC_US_PWR_WP_EN                          BIT(0xFFFFFFFF, 0)
 
 /* MMC errors */
 #define MMC_R1_BLOCK_LEN_ERR                      (1 << 29)
@@ -178,8 +178,8 @@
 #define SD_SCR_BUS_WIDTH_MASK                     0xf0000
 #define SD_SCR_SD_SPEC_MASK                       0x0f000000
 #define SD_SCR_SD_SPEC3_MASK                      0x8000
-#define SD_SCR_CMD23_SUPPORT                      BIT(1)
-#define SD_SCR_WIDTH_4BIT                         BIT(2)
+#define SD_SCR_CMD23_SUPPORT                      BIT(0xFFFFFFFF, 1)
+#define SD_SCR_WIDTH_4BIT                         BIT(0xFFFFFFFF, 2)
 
 /* SSR related macros */
 #define MMC_SD_AU_SIZE_BIT                        428

@@ -26,6 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <mmc_wrapper.h>
@@ -33,7 +34,10 @@
 #include <sdhci.h>
 #include <ufs.h>
 #include <target.h>
+#include <target/msm_shared.h>
 #include <string.h>
+#include <partition_parser.h>
+#include <boot_device.h>
 
 /*
  * Weak function for UFS.

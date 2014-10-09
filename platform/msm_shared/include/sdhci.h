@@ -177,11 +177,11 @@ enum {
 /*
  * Helper macros for register writes
  */
-#define SDHCI_SOFT_RESET                          BIT(0)
-#define SOFT_RESET_CMD                            BIT(1)
-#define SOFT_RESET_DATA                           BIT(2)
+#define SDHCI_SOFT_RESET                          BIT(0xFFFFFFFF, 0)
+#define SOFT_RESET_CMD                            BIT(0xFFFFFFFF, 1)
+#define SOFT_RESET_DATA                           BIT(0xFFFFFFFF, 2)
 #define SDHCI_RESET_MAX_TIMEOUT                   0x64
-#define SDHCI_1_8_VOL_SET                         BIT(3)
+#define SDHCI_1_8_VOL_SET                         BIT(0xFFFFFFFF, 3)
 
 /*
  * Interrupt related
@@ -191,13 +191,13 @@ enum {
 #define SDHCI_NRML_INT_SIG_EN                     0x000B
 #define SDHCI_ERR_INT_SIG_EN                      0xFFFF
 
-#define SDCC_HC_INT_CARD_REMOVE                   BIT(7)
-#define SDCC_HC_INT_CARD_INSERT                   BIT(6)
+#define SDCC_HC_INT_CARD_REMOVE                   BIT(0xFFFFFFFF, 7)
+#define SDCC_HC_INT_CARD_INSERT                   BIT(0xFFFFFFFF, 6)
 
 /*
  * HC mode enable/disable
  */
-#define SDHCI_HC_MODE_EN                          BIT(0)
+#define SDHCI_HC_MODE_EN                          BIT(0xFFFFFFFF, 0)
 #define SDHCI_HC_MODE_DIS                         (0 << 1)
 
 /*
@@ -208,22 +208,22 @@ enum {
 #define SDHCI_SDCLK_UP_BIT_SEL                    6
 #define SDHCI_SDCLK_FREQ_MASK                     0xFF
 #define SDHC_SDCLK_UP_BIT_MASK                    0x300
-#define SDHCI_INT_CLK_EN                          BIT(0)
-#define SDHCI_CLK_STABLE_MASK                     BIT(1)
-#define SDHCI_CLK_STABLE                          BIT(1)
-#define SDHCI_CLK_EN                              BIT(2)
+#define SDHCI_INT_CLK_EN                          BIT(0xFFFFFFFF, 0)
+#define SDHCI_CLK_STABLE_MASK                     BIT(0xFFFFFFFF, 1)
+#define SDHCI_CLK_STABLE                          BIT(0xFFFFFFFF, 1)
+#define SDHCI_CLK_EN                              BIT(0xFFFFFFFF, 2)
 #define SDHCI_CLK_DIS                             (0 << 2)
 #define SDHCI_CLK_RATE_MASK                       0x0000FF00
 #define SDHCI_CLK_RATE_BIT                        8
 
-#define SDHCI_CMD_ACT                             BIT(0)
-#define SDHCI_DAT_ACT                             BIT(1)
+#define SDHCI_CMD_ACT                             BIT(0xFFFFFFFF, 0)
+#define SDHCI_DAT_ACT                             BIT(0xFFFFFFFF, 1)
 
 /*
  * Bus voltage related macros
  */
 #define SDHCI_BUS_VOL_SEL                         1
-#define SDHCI_BUS_PWR_EN                          BIT(0)
+#define SDHCI_BUS_PWR_EN                          BIT(0xFFFFFFFF, 0)
 #define SDHCI_VOL_1_8                             5
 #define SDHCI_VOL_3_0                             6
 #define SDHCI_VOL_3_3                             7
@@ -237,8 +237,8 @@ enum {
 #define SDHCI_8BIT_WIDTH_MASK                     0x00040000
 
 #define SDHCI_BUS_WITDH_1BIT                      (0)
-#define SDHCI_BUS_WITDH_4BIT                      BIT(1)
-#define SDHCI_BUS_WITDH_8BIT                      BIT(5)
+#define SDHCI_BUS_WITDH_4BIT                      BIT(0xFFFFFFFF, 1)
+#define SDHCI_BUS_WITDH_8BIT                      BIT(0xFFFFFFFF, 5)
 
 /*
  * Adma related macros
@@ -246,25 +246,25 @@ enum {
 #define SDHCI_BLK_LEN_MASK                        0x00030000
 #define SDHCI_BLK_LEN_BIT                         16
 #define SDHCI_BLK_ADMA_MASK                       0x00080000
-#define SDHCI_INT_STS_TRANS_COMPLETE              BIT(1)
+#define SDHCI_INT_STS_TRANS_COMPLETE              BIT(0xFFFFFFFF, 1)
 #define SDHCI_STATE_CMD_DAT_MASK                  0x0003
-#define SDHCI_INT_STS_CMD_COMPLETE                BIT(0)
+#define SDHCI_INT_STS_CMD_COMPLETE                BIT(0xFFFFFFFF, 0)
 #define SDHCI_ERR_INT_STAT_MASK                   0x8000
 #define SDHCI_ADMA_DESC_LINE_SZ                   65536
 #define SDHCI_ADMA_MAX_TRANS_SZ                   (65535 * 512)
-#define SDHCI_ADMA_TRANS_VALID                    BIT(0)
-#define SDHCI_ADMA_TRANS_END                      BIT(1)
-#define SDHCI_ADMA_TRANS_DATA                     BIT(5)
+#define SDHCI_ADMA_TRANS_VALID                    BIT(0xFFFFFFFF, 0)
+#define SDHCI_ADMA_TRANS_END                      BIT(0xFFFFFFFF, 1)
+#define SDHCI_ADMA_TRANS_DATA                     BIT(0xFFFFFFFF, 5)
 #define SDHCI_MMC_BLK_SZ                          512
 #define SDHCI_MMC_CUR_BLK_CNT_BIT                 16
 #define SDHCI_MMC_BLK_SZ_BIT                      0
-#define SDHCI_TRANS_MULTI                         BIT(5)
+#define SDHCI_TRANS_MULTI                         BIT(0xFFFFFFFF, 5)
 #define SDHCI_TRANS_SINGLE                        (0 << 5)
-#define SDHCI_BLK_CNT_EN                          BIT(1)
-#define SDHCI_DMA_EN                              BIT(0)
-#define SDHCI_AUTO_CMD23_EN                       BIT(3)
-#define SDHCI_AUTO_CMD12_EN                       BIT(2)
-#define SDHCI_ADMA_32BIT                          BIT(4)
+#define SDHCI_BLK_CNT_EN                          BIT(0xFFFFFFFF, 1)
+#define SDHCI_DMA_EN                              BIT(0xFFFFFFFF, 0)
+#define SDHCI_AUTO_CMD23_EN                       BIT(0xFFFFFFFF, 3)
+#define SDHCI_AUTO_CMD12_EN                       BIT(0xFFFFFFFF, 2)
+#define SDHCI_ADMA_32BIT                          BIT(0xFFFFFFFF, 4)
 
 /*
  * Command related macros
@@ -275,17 +275,17 @@ enum {
 #define SDHCI_CMD_DATA_PRESENT_BIT                5
 #define SDHCI_CMD_CMD_TYPE_BIT                    6
 #define SDHCI_CMD_CMD_IDX_BIT                     8
-#define SDHCI_CMD_TIMEOUT_MASK                    BIT(0)
-#define SDHCI_CMD_CRC_MASK                        BIT(1)
-#define SDHCI_CMD_END_BIT_MASK                    BIT(2)
-#define SDHCI_CMD_IDX_MASK                        BIT(3)
-#define SDHCI_DAT_TIMEOUT_MASK                    BIT(4)
-#define SDHCI_DAT_CRC_MASK                        BIT(5)
-#define SDHCI_DAT_END_BIT_MASK                    BIT(6)
-#define SDHCI_CUR_LIM_MASK                        BIT(7)
-#define SDHCI_AUTO_CMD12_MASK                     BIT(8)
-#define SDHCI_ADMA_MASK                           BIT(9)
-#define SDHCI_READ_MODE                           BIT(4)
+#define SDHCI_CMD_TIMEOUT_MASK                    BIT(0xFFFFFFFF, 0)
+#define SDHCI_CMD_CRC_MASK                        BIT(0xFFFFFFFF, 1)
+#define SDHCI_CMD_END_BIT_MASK                    BIT(0xFFFFFFFF, 2)
+#define SDHCI_CMD_IDX_MASK                        BIT(0xFFFFFFFF, 3)
+#define SDHCI_DAT_TIMEOUT_MASK                    BIT(0xFFFFFFFF, 4)
+#define SDHCI_DAT_CRC_MASK                        BIT(0xFFFFFFFF, 5)
+#define SDHCI_DAT_END_BIT_MASK                    BIT(0xFFFFFFFF, 6)
+#define SDHCI_CUR_LIM_MASK                        BIT(0xFFFFFFFF, 7)
+#define SDHCI_AUTO_CMD12_MASK                     BIT(0xFFFFFFFF, 8)
+#define SDHCI_ADMA_MASK                           BIT(0xFFFFFFFF, 9)
+#define SDHCI_READ_MODE                           BIT(0xFFFFFFFF, 4)
 #define SDHCI_SWITCH_CMD                          6
 #define SDHCI_CMD_TIMEOUT                         0xF
 #define SDHCI_MAX_CMD_RETRY                       5000000
@@ -303,23 +303,23 @@ enum {
  * Power control relatd macros
  */
 #define SDCC_HC_PWR_CTRL_INT                      0xF
-#define SDCC_HC_BUS_ON                            BIT(0)
-#define SDCC_HC_BUS_OFF                           BIT(1)
-#define SDCC_HC_BUS_ON_OFF_SUCC                   BIT(0)
-#define SDCC_HC_IO_SIG_LOW                        BIT(2)
-#define SDCC_HC_IO_SIG_HIGH                       BIT(3)
-#define SDCC_HC_IO_SIG_SUCC                       BIT(2)
+#define SDCC_HC_BUS_ON                            BIT(0xFFFFFFFF, 0)
+#define SDCC_HC_BUS_OFF                           BIT(0xFFFFFFFF, 1)
+#define SDCC_HC_BUS_ON_OFF_SUCC                   BIT(0xFFFFFFFF, 0)
+#define SDCC_HC_IO_SIG_LOW                        BIT(0xFFFFFFFF, 2)
+#define SDCC_HC_IO_SIG_HIGH                       BIT(0xFFFFFFFF, 3)
+#define SDCC_HC_IO_SIG_SUCC                       BIT(0xFFFFFFFF, 2)
 
 /*
  * Command response
  */
 #define SDHCI_CMD_RESP_NONE                       0
-#define SDHCI_CMD_RESP_R1                         BIT(0)
-#define SDHCI_CMD_RESP_R1B                        BIT(1)
-#define SDHCI_CMD_RESP_R2                         BIT(2)
-#define SDHCI_CMD_RESP_R3                         BIT(3)
-#define SDHCI_CMD_RESP_R6                         BIT(6)
-#define SDHCI_CMD_RESP_R7                         BIT(7)
+#define SDHCI_CMD_RESP_R1                         BIT(0xFFFFFFFF, 0)
+#define SDHCI_CMD_RESP_R1B                        BIT(0xFFFFFFFF, 1)
+#define SDHCI_CMD_RESP_R2                         BIT(0xFFFFFFFF, 2)
+#define SDHCI_CMD_RESP_R3                         BIT(0xFFFFFFFF, 3)
+#define SDHCI_CMD_RESP_R6                         BIT(0xFFFFFFFF, 6)
+#define SDHCI_CMD_RESP_R7                         BIT(0xFFFFFFFF, 7)
 
 /*
  * Clock Divider values
@@ -336,15 +336,15 @@ enum {
 
 /* DDR mode related macros */
 #define SDHCI_DDR50_MODE_EN                       0x0004
-#define SDHCI_DDR50_MODE_MASK                     BIT(2)
+#define SDHCI_DDR50_MODE_MASK                     BIT(0xFFFFFFFF, 2)
 
 /* HS200/SDR50 mode related macros */
 #define SDHCI_SDR25_MODE_EN                       0x0001
 #define SDHCI_SDR12_MODE_EN                       0x0000
-#define SDHCI_SDR50_MODE_MASK                     BIT(0)
+#define SDHCI_SDR50_MODE_MASK                     BIT(0xFFFFFFFF, 0)
 #define SDHCI_SDR50_MODE_EN                       0x0002
 
-#define SDHCI_SDR104_MODE_MASK                    BIT(1)
+#define SDHCI_SDR104_MODE_MASK                    BIT(0xFFFFFFFF, 1)
 #define SDHCI_SDR104_MODE_EN                      0x0003
 
 #define SDHCI_SDR104_MODE                         0x3
