@@ -35,6 +35,8 @@ void apq8064_keypad_gpio_init();
 void clock_config_mmc(uint32_t interface, uint32_t freq);
 void clock_init_mmc(uint32_t interface);
 void msm_clocks_init(void);
+void mmss_clock_init(void);
+void mmss_clock_disable(void);
 
 #endif
 

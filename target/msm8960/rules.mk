@@ -25,6 +25,7 @@ MODULE_DEPS += \
 	dev/pmic/pm8921 \
 	dev/ssbi \
 	lib/ptable_msm \
+	dev/gcdb/display \
 	target/msm_shared
 
 GLOBAL_DEFINES += \
@@ -42,7 +43,8 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/init.c \
 	$(LOCAL_DIR)/atags.c \
 	$(LOCAL_DIR)/keypad.c \
-#	$(LOCAL_DIR)/target_display.o
+	$(LOCAL_DIR)/target_display.c \
+	$(LOCAL_DIR)/oem_panel.c
 
 include make/module.mk
 

@@ -471,21 +471,34 @@ void target_baseband_detect(struct board_data *board)
 	board->baseband = baseband;
 }
 
+static uint8_t splash_override;
+
 /* Returns 1 if target supports continuous splash screen. */
 int target_cont_splash_screen()
 {
-	switch(board_platform_id())
-	{
-	case MSM8960:
-	case MSM8960AB:
-	case APQ8060AB:
-	case MSM8260AB:
-	case MSM8660AB:
-		return 1;
-
-	default:
-		return 0;
+	uint8_t splash_screen = 0;
+	if(!splash_override) {
+		switch(board_platform_id())
+		{
+			case MSM8960:
+			case MSM8960AB:
+			case APQ8060AB:
+			case MSM8260AB:
+			case MSM8660AB:
+				dprintf(SPEW, "Target_cont_splash=1\n");
+				splash_screen = 1;
+				break;
+			default:
+				dprintf(SPEW, "Target_cont_splash=0\n");
+				splash_screen = 0;
+		}
 	}
+	return splash_screen;
+}
+
+void target_force_cont_splash_disable(uint8_t override)
+{
+	splash_override = override;
 }
 
 void apq8064_ext_3p3V_enable()

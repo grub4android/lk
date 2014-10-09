@@ -28,5 +28,8 @@ void msm8960_keypad_init(void);
 void msm8930_keypad_init(void);
 void target_mmc_caps(struct mmc_host *host);
 
+void target_force_cont_splash_disable(uint8_t override);
+uint32_t oem_panel_max_auto_detect_panels();
+
 #endif
 
