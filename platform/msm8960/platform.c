@@ -94,7 +94,7 @@ struct mmu_initial_mapping mmu_initial_mappings[] = {
     { .phys = MSM_IMEM_BASE,
       .virt = MSM_IMEM_BASE,
       .size = 1*MB,
-      .flags = MMU_INITIAL_MAP_STRONGLY_ORDERED,
+      .flags = MMU_INITIAL_MAPPING_FLAG_UNCACHED,
       .name = "imem" },
 
     /* identity map to let the boot code run */
