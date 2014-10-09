@@ -1,5 +1,5 @@
-/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
- * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
+ /* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+ *
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Fundation, Inc. nor the names of its
+ *     * Neither the name of Linux Foundation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -28,20 +28,9 @@
  *
  */
 
-#ifndef __BOARD_H
-#define __BOARD_H
+#ifndef __TARGET_BOARD_H
+#define __TARGET_BOARD_H
 
-#include <smem.h>
-
-#define LINUX_MACHTYPE_UNKNOWN 0
-#define BOARD_SOC_VERSION2     0x20000
-#define MAX_PMIC_DEVICES       SMEM_MAX_PMIC_DEVICES
-
-struct board_pmic_data {
-	uint32_t pmic_type;
-	uint32_t pmic_version;
-	uint32_t pmic_target;
-};
 
 /* 8960 */
 #define LINUX_MACHTYPE_8960_SIM     3230
@@ -51,7 +40,6 @@ struct board_pmic_data {
 #define LINUX_MACHTYPE_8960_FLUID   3398
 #define LINUX_MACHTYPE_8960_APQ     3399
 #define LINUX_MACHTYPE_8960_LIQUID  3535
-#define LINUX_MACHTYPE_8960_MITWOA  4459
 
 /* 8627 */
 #define LINUX_MACHTYPE_8627_CDP     3861
@@ -61,6 +49,7 @@ struct board_pmic_data {
 #define LINUX_MACHTYPE_8930_CDP     3727
 #define LINUX_MACHTYPE_8930_MTP     3728
 #define LINUX_MACHTYPE_8930_FLUID   3729
+#define LINUX_MACHTYPE_8930_EVT     4558
 
 /* 8064 */
 #define LINUX_MACHTYPE_8064_SIM     3572
@@ -71,49 +60,7 @@ struct board_pmic_data {
 #define LINUX_MACHTYPE_8064_MPQ_CDP 3993
 #define LINUX_MACHTYPE_8064_MPQ_HRD 3994
 #define LINUX_MACHTYPE_8064_MPQ_DTV 3995
-#define LINUX_MACHTYPE_8064_HRD     3994
-#define LINUX_MACHTYPE_8064_DTV     3995
-#define LINUX_MACHTYPE_8064_MITWO   4180
+#define LINUX_MACHTYPE_8064_EP      3996
+#define LINUX_MACHTYPE_8064_MPQ_DMA 4511
 
-struct board_data {
-	uint32_t platform;
-	uint32_t foundry_id;
-	uint32_t platform_version;
-	uint32_t platform_hw;
-	uint32_t platform_subtype;
-	uint32_t target;
-	uint32_t baseband;
-	struct board_pmic_data pmic_info[MAX_PMIC_DEVICES];
-	uint32_t platform_hlos_subtype;
-};
-
-void board_init();
-void target_detect(struct board_data *);
-void target_baseband_detect(struct board_data *);
-uint32_t board_platform_id();
-uint32_t board_target_id();
-uint32_t board_baseband();
-uint32_t board_hardware_id();
-uint8_t board_pmic_info(struct board_pmic_data *, uint8_t num_ent);
-uint32_t board_soc_version();
-uint32_t board_hardware_subtype(void);
-uint32_t board_get_ddr_subtype(void);
-uint32_t board_hlos_subtype(void);
-uint32_t board_pmic_target(uint8_t num_ent);
-
-/* DDR Subtype Macros
- * Determine the DDR Size on the device and define
- * the below subtype enums based on the DDR size.
- * These defines are matched with that of the DT
- * subtype
- */
-
-#define MB             (1024 * 1024)
-#define DDR_512MB      (512 * MB)
-
-enum subtype_ddr {
-       SUBTYPE_512MB = 1,
-};
-
-uint32_t board_foundry_id(void);
 #endif

@@ -20,27 +20,16 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __PLATFORM_MSM8960_H
-#define __PLATFORM_MSM8960_H
+#ifndef __TARGET_MSM8960_H
+#define __TARGET_MSM8960_H
 
-#include <platform/iomap.h>
-#include <platform/irqs.h>
-#include <platform/clock.h>
-#include <platform/gpio.h>
+void apq8064_keypad_init(void);
+void msm8960_keypad_init(void);
+void msm8930_keypad_init(void);
+void target_mmc_caps(struct mmc_host *host);
 
-#define MAX_INT NR_IRQS
-
-uint8_t platform_pmic_type(uint32_t pmic_type);
-void apq8064_keypad_gpio_init();
-void clock_config_mmc(uint32_t interface, uint32_t freq);
-void clock_init_mmc(uint32_t interface);
-void msm_clocks_init(void);
-void mmss_clock_init(void);
-void mmss_clock_disable(void);
-
-#if TARGET_MSM8960_ARIES
-void mi_display_gpio_init();
-#endif
+void target_force_cont_splash_disable(uint8_t override);
+uint32_t oem_panel_max_auto_detect_panels();
 
 #endif
 
