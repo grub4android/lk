@@ -36,6 +36,7 @@
 #include <platform/msm_shared.h>
 #include <board.h>
 #include <malloc.h>
+#include <splash.h>
 
 static struct msm_fb_panel_data *panel;
 
@@ -271,7 +272,7 @@ int msm_display_init(struct msm_fb_panel_data *pdata)
 		goto msm_display_init_out;
 
 	fbcon_setup(&(panel->fb));
-	//display_image_on_screen();
+	display_image_on_screen();
 	ret = msm_display_config();
 	if (ret)
 		goto msm_display_init_out;
@@ -383,4 +384,17 @@ int msm_display_off()
 
 msm_display_off_out:
 	return ret;
+}
+
+int platform_get_splash_image(struct fbimage* fbimg, bool* flag) {
+	fbimg->header.width = SPLASH_IMAGE_HEIGHT;
+	fbimg->header.height = SPLASH_IMAGE_WIDTH;
+#if DISPLAY_TYPE_MIPI
+	fbimg->image = (unsigned char *)imageBuffer_rgb888;
+#else
+	fbimg->image = (unsigned char *)imageBuffer;
+#endif
+
+	*flag = false;
+	return NO_ERROR;
 }
