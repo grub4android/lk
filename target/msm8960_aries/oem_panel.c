@@ -30,7 +30,7 @@
 #include <debug.h>
 #include <err.h>
 #include <string.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/msm_panel.h>
 #include <platform/msm_shared/board.h>
 #include <platform/msm_shared/mipi_dsi.h>

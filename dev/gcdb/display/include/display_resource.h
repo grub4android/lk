@@ -34,7 +34,7 @@
 /* HEADER files                                                              */
 /*---------------------------------------------------------------------------*/
 #include <debug.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/board.h>
 
 #define TOTAL_LDO_CTRL 5

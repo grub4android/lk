@@ -28,7 +28,7 @@
  */
 
 #include <smd.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <debug.h>
 #include <platform/irqs.h>
 #include <platform/iomap.h>

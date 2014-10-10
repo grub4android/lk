@@ -38,9 +38,9 @@
 #include <platform/interrupts.h>
 #include <platform/clock.h>
 #include <platform/gpio.h>
-#include "platform_p.h"
 #include <platform/msm_shared/uart_dm.h>
 #include <platform/msm_shared/gsbi.h>
+#include <platform/msm_shared/timer.h>
 
 #ifndef NULL
 #define NULL        0

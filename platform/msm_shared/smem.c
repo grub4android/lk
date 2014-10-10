@@ -33,8 +33,7 @@
 #include <sys/types.h>
 #include <platform/iomap.h>
 #include <platform/msm_shared.h>
-
-#include "smem.h"
+#include <platform/msm_shared/smem.h>
 
 static struct smem *smem;
 

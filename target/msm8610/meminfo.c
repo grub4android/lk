@@ -30,7 +30,7 @@
 #include <debug.h>
 #include <assert.h>
 #include <malloc.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <stdint.h>
 #include <libfdt.h>
 #include <platform/iomap.h>

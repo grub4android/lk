@@ -34,7 +34,7 @@
 /* HEADER files                                                              */
 /*---------------------------------------------------------------------------*/
 #include <debug.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 
 #define TOTAL_RESET_GPIO_CTRL 5
 

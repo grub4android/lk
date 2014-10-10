@@ -37,7 +37,7 @@
 #include <platform/msm_shared/mmc.h>
 #include <platform/msm_shared/clock.h>
 #include <platform/msm_shared/board.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 
 /* Set rate and enable the clock */
 static void clock_config(uint32_t ns, uint32_t md, uint32_t ns_addr, uint32_t md_addr)

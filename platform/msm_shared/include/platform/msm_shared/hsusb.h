@@ -28,8 +28,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _MSM7200_USB_H_
-#define _MSM7200_USB_H_
+#ifndef __PLATFORM_MSM_SHARED_USB_H_
+#define __PLATFORM_MSM_SHARED_USB_H_
 
 #ifndef MSM_USB_BASE
 #define MSM_USB_BASE 0xA0800000

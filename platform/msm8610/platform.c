@@ -35,7 +35,7 @@
 #include <platform/clock.h>
 #include <kernel/vm.h>
 #include <arch/arm/mmu.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/board.h>
 #include <platform/msm_shared/boot_stats.h>
 

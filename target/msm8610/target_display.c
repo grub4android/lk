@@ -28,7 +28,7 @@
  */
 
 #include <debug.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <err.h>
 #include <string.h>
 #include <platform/msm_shared/msm_panel.h>

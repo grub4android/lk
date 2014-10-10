@@ -35,8 +35,7 @@
 #include <platform/iomap.h>
 #include <lib/ptable_msm.h>
 #include <assert.h>
-
-#include "smem.h"
+#include <platform/msm_shared/smem.h>
 
 
 /* partition table from SMEM */

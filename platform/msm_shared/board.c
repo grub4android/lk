@@ -29,7 +29,7 @@
 
 #include <debug.h>
 #include <platform/msm_shared/board.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/baseband.h>
 #include <assert.h>
 

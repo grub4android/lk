@@ -33,8 +33,6 @@
 #include <platform/msm_shared/mipi_dsi.h>
 #include <platform/iomap.h>
 
-#include "platform_p.h"
-
 #ifndef MIPI_DSI0_BASE
 #define MIPI_DSI0_BASE MIPI_DSI_BASE
 #endif

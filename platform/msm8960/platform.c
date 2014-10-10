@@ -40,8 +40,7 @@
 #include <kernel/vm.h>
 #include <arch/arm/mmu.h>
 #include <platform/msm_shared/board.h>
-
-#include "platform_p.h"
+#include <platform/msm_shared/timer.h>
 
 static uint32_t ticks_per_sec = 0;
 

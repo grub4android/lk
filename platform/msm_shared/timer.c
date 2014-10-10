@@ -41,7 +41,7 @@
 #include <platform/interrupts.h>
 #include <platform/timer.h>
 #include <platform/msm8960.h>
-#include "platform_p.h"
+#include <platform/msm_shared/timer.h>
 
 #define LOCAL_TRACE 0
 

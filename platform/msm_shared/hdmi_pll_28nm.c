@@ -30,7 +30,7 @@
 #include <debug.h>
 #include <err.h>
 #include <reg.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <bits.h>
 #include <platform/msm_shared/msm_panel.h>
 #include <platform/timer.h>

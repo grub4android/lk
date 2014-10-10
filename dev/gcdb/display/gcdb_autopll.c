@@ -29,7 +29,7 @@
 
 #include <debug.h>
 #include <err.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/msm_panel.h>
 #include <platform/msm_shared/mipi_dsi.h>
 

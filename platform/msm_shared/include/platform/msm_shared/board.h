@@ -31,7 +31,7 @@
 #ifndef __PLATFORM_MSM_SHARED_BOARD_H
 #define __PLATFORM_MSM_SHARED_BOARD_H
 
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <arch/arm/mmu.h>
 
 #define LINUX_MACHTYPE_UNKNOWN 0

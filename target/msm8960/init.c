@@ -33,7 +33,7 @@
 #include <debug.h>
 #include <printf.h>
 #include <lib/ptable_msm.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/iomap.h>
 #include <platform/msm_shared/mmc.h>
 #include <platform/timer.h>

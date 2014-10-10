@@ -41,11 +41,11 @@
 #include <platform/gpio.h>
 #include <platform/msm_shared/spmi.h>
 #include <platform/msm_shared/board.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/baseband.h>
 #include <dev/keys.h>
 #include <pm8x41.h>
-#include <hsusb.h>
+#include <platform/msm_shared/hsusb.h>
 #include <kernel/thread.h>
 #include <arch/defines.h>
 #include <stdlib.h>

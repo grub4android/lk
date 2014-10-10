@@ -37,7 +37,7 @@
 #include <platform/msm_shared/gsbi.h>
 #include <dev/pm8921.h>
 #include <sys/types.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/board.h>
 
 typedef struct gpioregs gpioregs;

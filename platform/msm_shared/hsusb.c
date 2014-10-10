@@ -44,7 +44,7 @@
 #include <kernel/vm.h>
 #include <reg.h>
 #include <dev/udc.h>
-#include "hsusb.h"
+#include <platform/msm_shared/hsusb.h>
 
 #define MAX_TD_XFER_SIZE  (16 * 1024)
 

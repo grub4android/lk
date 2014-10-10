@@ -36,7 +36,7 @@
 #include <crypto4_eng.h>
 #include <platform/msm_shared/crypto_hash.h>
 #include <platform/msm_shared/scm.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/board.h>
 
 extern void ce_async_reset();

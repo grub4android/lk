@@ -43,7 +43,7 @@
 #include <usb30_dwc.h>
 #include <usb30_wrapper.h>
 #include <usb30_udc.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 #include <platform/msm_shared/board.h>
 #include <platform/timer.h>
 

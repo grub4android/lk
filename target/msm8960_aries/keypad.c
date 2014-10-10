@@ -39,7 +39,7 @@
 #include <platform/msm8960.h>
 #include <sys/types.h>
 #include <platform/msm_shared/board.h>
-#include <smem.h>
+#include <platform/msm_shared/smem.h>
 
 #define BITS_IN_ELEMENT(x) (sizeof(x) * 8)
 #define KEYMAP_INDEX(row, col) (row)* BITS_IN_ELEMENT(unsigned int) + (col)
