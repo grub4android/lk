@@ -69,6 +69,8 @@
 #include <openssl/conf_api.h>
 #include <openssl/e_os.h>
 
+extern char* getenv(const char*);
+
 static void value_free_hash_doall_arg(CONF_VALUE *a,
 				      LHASH_OF(CONF_VALUE) *conf);
 static void value_free_stack_doall(CONF_VALUE *a);
@@ -285,7 +287,7 @@ CONF_VALUE *_CONF_new_section(CONF *conf, const char *section)
 	v->value=(char *)sk;
 	
 	vv=lh_CONF_VALUE_insert(conf->data,v);
-	assert(vv == NULL);
+	ASSERT(vv == NULL);
 	ok=1;
 err:
 	if (!ok)

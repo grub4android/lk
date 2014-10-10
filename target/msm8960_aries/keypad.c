@@ -30,11 +30,13 @@
 
 #include <string.h>
 #include <debug.h>
+#include <err.h>
 #include <dev/keys.h>
 #include <dev/ssbi.h>
 #include <dev/gpio_keypad.h>
 #include <dev/pm8921.h>
 #include <platform/gpio.h>
+#include <platform/msm8960.h>
 #include <sys/types.h>
 #include <board.h>
 #include <smem.h>
@@ -167,10 +169,10 @@ int led_kp_set( int current,
 	if (rc)
 	{
 		dprintf(CRITICAL, "FAIL pm8921_config_drv_keypad(): rc=%d.\n", rc);
-		return -1;
+		return rc;
 	}
 
-	return 0;
+	return NO_ERROR;
 }
 
 /* Configure gpio 26 through lpg2 */

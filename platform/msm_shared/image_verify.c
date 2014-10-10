@@ -28,6 +28,8 @@
 #include <x509.h>
 #include <certificate.h>
 #include <crypto_hash.h>
+#include <string.h>
+#include <err/err.h>
 #include "image_verify.h"
 #include "scm.h"
 
@@ -63,7 +65,7 @@ image_decrypt_signature(unsigned char *signature_ptr, unsigned char *plain_text)
 	 */
 	int ret = -1;
 	X509 *x509_certificate = NULL;
-	unsigned char *cert_ptr = certBuffer;
+	const unsigned char *cert_ptr = (const unsigned char*)certBuffer;
 	unsigned int cert_size = sizeof(certBuffer);
 	EVP_PKEY *pub_key = NULL;
 	RSA *rsa_key = NULL;
@@ -130,7 +132,7 @@ image_verify(unsigned char *image_ptr,
 	     unsigned int image_size, unsigned hash_type)
 {
 
-	int ret = -1;
+	unsigned ret = -1;
 	int auth = 0;
 	unsigned char *plain_text = NULL;
 	unsigned int digest[8];

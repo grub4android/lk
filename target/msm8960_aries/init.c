@@ -31,7 +31,9 @@
  * SUCH DAMAGE.
  */
 
+#include <err.h>
 #include <debug.h>
+#include <printf.h>
 #include <lib/ptable.h>
 #include <smem.h>
 #include <platform/iomap.h>
@@ -44,20 +46,17 @@
 #include <dev/ssbi.h>
 #include <gsbi.h>
 #include <target.h>
+#include <target/msm8960.h>
 #include <platform.h>
 #include <dload_util.h>
 #include <baseband.h>
 #include <uart_dm.h>
 #include <crypto_hash.h>
 #include <board.h>
+#include <platform/msm_shared/timer.h>
 #include <target/board.h>
 #include <assert.h>
 #include <arch/defines.h>
-
-extern void msm8960_keypad_init(void);
-extern void msm8930_keypad_init(void);
-extern void panel_backlight_on_mitwo(unsigned int on);
-extern void panel_backlight_on_mitwoa(unsigned int on);
 
 static unsigned mmc_sdc_base[] =
     { MSM_SDC1_BASE, MSM_SDC2_BASE, MSM_SDC3_BASE, MSM_SDC4_BASE };
@@ -179,7 +178,7 @@ crypto_engine_type board_ce_type(void)
 	return platform_ce_type;
 }
 
-unsigned target_baseband()
+unsigned target_baseband(void)
 {
 	return board_baseband();
 }
@@ -492,7 +491,7 @@ void target_baseband_detect(struct board_data *board)
 static uint8_t splash_override;
 
 /* Returns 1 if target supports continuous splash screen. */
-int target_cont_splash_screen()
+int target_cont_splash_screen(void)
 {
 	uint8_t splash_screen = 0;
 	if(!splash_override) {
@@ -525,7 +524,7 @@ void target_force_cont_splash_disable(uint8_t override)
 	splash_override = override;
 }
 
-void apq8064_ext_3p3V_enable()
+void apq8064_ext_3p3V_enable(void)
 {
 	/* Configure GPIO for output */
 	gpio_tlmm_config(77, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA, GPIO_ENABLE);

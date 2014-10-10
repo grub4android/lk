@@ -1,17 +1,17 @@
 /* Copyright (c) 2012, The Linux Foundation. All rights reserved.
- *
+
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials provided
- *       with the distribution.
- *     * Neither the name of The Linux Foundation nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of The Linux Foundation nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -26,13 +26,14 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __CRYPTO5_WRAPPER_H__
-#define __CRYPYO5_WRAPPER_H__
+#ifndef __PLATFORM_MSM_SHARED_TIMER_H_
+#define __PLATFORM_MSM_SHARED_TIMER_H_
 
-#include <crypto5_eng.h>
+void platform_init_timer(void);
+void platform_uninit_timer(void);
+uint32_t platform_tick_rate(void);
 
-void crypto_init_params(struct crypto_init_params * params);
-uint32_t crypto_get_max_auth_blk_size(void);
-void crypto_eng_cleanup(void);
+void mdelay(unsigned msecs);
+void udelay(unsigned usecs);
 
 #endif

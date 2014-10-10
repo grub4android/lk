@@ -33,6 +33,7 @@
 #include <baseband.h>
 #include <assert.h>
 #include <arch/arm.h>
+#include <boot_device.h>
 
 #if DEVICE_TREE
 #include <dev_tree.h>
@@ -46,10 +47,11 @@ static struct board_data board = {UNKNOWN,
 	HW_PLATFORM_SUBTYPE_UNKNOWN,
 	LINUX_MACHTYPE_UNKNOWN,
 	BASEBAND_MSM,
-	{{PMIC_IS_INVALID, 0}, {PMIC_IS_INVALID, 0}, {PMIC_IS_INVALID, 0}},
+	{{PMIC_IS_INVALID, 0, 0}, {PMIC_IS_INVALID, 0, 0}, {PMIC_IS_INVALID, 0, 0}},
+	0
 };
 
-static void platform_detect()
+static void platform_detect(void)
 {
 	struct smem_board_info_v6 board_info_v6;
 	struct smem_board_info_v7 board_info_v7;
@@ -170,7 +172,7 @@ static void platform_detect()
 	}
 }
 
-void board_init()
+void board_init(void)
 {
 	platform_detect();
 	target_detect(&board);
@@ -182,17 +184,17 @@ uint32_t board_platform_id(void)
 	return board.platform;
 }
 
-uint32_t board_target_id()
+uint32_t board_target_id(void)
 {
 	return board.target;
 }
 
-uint32_t board_baseband()
+uint32_t board_baseband(void)
 {
 	return board.baseband;
 }
 
-uint32_t board_hardware_id()
+uint32_t board_hardware_id(void)
 {
 	return board.platform_hw;
 }
@@ -229,7 +231,7 @@ uint32_t board_pmic_target(uint8_t num_ent)
 	return 0;
 }
 
-uint32_t board_soc_version()
+uint32_t board_soc_version(void)
 {
 	return board.platform_version;
 }

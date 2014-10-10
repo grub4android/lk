@@ -178,8 +178,6 @@ int ext4_block_get(struct ext4_blockdev *bdev, struct ext4_block *b,
 
 int ext4_block_set(struct ext4_blockdev *bdev, struct ext4_block *b)
 {
-    uint64_t pba;
-    uint32_t pb_cnt;
     int r;
 
     ext4_assert(bdev && b);
@@ -206,12 +204,13 @@ int ext4_block_set(struct ext4_blockdev *bdev, struct ext4_block *b)
     }
 
 
-    pba = (b->lb_id * bdev->lg_bsize) / bdev->ph_bsize;
-    pb_cnt = bdev->lg_bsize / bdev->ph_bsize;
+    
 
 #if CONFIG_EXT4_READONLY
     r = EOK;
 #else
+	uint64_t pba = (b->lb_id * bdev->lg_bsize) / bdev->ph_bsize;
+	uint32_t pb_cnt = bdev->lg_bsize / bdev->ph_bsize;
     r = bdev->bwrite(bdev, b->data, pba, pb_cnt);
 #endif
     bdev->bc->dirty[b->cache_id] = false;
@@ -245,19 +244,15 @@ int ext4_blocks_get_direct(struct ext4_blockdev *bdev, void *buf,
 int ext4_blocks_set_direct(struct ext4_blockdev *bdev, const void *buf,
     uint64_t lba, uint32_t cnt)
 {
-    uint64_t pba;
-    uint32_t pb_cnt;
-
     ext4_assert(bdev && buf);
-
-    pba = (lba * bdev->lg_bsize) / bdev->ph_bsize;
-    pb_cnt = bdev->lg_bsize / bdev->ph_bsize;
 
     bdev->bwrite_ctr++;
 
 #if CONFIG_EXT4_READONLY
     return EOK;
 #else
+	uint32_t pb_cnt = bdev->lg_bsize / bdev->ph_bsize;
+	uint64_t pba = (lba * bdev->lg_bsize) / bdev->ph_bsize;
     return bdev->bwrite(bdev, buf, pba, pb_cnt * cnt);
 #endif
 }

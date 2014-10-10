@@ -186,10 +186,12 @@ static int def_load(CONF *conf, const char *name, long *line)
 	int ret;
 	BIO *in=NULL;
 
+#ifndef OPENSSL_NO_FP_API
 #ifdef OPENSSL_SYS_VMS
 	in=BIO_new_file(name, "r");
 #else
 	in=BIO_new_file(name, "rb");
+#endif
 #endif
 	if (in == NULL)
 		{
@@ -213,13 +215,13 @@ static int def_load_bio(CONF *conf, BIO *in, long *line)
 	int bufnum=0,i,ii;
 	BUF_MEM *buff=NULL;
 	char *s,*p,*end;
-	int again,n;
+	int again;
 	long eline=0;
 	char btmp[DECIMAL_SIZE(eline)+1];
 	CONF_VALUE *v=NULL,*tv;
 	CONF_VALUE *sv=NULL;
 	char *section=NULL,*buf;
-	STACK_OF(CONF_VALUE) *section_sk=NULL,*ts;
+	STACK_OF(CONF_VALUE) *section_sk=NULL,*ts __UNUSED;
 	char *start,*psection,*pname;
 	void *h = (void *)(conf->data);
 
@@ -309,7 +311,6 @@ static int def_load_bio(CONF *conf, BIO *in, long *line)
 		buf=buff->data;
 
 		clear_comments(conf, buf);
-		n=strlen(buf);
 		s=eat_ws(conf, buf);
 		if (IS_EOF(conf,*s)) continue; /* blank line */
 		if (*s == '[')
@@ -465,9 +466,6 @@ err:
 
 static void clear_comments(CONF *conf, char *p)
 	{
-	char *to;
-
-	to=p;
 	for (;;)
 		{
 		if (IS_FCOMMENT(conf,*p))

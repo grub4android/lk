@@ -37,23 +37,23 @@
 /*---------------------------------------------------------------------------*/
 /* GPIO configuration                                                        */
 /*---------------------------------------------------------------------------*/
-static struct gpio_pin reset_gpio = {
+static struct gpio_pin reset_gpio __UNUSED = {
   "msmgpio", 41, 3, 1, 0, 1
 };
 
-static struct gpio_pin enable_gpio = {
+static struct gpio_pin enable_gpio __UNUSED = {
   0, 0, 0, 0, 0, 0
 };
 
-static struct gpio_pin te_gpio = {
+static struct gpio_pin te_gpio __UNUSED = {
   "msmgpio", 12, 0, 2, 0, 1
 };
 
-static struct gpio_pin pwm_gpio = {
+static struct gpio_pin pwm_gpio __UNUSED = {
   0, 0, 0, 0, 0, 0
 };
 
-static struct gpio_pin mode_gpio = {
+static struct gpio_pin mode_gpio __UNUSED = {
   "msmgpio", 7, 3, 1, 0, 1
 };
 
@@ -61,7 +61,7 @@ static struct gpio_pin mode_gpio = {
 /*---------------------------------------------------------------------------*/
 /* Supply configuration                                                      */
 /*---------------------------------------------------------------------------*/
-static struct ldo_entry ldo_entry_array[] = {
+static struct ldo_entry ldo_entry_array[] __UNUSED = {
 { "vddio", 14, 0, 1800000, 100000, 100, 0, 0, 0, 0},
 { "vdda", 19, 0, 2850000, 100000, 100, 0, 0, 0, 0},
 };
@@ -72,19 +72,19 @@ static struct ldo_entry ldo_entry_array[] = {
 /* Target Physical configuration                                             */
 /*---------------------------------------------------------------------------*/
 
-static const uint32_t panel_strength_ctrl[] = {
+static const uint32_t panel_strength_ctrl[] __UNUSED = {
   0xff, 0x06
 };
 
-static const char panel_bist_ctrl[] = {
+static const char panel_bist_ctrl[] __UNUSED = {
   0x03, 0x03, 0x00, 0x00, 0x0f, 0x00
 };
 
-static const uint32_t panel_regulator_settings[] = {
+static const uint32_t panel_regulator_settings[] __UNUSED = {
   0x02, 0x08, 0x05, 0x00, 0x20, 0x03, 0x00
 };
 
-static const char panel_lane_config[] = {
+static const char panel_lane_config[] __UNUSED = {
 	0x80, 0x45, 0x00, 0x00, 0x00, 0x01, 0x66, 0x00, 0x00,
 	0x80, 0x45, 0x00, 0x00, 0x00, 0x01, 0x66, 0x00, 0x00,
 	0x80, 0x45, 0x00, 0x00, 0x00, 0x01, 0x66, 0x00, 0x00,
@@ -92,7 +92,7 @@ static const char panel_lane_config[] = {
 	0x40, 0x67, 0x00, 0x00, 0x00, 0x01, 0x88, 0x00, 0x00
 };
 
-static const uint32_t panel_physical_ctrl[] = {
+static const uint32_t panel_physical_ctrl[] __UNUSED = {
   0x7f, 0x00, 0x00, 0x00
 };
 

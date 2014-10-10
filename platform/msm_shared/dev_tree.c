@@ -34,6 +34,7 @@
 #include <qpic_nand.h>
 #include <stdlib.h>
 #include <string.h>
+#include <target.h>
 #include <platform.h>
 #include <board.h>
 #include <list.h>
@@ -489,7 +490,7 @@ void *dev_tree_appended(void *kernel, uint32_t kernel_size, void *tags)
 			break;
 		dtb_size = fdt_totalsize(&dtb_hdr);
 
-		if (check_aboot_addr_range_overlap(tags, dtb_size)) {
+		if (check_aboot_addr_range_overlap((unsigned)tags, dtb_size)) {
 			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 			return NULL;
 		}
@@ -518,7 +519,7 @@ void *dev_tree_appended(void *kernel, uint32_t kernel_size, void *tags)
 	}
 	/* free queue's memory */
 	list_for_every_entry(&dt_entry_queue->node, dt_node_tmp1, dt_node, node) {
-		dt_node_tmp2 = dt_node_tmp1->node.prev;
+		dt_node_tmp2 = (struct dt_entry_node*)dt_node_tmp1->node.prev;
 		dt_entry_list_delete(dt_node_tmp1);
 		dt_node_tmp1 = dt_node_tmp2;
 	}
@@ -723,7 +724,7 @@ static int platform_dt_absolute_compat_match(struct dt_entry_node *dt_list, uint
 				dt_node_tmp1->dt_entry_m->pmic_rev[2], dt_node_tmp1->dt_entry_m->pmic_rev[3],
 				dt_node_tmp1->dt_entry_m->offset, dt_node_tmp1->dt_entry_m->size);
 
-			dt_node_tmp2 = dt_node_tmp1->node.prev;
+			dt_node_tmp2 = (struct dt_entry_node*)dt_node_tmp1->node.prev;
 			dt_entry_list_delete(dt_node_tmp1);
 			dt_node_tmp1 = dt_node_tmp2;
 			delete_current_dt = 0;
@@ -792,7 +793,7 @@ static int update_dtb_entry_node(struct dt_entry_node *dt_list, uint32_t dtb_inf
 				dt_node_tmp1->dt_entry_m->pmic_rev[2], dt_node_tmp1->dt_entry_m->pmic_rev[3],
 				dt_node_tmp1->dt_entry_m->offset, dt_node_tmp1->dt_entry_m->size);
 
-			dt_node_tmp2 = dt_node_tmp1->node.prev;
+			dt_node_tmp2 = (struct dt_entry_node*)dt_node_tmp1->node.prev;
 			dt_entry_list_delete(dt_node_tmp1);
 			dt_node_tmp1 = dt_node_tmp2;
 		}
@@ -836,7 +837,7 @@ static int update_dtb_entry_node(struct dt_entry_node *dt_list, uint32_t dtb_inf
 				dt_node_tmp1->dt_entry_m->pmic_rev[2], dt_node_tmp1->dt_entry_m->pmic_rev[3],
 				dt_node_tmp1->dt_entry_m->offset, dt_node_tmp1->dt_entry_m->size);
 
-			dt_node_tmp2 = dt_node_tmp1->node.prev;
+			dt_node_tmp2 = (struct dt_entry_node*)dt_node_tmp1->node.prev;
 			dt_entry_list_delete(dt_node_tmp1);
 			dt_node_tmp1 = dt_node_tmp2;
 		}
@@ -1046,7 +1047,7 @@ int dev_tree_get_entry_info(struct dt_table *table, struct dt_entry *dt_entry_in
 
 	list_for_every_entry(&dt_entry_queue->node, dt_node_tmp1, dt_node, node) {
 		/* free node memory */
-		dt_node_tmp2 = dt_node_tmp1->node.prev;
+		dt_node_tmp2 = (struct dt_entry_node*)dt_node_tmp1->node.prev;
 		dt_entry_list_delete(dt_node_tmp1);
 		dt_node_tmp1 = dt_node_tmp2;
 	}
@@ -1258,7 +1259,6 @@ int update_device_tree(void *fdt, const char *cmdline,
 {
 	int ret = 0;
 	uint32_t offset;
-	int i;
 
 	/* Check the device tree header */
 	ret = fdt_check_header(fdt);
@@ -1337,6 +1337,7 @@ int update_device_tree(void *fdt, const char *cmdline,
 	/* Add chosen props from original ATAG's */
 	struct original_atags_info* info = board_get_original_atags_info();
 	if(info!=NULL) {
+		int i;
 		for(i=info->num_chosen_props-1; i>=0; i--) {
 			if(!strcmp("bootargs", info->chosen_props[i].name)) continue;
 			if(!strcmp("linux,initrd-start", info->chosen_props[i].name)) continue;

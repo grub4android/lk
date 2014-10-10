@@ -256,7 +256,7 @@ static int grub_sideload_handler(void *data)
 
 	// BOOT !
 	void (*entry)(unsigned, unsigned, unsigned*) = (void*)hdr->kernel_addr;
-	dprintf(INFO, "booting GRUB from sideload @ %p ramdisk @ %p\n", entry, hdr->ramdisk_addr);
+	dprintf(INFO, "booting GRUB from sideload @ %p ramdisk @ %p\n", entry, (void*)hdr->ramdisk_addr);
 	entry(0, board_machtype(), NULL);
 
 	return 0;

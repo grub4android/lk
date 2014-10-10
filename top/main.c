@@ -39,6 +39,7 @@
 #include <lk/init.h>
 #if WITH_PLATFORM_MSM_SHARED
 #include <boot_stats.h>
+#include <scm.h>
 #endif
 
 extern void *__ctor_list;

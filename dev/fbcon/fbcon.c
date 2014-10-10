@@ -210,10 +210,10 @@ struct fbcon_config* fbcon_display(void)
 }
 
 
-extern struct fbimage* fetch_image_from_partition();
+extern struct fbimage* fetch_image_from_partition(void);
 void fbcon_putImage(struct fbimage *fbimg, bool flag);
 
-void display_image_on_screen()
+void display_image_on_screen(void)
 {
 	struct fbimage default_fbimg, *fbimg;
 	bool flag = true;
@@ -269,12 +269,15 @@ void fbcon_putImage(struct fbimage *fbimg, bool flag)
 		return;
 	}
 
-	if(fbimg) {
-		header = &fbimg->header;
-		width = pitch = header->width;
-		height = header->height;
-		logo_base = (unsigned char *)fbimg->image;
+	if(!fbimg) {
+		dprintf(CRITICAL,"fbimg is NULL!\n");
+		return;
 	}
+
+	header = &fbimg->header;
+	width = pitch = header->width;
+	height = header->height;
+	logo_base = (unsigned char *)fbimg->image;
 
 	total_x = config->width;
 	total_y = config->height;

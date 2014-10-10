@@ -183,7 +183,7 @@ static int API_udelay(va_list ap)
 	if ((d = (unsigned long *)va_arg(ap, uint32_t)) == NULL)
 		return API_EINVAL;
 
-	udelay(*d);
+	spin(*d);
 	return 0;
 }
 
@@ -592,7 +592,7 @@ static int API_display_fb_flush(va_list ap)
 {
 #if TARGET_MSM8960_ARIES
 	trigger_mdp_dsi();
-	mdelay(10);
+	spin(10000);
 #endif
 	return 0;
 }
@@ -614,7 +614,7 @@ static int keymap[MAX_KEYS];
 static int API_input_getkey(va_list ap)
 {
 	// small delay to prevent unwanted keypresses
-	mdelay(50);
+	spin(50000);
 
 	CHECK_AND_REPORT_KEY(KEY_UP, target_volume_up());
 	CHECK_AND_REPORT_KEY(KEY_DOWN, target_volume_down());

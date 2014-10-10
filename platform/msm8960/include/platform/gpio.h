@@ -30,9 +30,7 @@
 #ifndef __PLATFORM_MSM8960_GPIO_H
 #define __PLATFORM_MSM8960_GPIO_H
 
-/* GPIO TLMM: Direction */
-#define GPIO_INPUT      0
-#define GPIO_OUTPUT     1
+#include <dev/gpio.h>
 
 /* GPIO TLMM: Pullup/Pulldown */
 #define GPIO_NO_PULL    0
@@ -77,9 +75,17 @@
 
 void gpio_config_i2c(uint8_t gsbi_id);
 void gpio_config_uart_dm(uint8_t id);
-void msm8960_keypad_gpio_init();
-void msm8930_keypad_gpio_init();
+void msm8960_keypad_gpio_init(void);
+void msm8930_keypad_gpio_init(void);
 void pmic8921_gpio_set(uint32_t gpio, uint32_t level);
-uint32_t pmic8921_gpio_get(uint32_t gpio);
+uint8_t pmic8921_gpio_get(uint32_t gpio);
+
+void gpio_tlmm_config(uint32_t gpio,
+			uint8_t func,
+			uint8_t dir,
+			uint8_t pull,
+			uint8_t drvstr,
+			uint32_t enable);
+void gpio_set(uint32_t gpio, uint32_t dir);
 
 #endif

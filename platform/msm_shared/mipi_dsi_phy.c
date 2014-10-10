@@ -27,13 +27,18 @@
  *
  */
 #include <debug.h>
+#include <err.h>
 #include <reg.h>
 #include <arch/defines.h>
 #include <mipi_dsi.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/iomap.h>
 
-#if (DISPLAY_TYPE_MDSS == 0)
+#ifndef MIPI_DSI0_BASE
 #define MIPI_DSI0_BASE MIPI_DSI_BASE
+#endif
+
+#ifndef MIPI_DSI1_BASE
 #define MIPI_DSI1_BASE MIPI_DSI_BASE
 #endif
 
@@ -238,6 +243,8 @@ int mdss_dsi_phy_regulator_init(struct mdss_dsi_phy_ctrl *pd)
 	/* Regulator ctrl 4 */
 	writel(pd->regulator[4], DSI0_PHY_BASE + off + (4 * 4));
 	dmb();
+
+	return NO_ERROR;
 }
 
 int mdss_dsi_v2_phy_init(struct mipi_dsi_panel_config *pinfo, uint32_t ctl_base)
@@ -364,6 +371,7 @@ static int mdss_dsi_phy_28nm_init(struct mipi_dsi_panel_config *pinfo,
 	writel(0x41b, ctl_base + 0x0c4);
 	dmb();
 
+	return NO_ERROR;
 }
 
 void mdss_dsi_phy_contention_detection(
@@ -444,6 +452,8 @@ static int mdss_dsi_phy_20nm_init(struct mipi_dsi_panel_config *pinfo,
 
 	writel(0x41b, ctl_base + MMSS_DSI_CLKOUT_TIMING_CTRL);
 	dmb();
+
+	return NO_ERROR;
 }
 
 int mdss_dsi_phy_init (struct mipi_dsi_panel_config *pinfo,

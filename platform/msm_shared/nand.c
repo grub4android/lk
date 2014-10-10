@@ -27,6 +27,7 @@
  */
 
 #include <debug.h>
+#include <assert.h>
 #include <reg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +77,7 @@ static unsigned NAND_CFG0_RAW, NAND_CFG1_RAW;
 static unsigned ECC_BCH_CFG;
 
 static uint32_t enable_bch_ecc;
-static unsigned int *bbtbl;
+static int *bbtbl;
 
 #define CFG1_WIDE_FLASH (1U << 1)
 
@@ -2025,9 +2026,9 @@ flash_onenand_erase_block(dmov_s * cmdlist, unsigned *ptrlist, unsigned page)
 	unsigned onenand_startaddr2 = DEVICE_BUFFERRAM_0 << 15;
 	unsigned onenand_startbuffer = DATARAM0_0 << 8;
 
-	unsigned controller_status;
-	unsigned interrupt_status;
-	unsigned ecc_status;
+	unsigned controller_status __UNUSED;
+	unsigned interrupt_status __UNUSED;
+	unsigned ecc_status __UNUSED;
 
 	if ((page * flash_pagesize) & (erasesize - 1))
 		return -1;
@@ -2324,9 +2325,9 @@ _flash_onenand_read_page(dmov_s * cmdlist, unsigned *ptrlist,
 	unsigned onenand_sysconfig1 = (raw_mode == 1) ? ONENAND_SYSCFG1_ECCDIS :
 	    ONENAND_SYSCFG1_ECCENA;
 
-	unsigned controller_status;
-	unsigned interrupt_status;
-	unsigned ecc_status;
+	unsigned controller_status __UNUSED;
+	unsigned interrupt_status __UNUSED;
+	unsigned ecc_status __UNUSED;
 	if (raw_mode != 1) {
 		int isbad = 0;
 		isbad = flash_onenand_block_isbad(cmdlist, ptrlist, page);
@@ -2741,9 +2742,9 @@ _flash_onenand_write_page(dmov_s * cmdlist, unsigned *ptrlist,
 	unsigned onenand_sysconfig1 = (raw_mode == 1) ? ONENAND_SYSCFG1_ECCDIS :
 	    ONENAND_SYSCFG1_ECCENA;
 
-	unsigned controller_status;
-	unsigned interrupt_status;
-	unsigned ecc_status;
+	unsigned controller_status __UNUSED;
+	unsigned interrupt_status __UNUSED;
+	unsigned ecc_status __UNUSED;
 
 	char flash_oob[64];
 
@@ -3321,7 +3322,7 @@ static struct ptable *flash_ptable = NULL;
 
 void flash_init(void)
 {
-	int i = 0;
+	unsigned i = 0;
 	ASSERT(flash_ptable == NULL);
 
 	flash_ptrlist = memalign(32, 1024);
@@ -3344,7 +3345,7 @@ void flash_init(void)
 	}
 	/* Create a bad block table */
 	bbtbl =
-	    (unsigned int *)malloc(sizeof(unsigned int) *
+	    (int *)malloc(sizeof(int) *
 				   flash_info.num_blocks);
 	for (i = 0; i < flash_info.num_blocks; i++)
 		bbtbl[i] = -1;

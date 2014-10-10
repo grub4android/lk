@@ -93,10 +93,12 @@ LHASH_OF(CONF_VALUE) *CONF_load(LHASH_OF(CONF_VALUE) *conf, const char *file,
 	LHASH_OF(CONF_VALUE) *ltmp;
 	BIO *in=NULL;
 
+#ifndef OPENSSL_NO_FP_API
 #ifdef OPENSSL_SYS_VMS
 	in=BIO_new_file(file, "r");
 #else
 	in=BIO_new_file(file, "rb");
+#endif
 #endif
 	if (in == NULL)
 		{

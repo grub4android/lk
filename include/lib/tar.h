@@ -3,7 +3,7 @@
 
 #define TMAGIC   "ustar"        /* ustar and a null */
 #define TMAGLEN  6
-#define ALIGN(x, y)	(x + ((y - ((x) & (y-1))) & (y-1)))
+//#define ALIGN(x, y)	(x + ((y - ((x) & (y-1))) & (y-1)))
 
 struct posix_header
 {                              /* byte offset */

@@ -45,7 +45,7 @@
 /*---------------------------------------------------------------------------*/
 static struct panel_config hx8379a_wvga_video_panel_data = {
 	"qcom,mdss_dsi_hx8379a_wvga_video", "dsi:0:", "qcom,mdss-dsi-panel",
-	10, 0, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	10, 0, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,7 +204,7 @@ static struct mipi_dsi_cmd hx8379a_wvga_video_on_command[] = {
 
 #define HX8379A_WVGA_VIDEO_ON_COMMAND 12
 
-
+/*
 static char hx8379a_wvga_videooff_cmd0[] = {
 	0x28, 0x00, 0x05, 0x80
 };
@@ -219,7 +219,7 @@ static struct mipi_dsi_cmd hx8379a_wvga_video_off_command[] = {
 };
 
 #define HX8379A_WVGA_VIDEO_OFF_COMMAND 2
-
+*/
 
 static struct command_state hx8379a_wvga_video_state = {
 	0, 0

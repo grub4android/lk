@@ -27,6 +27,7 @@
  *
  */
 
+#include <debug.h>
 #include <stdint.h>
 #include <reg.h>
 #include <err.h>
@@ -36,13 +37,14 @@
 #include <platform/clock.h>
 #include <dev/fbcon.h>
 #include <dev/lcdc.h>
+#include <platform/msm_shared/timer.h>
 
 #include <msm_panel.h>
 #define MDP_OUTP(addr, val)		writel(val, addr);
 
 void lvds_init(struct msm_panel_info *pinfo)
 {
-	unsigned int lvds_intf, lvds_phy_cfg0;
+	unsigned int lvds_intf = 0, lvds_phy_cfg0 = 0;
 	MDP_OUTP(MDP_BASE + 0xc2034, 0x33);
 	udelay(1000);
 

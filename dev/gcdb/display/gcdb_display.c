@@ -31,19 +31,21 @@
 #include <err.h>
 #include <smem.h>
 #include <msm_panel.h>
+#include <target.h>
 #include <string.h>
 #include <stdlib.h>
 #include <board.h>
 #include <mdp5.h>
 #include <platform/gpio.h>
 #include <mipi_dsi.h>
+#include <platform/msm_shared/timer.h>
 
-#include "include/display_resource.h"
-#include "include/panel.h"
-#include "panel_display.h"
-#include "gcdb_display.h"
-#include "target/display.h"
-#include "gcdb_autopll.h"
+#include <display_resource.h>
+#include <panel.h>
+#include <panel_display.h>
+#include <gcdb_display.h>
+#include <target/display.h>
+#include <gcdb_autopll.h>
 
 /*---------------------------------------------------------------------------*/
 /* static                                                                    */
@@ -57,7 +59,7 @@ static struct mdss_dsi_phy_ctrl dsi_video_mode_phy_db;
 /* Extern                                                                    */
 /*---------------------------------------------------------------------------*/
 extern int msm_display_init(struct msm_fb_panel_data *pdata);
-extern int msm_display_off();
+extern int msm_display_off(void);
 
 static uint32_t panel_backlight_ctrl(uint8_t enable)
 {
@@ -74,7 +76,7 @@ static uint32_t mdss_dsi_panel_reset(uint8_t enable)
 	return ret;
 }
 
-static uint32_t mdss_dsi_panel_clock(uint8_t enable,
+static int mdss_dsi_panel_clock(int enable,
 				struct msm_panel_info *pinfo)
 {
 	uint32_t ret = NO_ERROR;
@@ -90,7 +92,7 @@ static uint32_t mdss_dsi_panel_clock(uint8_t enable,
 	return ret;
 }
 
-static int mdss_dsi_panel_power(uint8_t enable,
+static int mdss_dsi_panel_power(int enable,
 				struct msm_panel_info *pinfo)
 {
 	int ret = NO_ERROR;
@@ -149,7 +151,7 @@ static int mdss_dsi_panel_pre_init(void)
 	return ret;
 }
 
-static int mdss_dsi_bl_enable(uint8_t enable)
+static int mdss_dsi_bl_enable(int enable)
 {
 	int ret = NO_ERROR;
 
@@ -265,7 +267,7 @@ end:
 }
 
 
-static void init_platform_data()
+static void init_platform_data(void)
 {
 	memcpy(dsi_video_mode_phy_db.regulator, panel_regulator_settings,
 							REGULATOR_SIZE);
@@ -282,10 +284,9 @@ static void mdss_edp_panel_init(struct msm_panel_info *pinfo)
 	target_edp_panel_init(pinfo);
 }
 
-static uint32_t mdss_edp_panel_clock(uint8_t enable,
-				struct msm_panel_info *pinfo)
+static int mdss_edp_panel_clock(int enable)
 {
-	return target_edp_panel_clock(enable, pinfo);
+	return target_edp_panel_clock(enable);
 }
 
 static uint32_t mdss_edp_panel_enable(void)
@@ -298,7 +299,7 @@ static uint32_t mdss_edp_panel_disable(void)
 	return target_edp_panel_disable();
 }
 
-static int mdss_edp_panel_power(uint8_t enable,
+static int mdss_edp_panel_power(int enable,
 				struct msm_panel_info *pinfo)
 {
 	int ret = NO_ERROR;
@@ -335,7 +336,7 @@ static int mdss_edp_panel_power(uint8_t enable,
 	return ret;
 }
 
-static int mdss_edp_bl_enable(uint8_t enable)
+static int mdss_edp_bl_enable(int enable)
 {
 	int ret = NO_ERROR;
 

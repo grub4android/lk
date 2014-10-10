@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <printf.h>
 #include <board.h>
 
 struct nameval {

@@ -30,18 +30,23 @@
 #include <debug.h>
 #include <smem.h>
 #include <err.h>
+#include <string.h>
 #include <msm_panel.h>
 #include <mipi_dsi.h>
+#include <platform/timer.h>
 #include <pm8x41.h>
 #include <pm8x41_wled.h>
 #include <board.h>
 #include <platform/gpio.h>
 #include <platform/iomap.h>
+#include <platform/clock.h>
 #include <pm_pwm.h>
 #include <target/display.h>
+#include <target.h>
+#include <gcdb_display.h>
 
-#include "include/panel.h"
-#include "include/display_resource.h"
+#include <panel.h>
+#include <display_resource.h>
 
 #define MODE_GPIO_STATE_ENABLE 1
 
@@ -145,8 +150,8 @@ int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 			0x100 * ldo_entry_array[ldocounter].ldo_id),
 			ldo_entry_array[ldocounter].ldo_type);
 
-		dprintf(SPEW, "Setting %s\n",
-				ldo_entry_array[ldocounter].ldo_id);
+		dprintf(SPEW, "Setting %s(%u)\n",
+				ldo_entry_array[ldocounter].ldo_name, ldo_entry_array[ldocounter].ldo_id);
 
 		/* Set voltage during power on */
 		if (enable) {
@@ -179,7 +184,7 @@ void target_display_init(const char *panel_name)
 
 	do {
 		target_force_cont_splash_disable(false);
-		ret = gcdb_display_init(panel_name, MDP_REV_304, MIPI_FB_ADDR);
+		ret = gcdb_display_init(panel_name, MDP_REV_304, (void*)MIPI_FB_ADDR);
 		if (ret) {
 			/*Panel signature did not match, turn off the display*/
 			target_force_cont_splash_disable(true);

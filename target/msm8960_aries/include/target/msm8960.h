@@ -20,37 +20,18 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __LIB_PRINTF_H
-#define __LIB_PRINTF_H
+#ifndef __TARGET_MSM8960_H
+#define __TARGET_MSM8960_H
 
-#include <stdarg.h>
-#include <compiler.h>
-#include <stddef.h>
+#include <mmc.h>
 
-__BEGIN_CDECLS
+void apq8064_keypad_init(void);
+void msm8960_keypad_init(void);
+void msm8930_keypad_init(void);
+void target_mmc_caps(struct mmc_host *host);
 
-#if !DISABLE_DEBUG_OUTPUT
-#define printf(x...) _printf(x)
-#else
-static inline int __PRINTFLIKE(1, 2) printf(const char *fmt, ...) { return 0; }
-#endif
-
-int _printf(const char *fmt, ...) __PRINTFLIKE(1, 2);
-int sprintf(char *str, const char *fmt, ...) __PRINTFLIKE(2, 3);
-int snprintf(char *str, size_t len, const char *fmt, ...) __PRINTFLIKE(3, 4);
-int vsprintf(char *str, const char *fmt, va_list ap);
-int vsnprintf(char *str, size_t len, const char *fmt, va_list ap);
-
-/* printf engine that parses the format string and generates output */
-
-/* function pointer to pass the printf engine, called back during the formatting.
- * input is a string to output, length bytes to output (or null on string),
- * return code is number of characters that would have been written, or error code (if negative)
- */
-typedef int (*_printf_engine_output_func)(const char *str, size_t len, void *state);
-
-int _printf_engine(_printf_engine_output_func out, void *state, const char *fmt, va_list ap);
-
-__END_CDECLS
+void target_force_cont_splash_disable(uint8_t override);
+uint32_t oem_panel_max_auto_detect_panels(void);
 
 #endif
+

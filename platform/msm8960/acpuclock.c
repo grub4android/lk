@@ -28,6 +28,7 @@
 
 #include <debug.h>
 #include <reg.h>
+#include <printf.h>
 #include <assert.h>
 #include <platform/iomap.h>
 #include <platform/clock.h>
@@ -37,6 +38,7 @@
 #include <clock.h>
 #include <board.h>
 #include <smem.h>
+#include <platform/msm_shared/timer.h>
 
 /* Set rate and enable the clock */
 static void clock_config(uint32_t ns, uint32_t md, uint32_t ns_addr, uint32_t md_addr)
@@ -212,7 +214,6 @@ void clock_config_mmc(uint32_t interface, uint32_t freq)
 {
 	char sdc_clk[64];
 	unsigned rate;
-	uint32_t reg = 0;
 
 	snprintf(sdc_clk, 64, "sdc%u_clk", interface);
 
@@ -268,7 +269,7 @@ void ce_clock_init(void)
 	}
 }
 /* Async Reset CE1 */
-void ce_async_reset()
+void ce_async_reset(void)
 {
 	/* Enable Async reset bit for HCLK CE1 */
 	writel((1<<7) | (1 << 4), CE1_HCLK_CTL_REG);

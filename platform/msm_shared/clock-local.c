@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <clock.h>
 #include <clock-local.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/timer.h>
 
 /*
@@ -121,10 +122,8 @@ static void __local_clk_enable_reg(struct rcg_clk *clk)
 int local_clk_enable(struct clk *c)
 {
 	int rc;
-	struct clk_freq_tbl *cf;
 	struct rcg_clk *clk = to_rcg_clk(c);
 
-	cf = clk->current_freq;
 	rc = clk_enable(clk->depends);
 	if (rc)
 		goto err_dep;
@@ -244,8 +243,6 @@ int branch_clk_enable(struct clk *clk)
 
 void branch_clk_disable(struct clk *clk)
 {
-	struct branch_clk *branch = to_branch_clk(clk);
-
 	/* TODO: Stub function for now */
 }
 

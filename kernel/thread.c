@@ -557,7 +557,7 @@ void thread_preempt(void)
  */
 void thread_block(void)
 {
-	thread_t *current_thread = get_current_thread();
+	thread_t *current_thread __UNUSED = get_current_thread();
 
 #if THREAD_CHECKS
 	ASSERT(current_thread->magic == THREAD_MAGIC);

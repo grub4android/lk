@@ -345,8 +345,8 @@ qpic_nand_init(struct qpic_nand_init_config *config);
 unsigned
 flash_block_size(void);
 void
-qpic_nand_uninit();
+qpic_nand_uninit(void);
 /* Api to return the nand base */
-uint32_t nand_device_base();
+uint32_t nand_device_base(void);
 
 #endif

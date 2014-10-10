@@ -27,7 +27,7 @@
  */
 
 #ifndef __CRYPTO_HASH_H__
-#define __CRYPYO_HASH_H__
+#define __CRYPTO_HASH_H__
 
 #ifndef NULL
 #define NULL		0
@@ -105,7 +105,7 @@ extern void crypto_get_digest(unsigned char *digest_ptr,
 
 extern void crypto_get_ctx(void *ctx_ptr);
 
-extern uint32_t crypto_get_max_auth_blk_size();
+extern uint32_t crypto_get_max_auth_blk_size(void);
 
 static void crypto_init(void);
 
@@ -130,6 +130,10 @@ static crypto_result_type crypto_sha256(unsigned char *buff_ptr,
 static crypto_result_type crypto_sha1(unsigned char *buff_ptr,
 				      unsigned int buff_size,
 				      unsigned char *digest_ptr);
+
+void
+hash_find(unsigned char *addr, unsigned int size, unsigned char *digest,
+	  unsigned char auth_alg);
 
 bool crypto_initialized(void);
 #endif

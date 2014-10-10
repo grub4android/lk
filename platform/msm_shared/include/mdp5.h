@@ -189,7 +189,7 @@
 #define MDSS_MDP_REG_PP_FBC_LOSSY_MODE          0x03C
 
 void mdp_set_revision(int rev);
-int mdp_get_revision();
+int mdp_get_revision(void);
 int mdp_dsi_video_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
 int mipi_dsi_cmd_config(struct fbcon_config mipi_fb_cfg,
 			unsigned short num_of_lanes);

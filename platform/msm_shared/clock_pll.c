@@ -35,6 +35,7 @@
 #include <platform/timer.h>
 #include <clock.h>
 #include <clock_pll.h>
+#include <platform/msm_shared/timer.h>
 
 /*
  * pll_vote_clk functions

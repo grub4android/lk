@@ -29,6 +29,7 @@
 #include <debug.h>
 #include <reg.h>
 #include <platform/iomap.h>
+#include <platform.h>
 #include <qgic.h>
 #include <qtimer.h>
 #include <platform/clock.h>
@@ -37,8 +38,6 @@
 #include <smem.h>
 #include <board.h>
 #include <boot_stats.h>
-
-#define MB (1024*1024)
 
 #define MSM_IOMAP_SIZE ((MSM_IOMAP_END - MSM_IOMAP_BASE)/MB)
 
@@ -82,7 +81,7 @@ uint32_t platform_get_sclk_count(void)
 	return readl(MPM2_MPM_SLEEP_TIMETICK_COUNT_VAL);
 }
 
-addr_t get_bs_info_addr()
+addr_t get_bs_info_addr(void)
 {
 	return ((addr_t)BS_INFO_ADDR);
 }

@@ -25,7 +25,7 @@ endif
 ifeq ($(ENABLE_2NDSTAGE_BOOT),1)
 GLOBAL_DEFINES += BOOT_2NDSTAGE=1
 
-MODULE_SRCS += $(LOCAL_DIR)/2ndstage_tools.o
+MODULE_SRCS += $(LOCAL_DIR)/2ndstage_tools.c
 endif
 
 ifneq ($(SPLASH_PARTITION_NAME),)

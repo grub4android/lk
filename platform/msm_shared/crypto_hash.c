@@ -29,6 +29,8 @@
 #include <string.h>
 #include <debug.h>
 #include <sys/types.h>
+#include <target.h>
+#include <sha/sha.h>
 #include "crypto_hash.h"
 
 static crypto_SHA256_ctx g_sha256_ctx;

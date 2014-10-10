@@ -144,15 +144,15 @@ enum boot_verfiy_event
 
 extern char KEYSTORE_PTN_NAME[];
 /* Function to initialize keystore */
-uint32_t boot_verify_keystore_init();
+uint32_t boot_verify_keystore_init(void);
 /* Function to verify boot/recovery image */
 bool boot_verify_image(unsigned char* img_addr, uint32_t img_size, char *pname);
 /* Function to send event to boot state machine */
 void boot_verify_send_event(uint32_t event);
 /* Read current boot state */
-uint32_t boot_verify_get_state();
+uint32_t boot_verify_get_state(void);
 /* Print current boot state */
-void boot_verify_print_state();
+void boot_verify_print_state(void);
 /* Function to validate keystore */
 bool boot_verify_validate_keystore(unsigned char * user_addr);
 /* Function to check if partition is allowed to flash in verified mode */

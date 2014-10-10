@@ -30,8 +30,11 @@
 #ifndef _PLATFORM_MSM_SHARED_MSM_PANEL_H_
 #define _PLATFORM_MSM_SHARED_MSM_PANEL_H_
 
+#include <err.h>
+#include <debug.h>
 #include <stdint.h>
 #include <dev/fbcon.h>
+#include <platform.h>
 
 #define TRUE	1
 #define FALSE	0
@@ -273,5 +276,25 @@ struct msm_fb_panel_data {
 	int (*post_power_func)(int enable);
 	int (*pre_init_func)(void);
 };
+
+int msm_display_off(void);
+int mdp_lcdc_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
+int lvds_on(struct msm_fb_panel_data *pdata);
+int mdp_lcdc_on(void);
+int mdp_lcdc_off(void);
+int target_display_pre_on(void);
+int target_display_post_on(void);
+int target_display_pre_off(void);
+int target_display_post_off(void);
+int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo);
+void target_edp_panel_init(struct msm_panel_info *pinfo);
+int target_edp_panel_clock(uint8_t enable);
+int target_edp_panel_enable(void);
+int target_edp_panel_disable(void);
+int target_edp_bl_ctrl(int enable);
+int target_hdmi_panel_clock(uint8_t enable, struct msm_panel_info *pinfo);
+int target_hdmi_regulator_ctrl(bool enable);
+int mdss_hdmi_init(void);
+int target_hdmi_gpio_ctrl(bool enable);
 
 #endif

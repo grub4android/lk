@@ -28,6 +28,7 @@
 
 #include <debug.h>
 #include <assert.h>
+#include <malloc.h>
 #include <reg.h>
 #include <spmi.h>
 #include <bits.h>
@@ -45,11 +46,11 @@ static spmi_callback callback;
 static uint32_t pmic_arb_ver;
 static uint8_t *chnl_tbl;
 
-static void spmi_lookup_chnl_number()
+static void spmi_lookup_chnl_number(void)
 {
 	int i;
-	uint8_t slave_id;
-	uint8_t ppid_address;
+	uint8_t slave_id = 0;
+	uint8_t ppid_address = 0;
 	/* We need a max of sid (4 bits) + pid (8bits) of uint8_t's */
 	uint32_t chnl_tbl_sz = BIT(12) * sizeof(uint8_t);
 
@@ -96,7 +97,6 @@ static void write_wdata_from_array(uint8_t *array,
 {
 	uint32_t shift_value[] = {0, 8, 16, 24};
 	int i;
-	int j;
 	uint32_t val = 0;
 
 	/* Write to WDATA */
@@ -128,7 +128,7 @@ static void write_wdata_from_array(uint8_t *array,
 unsigned int pmic_arb_write_cmd(struct pmic_arb_cmd *cmd,
                                 struct pmic_arb_param *param)
 {
-	uint32_t bytes_written = 0;
+	uint8_t bytes_written = 0;
 	uint32_t error;
 	uint32_t val = 0;
 
@@ -242,7 +242,6 @@ unsigned int pmic_arb_read_cmd(struct pmic_arb_cmd *cmd,
 {
 	uint32_t val = 0;
 	uint32_t error;
-	uint32_t addr;
 	uint8_t bytes_read = 0;
 
 	/* Look up for pmic channel only for V2 hardware
@@ -359,7 +358,7 @@ int spmi_acc_irq(uint32_t periph_acc_irq, uint32_t status)
 		return 0;
 }
 
-void spmi_irq()
+enum handler_return spmi_irq(void* data)
 {
 	int i;
 	uint32_t status;
@@ -373,9 +372,11 @@ void spmi_irq()
 		if (status)
 			if (!spmi_acc_irq(i, status))
 				/* Not the correct interrupt, continue to wait */
-				return;
+				return INT_NO_RESCHEDULE;
 	}
 	mask_interrupt(EE0_KRAIT_HLOS_SPMI_PERIPH_IRQ);
+
+	return INT_NO_RESCHEDULE;
 }
 
 /* Enable interrupts on a particular peripheral: periph_id */
@@ -388,7 +389,7 @@ void spmi_enable_periph_interrupts(uint8_t periph_id)
 
 }
 
-void spmi_uninit()
+void spmi_uninit(void)
 {
 	mask_interrupt(EE0_KRAIT_HLOS_SPMI_PERIPH_IRQ);
 }

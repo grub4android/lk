@@ -600,7 +600,7 @@ static void build_SYS_str_reasons(void)
 		if (str->string == NULL)
 			{
 			char (*dest)[LEN_SYS_STR_REASON] = &(strerror_tab[i - 1]);
-			char *src = strerror(i);
+			const char *src = strerror(i);
 			if (src != NULL)
 				{
 				strncpy(*dest, src, sizeof *dest);

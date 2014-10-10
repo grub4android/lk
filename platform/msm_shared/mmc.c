@@ -26,23 +26,26 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <err.h>
 #include <string.h>
 #include <stdlib.h>
 #include <debug.h>
 #include <reg.h>
-#include "mmc.h"
+#include <mmc.h>
 #include <partition_parser.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>
+#include <platform/clock.h>
 #include <bits.h>
 
 #if MMC_BOOT_ADM
-#include "adm.h"
+#include <adm.h>
 #endif
 
 #if MMC_BOOT_BAM
-#include "bam.h"
-#include "mmc_dml.h"
+#include <bam.h>
+#include <mmc_dml.h>
 #endif
 
 #ifndef NULL
@@ -53,6 +56,8 @@
 
 #define MMC_BOOT_DATA_READ     0
 #define MMC_BOOT_DATA_WRITE    1
+
+extern void target_mmc_caps(struct mmc_host *host);
 
 static unsigned int mmc_boot_data_transfer(unsigned int *data_ptr,
 						unsigned int data_len,
@@ -73,19 +78,19 @@ void mmc_boot_dml_init();
 static void mmc_boot_dml_producer_trans_init(unsigned trans_end,
 										     unsigned size);
 
-static void mmc_boot_dml_consumer_trans_init();
+static void mmc_boot_dml_consumer_trans_init(void);
 
-static uint32_t mmc_boot_dml_chk_producer_idle();
+static uint32_t mmc_boot_dml_chk_producer_idle(void);
 
-static void mmc_boot_dml_wait_producer_idle();
-static void mmc_boot_dml_wait_consumer_idle();
-static void mmc_boot_dml_reset();
+static void mmc_boot_dml_wait_producer_idle(void);
+static void mmc_boot_dml_wait_consumer_idle(void);
+static void mmc_boot_dml_reset(void);
 static int mmc_bam_init(uint32_t bam_base);
-static int mmc_bam_transfer_data();
+static int mmc_bam_transfer_data(void);
 static unsigned int
 mmc_boot_bam_setup_desc(unsigned int *data_ptr,
 			    unsigned int data_len, unsigned char direction);
-uint32_t mmc_page_size();
+uint32_t mmc_page_size(void);
 
 #endif
 
@@ -159,12 +164,12 @@ unsigned int SWAP_ENDIAN(unsigned int val)
 									 24);
 }
 
-uint32_t mmc_page_size()
+uint32_t mmc_page_size(void)
 {
 	return BOARD_KERNEL_PAGESIZE;
 }
 
-void mmc_mclk_reg_wr_delay()
+void mmc_mclk_reg_wr_delay(void)
 {
 	if (mmc_host.mmc_cont_version)
 	{
@@ -1939,7 +1944,7 @@ unsigned int mmc_boot_init(struct mmc_host *host)
 	/* Wait for the MMC_BOOT_MCI_POWER write to go through. */
 	mmc_mclk_reg_wr_delay();
 
-	return MMC_BOOT_E_SUCCESS;
+	return mmc_ret;
 }
 
 /*
@@ -2271,7 +2276,6 @@ mmc_boot_init_and_identify_cards(struct mmc_host *host,
 {
 	unsigned int mmc_return = MMC_BOOT_E_SUCCESS;
 	unsigned int status;
-	uint8_t mmc_bus_width = 0;
 
 	/* Basic check */
 	if (host == NULL) {
@@ -2370,7 +2374,7 @@ mmc_boot_init_and_identify_cards(struct mmc_host *host,
 	if (MMC_BOOT_CARD_STATUS(status) != MMC_BOOT_TRAN_STATE)
 		return MMC_BOOT_E_FAILURE;
 
-	return MMC_BOOT_E_SUCCESS;
+	return mmc_return;
 }
 
 void mmc_display_ext_csd(void)
@@ -2744,10 +2748,11 @@ mmc_wp(unsigned int sector, unsigned int size, unsigned char set_clear_wp)
 	return rc;
 }
 
-void mmc_wp_test(void)
+unsigned int mmc_wp_test(void)
 {
-	unsigned int mmc_ret = 0;
+	unsigned int mmc_ret = MMC_BOOT_E_SUCCESS;
 	mmc_ret = mmc_wp(0xE06000, 0x5000, 1);
+	return mmc_ret;
 }
 
 unsigned mmc_get_psn(void)
@@ -2884,7 +2889,7 @@ mmc_boot_fifo_write(unsigned int *mmc_ptr, unsigned int data_len)
 			sz = ((count >> 2) >  MMC_BOOT_MCI_HFIFO_COUNT) \
 				 ? MMC_BOOT_MCI_HFIFO_COUNT : (count >> 2);
 
-			for (int i = 0; i < sz; i++) {
+			for (unsigned i = 0; i < sz; i++) {
 				writel(*mmc_ptr, MMC_BOOT_MCI_FIFO);
 				mmc_ptr++;
 				/* increase mmc_count by word size */
@@ -3018,7 +3023,7 @@ static unsigned int mmc_boot_send_erase(struct mmc_card *card)
 	/* Checking for write protect */
 	if (cmd.resp[0] & MMC_BOOT_R1_WP_ERASE_SKIP) {
 		dprintf(CRITICAL, "Write protect enabled for sector \n");
-		return;
+		return MMC_BOOT_E_FAILURE;
 	}
 
 	/* Checking if the erase operation for the card is compelete */
@@ -3123,7 +3128,7 @@ mmc_erase_card(unsigned long long data_addr, unsigned long long size)
 /*
  * Disable MCI clk
  */
-void mmc_boot_mci_clk_disable()
+void mmc_boot_mci_clk_disable(void)
 {
 	uint32_t reg = 0;
 
@@ -3137,7 +3142,7 @@ void mmc_boot_mci_clk_disable()
 /*
  * Enable MCI CLK
  */
-void mmc_boot_mci_clk_enable()
+void mmc_boot_mci_clk_enable(void)
 {
 	uint32_t reg = 0;
 
@@ -3159,7 +3164,7 @@ void mmc_boot_mci_clk_enable()
 
 #if MMC_BOOT_BAM
 
-void mmc_boot_dml_init()
+void mmc_boot_dml_init(void)
 {
 	uint32_t val = 0;
 
@@ -3195,7 +3200,7 @@ void mmc_boot_dml_init()
 }
 
 /* Function to set up SDCC dml for System producer transaction. */
-static void mmc_boot_dml_consumer_trans_init()
+static void mmc_boot_dml_consumer_trans_init(void)
 {
 	uint32_t val = 0;
 
@@ -3239,7 +3244,7 @@ static void mmc_boot_dml_producer_trans_init(unsigned trans_end,
  * return value: 1: Producer is idle
  *                    0: Producer is busy
  */
-static uint32_t mmc_boot_dml_chk_producer_idle()
+static uint32_t mmc_boot_dml_chk_producer_idle(void)
 {
 	uint32_t val = 0;
 
@@ -3252,7 +3257,7 @@ static uint32_t mmc_boot_dml_chk_producer_idle()
 }
 
 /* Function to clear transaction complete flag */
-static void mmc_boot_dml_clr_trans_complete()
+static void mmc_boot_dml_clr_trans_complete(void)
 {
 	uint32_t val;
 
@@ -3263,19 +3268,19 @@ static void mmc_boot_dml_clr_trans_complete()
 }
 
 /* Blocking function to wait until DML is idle. */
-static void mmc_boot_dml_wait_producer_idle()
+static void mmc_boot_dml_wait_producer_idle(void)
 {
 	while(!(readl(SDCC_DML_STATUS(dml_base)) & 1));
 }
 
 /* Blocking function to wait until DML is idle. */
-static void mmc_boot_dml_wait_consumer_idle()
+static void mmc_boot_dml_wait_consumer_idle(void)
 {
 	while(!(readl(SDCC_DML_STATUS(dml_base)) & (1 << SDCC_DML_CONSUMER_IDLE_SHIFT)));
 }
 
 /* Initialize S/W reset */
-static void mmc_boot_dml_reset()
+static void mmc_boot_dml_reset(void)
 {
 	/* Initialize s/w reset for DML core */
 	writel(1, SDCC_DML_SW_RESET(dml_base));
@@ -3433,7 +3438,7 @@ mmc_boot_bam_setup_desc(unsigned int *data_ptr,
 /*
  * Check if card supports DDR mode
  */
-uint8_t card_supports_ddr_mode()
+uint8_t card_supports_ddr_mode(void)
 {
 	if (IS_BIT_SET_EXT_CSD(MMC_DEVICE_TYPE, 2) ||
 		IS_BIT_SET_EXT_CSD(MMC_DEVICE_TYPE, 3))
@@ -3445,7 +3450,7 @@ uint8_t card_supports_ddr_mode()
 /*
  * Check if card suppports HS200 mode
  */
-uint8_t card_supports_hs200_mode()
+uint8_t card_supports_hs200_mode(void)
 {
 	if (IS_BIT_SET_EXT_CSD(MMC_DEVICE_TYPE, 4) ||
 		IS_BIT_SET_EXT_CSD(MMC_DEVICE_TYPE, 5))
@@ -3455,13 +3460,13 @@ uint8_t card_supports_hs200_mode()
 }
 
 /* Return the density of the mmc device */
-uint64_t mmc_get_device_capacity()
+uint64_t mmc_get_device_capacity(void)
 {
 	return mmc_card.capacity;
 }
 
 /* Return the block size of the mmc device */
-uint32_t mmc_get_device_blocksize()
+uint32_t mmc_get_device_blocksize(void)
 {
 	return mmc_card.block_size;
 }

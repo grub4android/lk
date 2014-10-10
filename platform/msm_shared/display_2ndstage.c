@@ -28,6 +28,7 @@
  */
 
 #include <debug.h>
+#include <malloc.h>
 #include <dev/fbcon.h>
 #include <mipi_dsi.h>
 #include <target/display.h>
@@ -43,7 +44,7 @@ void target_display_init(const char *panel_name)
 	struct fbcon_config *config = NULL;
 	config = (struct fbcon_config*)malloc(sizeof(struct fbcon_config));
 
-	config->base = fb_addr;
+	config->base = (void*)fb_addr;
 	config->width = DISPLAY_2NDSTAGE_WIDTH;
 	config->height = DISPLAY_2NDSTAGE_HEIGHT;
 	config->stride = config->width;

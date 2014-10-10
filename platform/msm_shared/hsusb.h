@@ -181,4 +181,6 @@ struct ept_queue_item {
 #define ULPI_MISC_A_VBUSVLDEXTSEL    (1 << 1)
 #define ULPI_MISC_A_VBUSVLDEXT       (1 << 0)
 
+void ulpi_write(unsigned val, unsigned reg);
+
 #endif

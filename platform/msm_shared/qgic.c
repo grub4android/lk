@@ -41,7 +41,7 @@
 
 static struct ihandler handler[NR_IRQS];
 
-static uint8_t qgic_get_cpumask()
+static uint8_t qgic_get_cpumask(void)
 {
 	uint32_t mask=0, i;
 

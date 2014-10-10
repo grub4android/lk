@@ -30,6 +30,7 @@
  * SUCH DAMAGE.
  */
 
+#include <string.h>
 #include <stdlib.h>
 #include <debug.h>
 #include <printf.h>
@@ -37,7 +38,10 @@
 #include <dev/fbcon.h>
 #include <dev/uart.h>
 #include <platform/timer.h>
+#include <kernel/thread.h>
 #include <platform.h>
+#include <platform/msm_shared.h>
+#include <platform/msm_shared/timer.h>
 
 #if PON_VIB_SUPPORT
 #include <vibrator.h>

@@ -29,19 +29,28 @@
  */
 #include <debug.h>
 #include <err.h>
+#include <string.h>
 #include <msm_panel.h>
 #include <mipi_dsi.h>
 #include <dev/pm8921.h>
 #include <board.h>
+#include <platform/gpio.h>
+#include <platform/iomap.h>
+#include <platform/clock.h>
+#include <platform/msm8960.h>
 #include <mdp4.h>
 #include <target/display.h>
+#include <target.h>
 #include <target/board.h>
+#include <target/msm8960.h>
+#include <gcdb_display.h>
 #include <gsbi.h>
 #include <i2c_qup.h>
 #include <platform/iomap.h>
+#include <platform/msm_shared/timer.h>
 
-#include "include/panel.h"
-#include "include/display_resource.h"
+#include <panel.h>
+#include <display_resource.h>
 
 #define PM8921_GPIO_LCD_DCDC_EN         11
 #define PM8921_GPIO_PANEL_RESET         25
@@ -289,7 +298,7 @@ void target_display_init(const char *panel_name)
 	}
 
 	do {
-		ret = gcdb_display_init(panel_name, MDP_REV_44, MIPI_FB_ADDR);
+		ret = gcdb_display_init(panel_name, MDP_REV_44, (void*)MIPI_FB_ADDR);
 		if (ret) {
 			/*Panel signature did not match, turn off the display*/
 			target_force_cont_splash_disable(true);

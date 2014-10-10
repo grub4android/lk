@@ -31,6 +31,7 @@
 #include <reg.h>
 #include <pm8x41.h>
 #include <pm_vib.h>
+#include <pm8x41_hw.h>
 
 #define QPNP_VIB_EN    BIT(7)
 

@@ -31,7 +31,10 @@
 #include <reg.h>
 #include <msm_panel.h>
 #include <err.h>
+#include <mipi_dsi.h>
+#include <platform/msm_shared/timer.h>
 #include <target/display.h>
+#include <target.h>
 #include <platform/timer.h>
 #include <platform/iomap.h>
 
@@ -81,7 +84,7 @@ int mdp_dsi_video_config(struct msm_panel_info *pinfo,
 	if (mdp_rev == MDP_REV_304 || mdp_rev == MDP_REV_305) {
 		writel((pinfo->xres + lcdc->h_back_porch + \
 			lcdc->h_pulse_width - 1) << 16 | \
-			lcdc->h_back_porch + lcdc->h_pulse_width, \
+			(lcdc->h_back_porch + lcdc->h_pulse_width), \
 			MDP_DSI_VIDEO_DISPLAY_HCTL);
 		writel((lcdc->v_back_porch + lcdc->v_pulse_width) \
 			* hsync_period, MDP_DSI_VIDEO_DISPLAY_V_START);

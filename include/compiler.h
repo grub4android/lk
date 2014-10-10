@@ -167,7 +167,4 @@
 #define __END_CDECLS
 #endif
 
-/* TODO: add type check */
-#define countof(a) (sizeof(a) / sizeof((a)[0]))
-
 #endif

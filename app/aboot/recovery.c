@@ -26,6 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <debug.h>
 #include <arch/arm.h>
 #include <dev/udc.h>
@@ -57,9 +58,10 @@ static char buf[4096];
 
 unsigned boot_into_recovery = 0;
 
-extern uint32_t get_page_size();
-extern void reset_device_info();
-extern void set_device_root();
+extern uint32_t get_page_size(void);
+extern uint32_t mmc_get_device_blocksize(void);
+extern void reset_device_info(void);
+extern void set_device_root(void);
 
 int get_recovery_message(struct recovery_message *out)
 {
@@ -393,7 +395,7 @@ static int emmc_set_recovery_msg(struct recovery_message *out)
 	unsigned char data[size];
 	int index = INVALID_PTN;
 
-	index = partition_get_index((unsigned char *) ptn_name);
+	index = partition_get_index(ptn_name);
 	ptn = partition_get_offset(index);
 	if(ptn == 0) {
 		dprintf(CRITICAL,"partition %s doesn't exist\n",ptn_name);
@@ -415,7 +417,7 @@ static int emmc_get_recovery_msg(struct recovery_message *in)
 	int index = INVALID_PTN;
 
 	size = mmc_get_device_blocksize();
-	index = partition_get_index((unsigned char *) ptn_name);
+	index = partition_get_index(ptn_name);
 	ptn = partition_get_offset(index);
 	if(ptn == 0) {
 		dprintf(CRITICAL,"partition %s doesn't exist\n",ptn_name);

@@ -37,10 +37,10 @@
 
 void qtimer_set_physical_timer(lk_time_t msecs_interval,
 	platform_timer_callback tmr_callback, void *tmr_arg);
-void qtimer_disable();
-uint64_t qtimer_get_phy_timer_cnt();
-uint32_t qtimer_current_time();
-uint32_t qtimer_get_frequency();
-void qtimer_uninit();
-void qtimer_init();
-uint32_t qtimer_tick_rate();
+void qtimer_disable(void);
+uint64_t qtimer_get_phy_timer_cnt(void);
+uint32_t qtimer_current_time(void);
+uint32_t qtimer_get_frequency(void);
+void qtimer_uninit(void);
+void qtimer_init(void);
+uint32_t qtimer_tick_rate(void);

@@ -45,7 +45,7 @@
 /*---------------------------------------------------------------------------*/
 static struct panel_config truly_wvga_cmd_panel_data = {
 	"qcom,mdss_dsi_truly_wvga_cmd", "dsi:0:", "qcom,mdss-dsi-panel",
-	11, 1, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2
+	11, 1, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -374,7 +374,7 @@ static struct mipi_dsi_cmd truly_wvga_cmd_on_command[] = {
 
 #define TRULY_WVGA_CMD_ON_COMMAND 45
 
-
+/*
 static char truly_wvga_cmdoff_cmd0[] = {
 	0x28, 0x00, 0x05, 0x80
 };
@@ -389,7 +389,7 @@ static struct mipi_dsi_cmd truly_wvga_cmd_off_command[] = {
 };
 
 #define TRULY_WVGA_CMD_OFF_COMMAND 2
-
+*/
 
 static struct command_state truly_wvga_cmd_state = {
 	0, 0

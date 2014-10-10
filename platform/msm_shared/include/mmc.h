@@ -577,7 +577,7 @@ struct mmc_host {
     ({                                                             \
      unsigned int indx = (start) / (size_of);                  \
      unsigned int offset = (start) % (size_of);                \
-     unsigned int mask = (((len)<(size_of))? 1<<(len):0) - 1; \
+     unsigned int mask = (((len)<(size_of))? 1llu<<(len):0) - 1; \
      unsigned int unpck = array[indx] >> offset;               \
      unsigned int indx2 = ((start) + (len) - 1) / (size_of);       \
      if(indx2 > indx)                                          \
@@ -629,12 +629,13 @@ unsigned mmc_get_psn(void);
 unsigned int mmc_erase_card(unsigned long long data_addr,
 			    unsigned long long data_len);
 
-void mmc_mclk_reg_wr_delay();
-void mmc_boot_mci_clk_enable();
-void mmc_boot_mci_clk_disable();
-uint8_t card_supports_ddr_mode();
-uint8_t card_supports_hs200_mode();
-uint64_t mmc_get_device_capacity();
+void mmc_mclk_reg_wr_delay(void);
+void mmc_boot_mci_clk_enable(void);
+void mmc_boot_mci_clk_disable(void);
+uint8_t card_supports_ddr_mode(void);
+uint8_t card_supports_hs200_mode(void);
+uint64_t mmc_get_device_capacity(void);
 void mmc_put_card_to_sleep(void);
+uint32_t mmc_get_device_blocksize(void);
 #endif
 #endif

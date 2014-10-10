@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Travis Geiselbrecht
+ * Copyright (c) 2008 Travis Geiselbrecht
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,20 +20,27 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __STDDEF_H
-#define __STDDEF_H
+#ifndef __PLATFORM_MSM8960_H
+#define __PLATFORM_MSM8960_H
 
-#include <compiler.h> // for __offsetof()
+#include <platform/iomap.h>
+#include <platform/irqs.h>
+#include <platform/clock.h>
+#include <platform/gpio.h>
 
-#define offsetof(x, y) __offsetof(x, y)
+#define MAX_INT NR_IRQS
 
-typedef long ptrdiff_t;
+uint8_t platform_pmic_type(uint32_t pmic_type);
+void apq8064_keypad_gpio_init(void);
+void clock_config_mmc(uint32_t interface, uint32_t freq);
+void clock_init_mmc(uint32_t interface);
+void msm_clocks_init(void);
+void mmss_clock_init(void);
+void mmss_clock_disable(void);
 
-#ifndef _SIZE_T_DEFINED_
-typedef unsigned long size_t;
+#if TARGET_MSM8960_ARIES
+void mi_display_gpio_init(void);
 #endif
-typedef long          ssize_t;
-
-#define NULL 0
 
 #endif
+

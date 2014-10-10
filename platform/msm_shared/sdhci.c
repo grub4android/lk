@@ -39,6 +39,7 @@
 #include <assert.h>
 #include <sdhci.h>
 #include <sdhci_msm.h>
+#include <platform/msm_shared/timer.h>
 
 static void sdhci_dumpregs(struct sdhci_host *host)
 {

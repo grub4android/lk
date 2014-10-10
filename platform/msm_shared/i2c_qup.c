@@ -42,6 +42,7 @@
 
 #include <gsbi.h>
 #include <i2c_qup.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/irqs.h>
 #include <platform/iomap.h>
 #include <platform/gpio.h>
@@ -784,6 +785,7 @@ struct qup_i2c_dev *qup_i2c_init(uint8_t gsbi_id, unsigned clk_freq,
 	return dev;
 }
 
+#if PERIPH_BLK_BLSP
 struct qup_i2c_dev *qup_blsp_i2c_init(uint8_t blsp_id, uint8_t qup_id,
 									  uint32_t clk_freq, uint32_t src_clk_freq)
 {
@@ -815,6 +817,7 @@ struct qup_i2c_dev *qup_blsp_i2c_init(uint8_t blsp_id, uint8_t qup_id,
 
 	return dev;
 }
+#endif
 
 int qup_i2c_deinit(struct qup_i2c_dev *dev)
 {

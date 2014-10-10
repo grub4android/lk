@@ -28,14 +28,16 @@
 
 #include <debug.h>
 #include <err.h>
+#include <string.h>
+#include <dev/flash.h>
 #include <msm_panel.h>
 #include <mdp4.h>
 #include <mipi_dsi.h>
 #include <boot_stats.h>
+#include <target.h>
+#include <malloc.h>
 
 static struct msm_fb_panel_data *panel;
-
-extern int lvds_on(struct msm_fb_panel_data *pdata);
 
 static int msm_fb_alloc(struct fbcon_config *fb)
 {
@@ -53,7 +55,7 @@ static int msm_fb_alloc(struct fbcon_config *fb)
 	return NO_ERROR;
 }
 
-int msm_display_config()
+int msm_display_config(void)
 {
 	int ret = NO_ERROR;
 	int mdp_rev;
@@ -138,7 +140,7 @@ msm_display_config_out:
 	return ret;
 }
 
-int msm_display_on()
+int msm_display_on(void)
 {
 	int ret = NO_ERROR;
 	int mdp_rev;
@@ -160,7 +162,7 @@ int msm_display_on()
 	switch (pinfo->type) {
 	case LVDS_PANEL:
 		dprintf(INFO, "Turn on LVDS PANEL.\n");
-		ret = mdp_lcdc_on(panel);
+		ret = mdp_lcdc_on();
 		if (ret)
 			goto msm_display_on_out;
 		ret = lvds_on(panel);
@@ -191,7 +193,7 @@ int msm_display_on()
 		break;
 	case LCDC_PANEL:
 		dprintf(INFO, "Turn on LCDC PANEL.\n");
-		ret = mdp_lcdc_on(panel);
+		ret = mdp_lcdc_on();
 		if (ret)
 			goto msm_display_on_out;
 		break;

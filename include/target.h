@@ -26,14 +26,15 @@
 #define __TARGET_H
 
 #include <stdbool.h>
+#include <crypto_hash.h>
 
 
 /* Target helper functions exposed to USB driver */
 typedef struct {
-	void (*mux_config) ();
-	void (*phy_reset) ();
-	void (*phy_init) ();
-	void (*clock_init) ();
+	void (*mux_config) (void);
+	void (*phy_reset) (void);
+	void (*phy_init) (void);
+	void (*clock_init) (void);
 	uint8_t vbus_override;
 } target_usb_iface_t;
 
@@ -71,26 +72,38 @@ void target_serialno(unsigned char *buf);
 void target_fastboot_init(void);
 void target_load_ssd_keystore(void);
 bool target_is_ssd_enabled(void);
-void *target_mmc_device();
+void *target_mmc_device(void);
 uint32_t is_user_force_reset(void);
 
+void target_usb_init(void);
+void target_usb_stop(void);
+
+int target_cont_splash_screen(void);
 bool target_display_panel_node(char *panel_name, char *pbuf,
 	uint16_t buf_size);
 void target_display_init(const char *panel_name);
 void target_display_shutdown(void);
+uint8_t target_panel_auto_detect_enabled(void);
 
-uint32_t target_get_boot_device();
+uint32_t target_get_boot_device(void);
 
-const char * target_usb_controller();
+const char * target_usb_controller(void);
 void target_usb_phy_reset(void);
 void target_usb_phy_mux_configure(void);
-target_usb_iface_t * target_usb30_init();
-bool target_is_cdp_qvga();
-uint32_t target_hw_interposer();
-uint32_t target_override_pll();
-uint32_t target_ddr_cfg_val();
+target_usb_iface_t * target_usb30_init(void);
+bool target_is_cdp_qvga(void);
+uint32_t target_hw_interposer(void);
+uint32_t target_override_pll(void);
+uint32_t target_ddr_cfg_val(void);
+uint32_t target_get_hlos_subtype(void);
+uint8_t target_is_edp(void);
+bool target_warm_boot(void);
 
-int target_volume_up();
-uint32_t target_volume_down();
+void target_crypto_init_params(void);
+crypto_engine_type board_ce_type(void);
+bool target_use_signed_kernel(void);
+
+int target_volume_up(void);
+uint32_t target_volume_down(void);
 int target_power_key(void);
 #endif

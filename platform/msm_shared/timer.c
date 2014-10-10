@@ -41,6 +41,8 @@
 #include <platform/interrupts.h>
 #include <kernel/thread.h>
 
+#include <platform/msm_shared/timer.h>
+
 #define GPT_ENABLE_CLR_ON_MATCH_EN        2
 #define GPT_ENABLE_EN                     1
 #define DGT_ENABLE_CLR_ON_MATCH_EN        2

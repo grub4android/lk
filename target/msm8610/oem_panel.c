@@ -29,13 +29,15 @@
 
 #include <debug.h>
 #include <err.h>
+#include <string.h>
 #include <smem.h>
 #include <msm_panel.h>
 #include <board.h>
 #include <mipi_dsi.h>
+#include <target.h>
 
-#include "include/panel.h"
-#include "panel_display.h"
+#include <panel.h>
+#include <panel_display.h>
 
 /*---------------------------------------------------------------------------*/
 /* GCDB Panel Database                                                       */
@@ -71,7 +73,7 @@ QRD_SKUAB = 3,
 
 static uint32_t panel_id;
 
-int oem_panel_rotation()
+int oem_panel_rotation(void)
 {
 	/* OEM can keep there panel spefic on instructions in this
 	function */
@@ -79,14 +81,14 @@ int oem_panel_rotation()
 }
 
 
-int oem_panel_on()
+int oem_panel_on(void)
 {
 	/* OEM can keep there panel spefic on instructions in this
 	function */
 	return NO_ERROR;
 }
 
-int oem_panel_off()
+int oem_panel_off(void)
 {
 	/* OEM can keep there panel spefic off instructions in this
 	function */
@@ -235,7 +237,7 @@ static int init_panel_data(struct panel_struct *panelstruct,
 	return pan_type;
 }
 
-uint32_t oem_panel_max_auto_detect_panels()
+uint32_t oem_panel_max_auto_detect_panels(void)
 {
 	return target_panel_auto_detect_enabled() ?
 			DISPLAY_MAX_PANEL_DETECTION : 0;

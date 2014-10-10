@@ -45,7 +45,6 @@
 #include <platform/iomap.h>
 #include <platform/timer.h>
 #include <platform.h>
-#include <platform/msm_shared.h>
 
 #define LINUX_MACHTYPE_8660_QT      3298
 

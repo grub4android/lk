@@ -99,9 +99,9 @@ __WEAK void ce_clock_init(void)
 {
 }
 
-__WEAK addr_t get_bs_info_addr()
+__WEAK addr_t get_bs_info_addr(void)
 {
-	return NULL;
+	return 0;
 }
 
 __WEAK uint32_t platform_get_sclk_count(void)
@@ -119,17 +119,17 @@ __WEAK int get_target_boot_params(const char *cmdline, const char *part,
 	return -1;
 }
 
-__WEAK uint32_t platform_get_smem_base_addr()
+__WEAK uint32_t platform_get_smem_base_addr(void)
 {
 	return (uint32_t)MSM_SHARED_BASE;
 }
 
-__WEAK uint32_t platform_boot_dev_isemmc()
+__WEAK uint32_t platform_boot_dev_isemmc(void)
 {
         return 1;
 }
 
-__WEAK uint32_t platform_get_boot_dev()
+__WEAK uint32_t platform_get_boot_dev(void)
 {
         return 0;
 }

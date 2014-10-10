@@ -55,6 +55,7 @@ void halt(void)
 {
 	enter_critical_section(); // disable ints
 	platform_halt();
+	for(;;);
 }
 
 void _panic(void *caller, const char *fmt, ...)
@@ -140,7 +141,7 @@ int _dprintf(const char *fmt, ...)
 	char ts_buf[13];
 	int err;
 
-	snprintf(ts_buf, sizeof(ts_buf), "[%u] ", current_time());
+	snprintf(ts_buf, sizeof(ts_buf), "[%lu] ", current_time());
 	dputs(ALWAYS, ts_buf);
 
 	va_list ap;
