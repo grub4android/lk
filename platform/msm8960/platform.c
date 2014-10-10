@@ -51,13 +51,13 @@ struct mmu_initial_mapping mmu_initial_mappings[] = {
 
 	{ .phys = 0,
       .virt = 0,
-      .size = 2048*MB,
+      .size = 2048*MB-1,
       .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
       .name = "identity"  },
 
-	{ .phys = 2048*MB,
-      .virt = 2048*MB,
-      .size = 2048*MB,
+	{ .phys = 2048*MB-1,
+      .virt = 2048*MB-1,
+      .size = 2048*MB-1,
       .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
       .name = "identity"  },
 
