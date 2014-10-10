@@ -37,6 +37,7 @@
 #include <platform.h>
 #include <target.h>
 #include <target/msm_shared.h>
+#include <platform/msm_shared.h>
 #include <kernel/thread.h>
 #include <kernel/event.h>
 #include <kernel/vm.h>
@@ -451,6 +452,27 @@ static void cmd_download(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
+void cmd_reboot(const char *arg, void *data, unsigned sz)
+{
+	dprintf(INFO, "rebooting the device\n");
+	fastboot_okay("");
+	reboot_device(REBOOT_MODE_NORMAL);
+}
+
+void cmd_reboot_bootloader(const char *arg, void *data, unsigned sz)
+{
+	dprintf(INFO, "rebooting the device\n");
+	fastboot_okay("");
+	reboot_device(REBOOT_MODE_FASTBOOT);
+}
+
+void cmd_reboot_recovery(const char *arg, void *data, unsigned sz)
+{
+	dprintf(INFO, "rebooting the device\n");
+	fastboot_okay("");
+	reboot_device(REBOOT_MODE_RECOVERY);
+}
+
 static void fastboot_command_loop(void)
 {
 	struct fastboot_cmd *cmd;
@@ -598,6 +620,9 @@ static void fastboot_init(const struct app_descriptor *app)
 
 	fastboot_register("getvar:", cmd_getvar);
 	fastboot_register("download:", cmd_download);
+	fastboot_register("reboot", cmd_reboot);
+	fastboot_register("reboot-bootloader", cmd_reboot_bootloader);
+	fastboot_register("oem reboot-recovery", cmd_reboot_recovery);
 	fastboot_publish("version", "0.5");
 
 	fastboot_initialized = 1;
