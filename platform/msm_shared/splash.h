@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef __PLATFORM_MSM_SHARED_SPLASH_H
-#define __PLATFORM_MSM_SHARED_SPLASH_H
+#ifndef __SPLASH_H
+#define __SPLASH_H
 
 #define SPLASH_IMAGE_WIDTH     124
 #define SPLASH_IMAGE_HEIGHT    113

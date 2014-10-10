@@ -36,7 +36,7 @@
 #include <platform/msm_shared.h>
 #include <platform/msm_shared/board.h>
 #include <malloc.h>
-#include <platform/msm_shared/splash.h>
+#include "splash.h"
 
 static struct msm_fb_panel_data *panel;
 
