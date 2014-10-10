@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <endian.h>
-#include <ufs.h>
+#include <platform/msm_shared/ufs.h>
 #include <dme.h>
 #include <uic.h>
 #include <utp.h>

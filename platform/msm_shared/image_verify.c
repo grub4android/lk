@@ -26,7 +26,7 @@
  */
 #include <x509.h>
 #include <certificate.h>
-#include <crypto_hash.h>
+#include <platform/msm_shared/crypto_hash.h>
 #include "image_verify.h"
 #include "scm.h"
 

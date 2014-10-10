@@ -29,7 +29,7 @@
 #include <err.h>
 #include <debug.h>
 #include <platform.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 
 __WEAK int mdp_lcdc_config(void)
 {

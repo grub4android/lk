@@ -30,8 +30,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "mmc.h"
-#include "partition_parser.h"
+#include <platform/msm_shared/mmc.h>
+#include <platform/msm_shared/partition_parser.h>
 
 __WEAK void mmc_set_lun(uint8_t lun)
 {

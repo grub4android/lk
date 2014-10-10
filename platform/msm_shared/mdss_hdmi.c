@@ -29,7 +29,7 @@
 #include <err.h>
 #include <debug.h>
 #include <reg.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 #include <platform/timer.h>
 #include <platform/clock.h>
 #include <platform/iomap.h>

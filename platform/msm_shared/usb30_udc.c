@@ -44,7 +44,7 @@
 #include <usb30_wrapper.h>
 #include <usb30_udc.h>
 #include <smem.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <platform/timer.h>
 
 //#define DEBUG_USB

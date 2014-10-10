@@ -29,12 +29,12 @@
 #include <debug.h>
 #include <reg.h>
 #include <compiler.h>
-#include <qtimer.h>
+#include <platform/msm_shared/qtimer.h>
 #include <arch/defines.h>
 #include <platform/irqs.h>
 #include <platform/iomap.h>
 #include <platform/interrupts.h>
-#include <qtimer_mmap_hw.h>
+#include <platform/msm_shared/qtimer_mmap_hw.h>
 
 static platform_timer_callback timer_callback;
 static void *timer_arg;

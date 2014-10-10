@@ -29,7 +29,7 @@
 #include <debug.h>
 #include <reg.h>
 #include <malloc.h>
-#include <qgic.h>
+#include <platform/msm_shared/qgic.h>
 #include <ufs_hw.h>
 #include <ufs_hci.h>
 #include <uic.h>

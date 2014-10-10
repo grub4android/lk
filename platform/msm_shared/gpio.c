@@ -30,7 +30,7 @@
 #include <reg.h>
 #include <bits.h>
 #include <platform/iomap.h>
-#include <gpio.h>
+#include <platform/msm_shared/gpio.h>
 
 static void tlmm_set_sdc_pins(struct tlmm_cfgs *cfg)
 {

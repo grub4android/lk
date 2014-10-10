@@ -30,15 +30,15 @@
 #include <debug.h>
 #include <err.h>
 #include <smem.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 #include <target/msm_shared.h>
 #include <target/msm_display.h>
 #include <string.h>
 #include <stdlib.h>
-#include <board.h>
-#include <mdp5.h>
+#include <platform/msm_shared/board.h>
+#include <platform/msm_shared/mdp5.h>
 #include <platform/gpio.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/mipi_dsi.h>
 
 #include <display_resource.h>
 #include <panel.h>

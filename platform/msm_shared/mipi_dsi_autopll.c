@@ -30,7 +30,7 @@
 #include <reg.h>
 #include <err.h>
 #include <smem.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <platform/iomap.h>
 
 #define LPFR_LUT_SIZE 10

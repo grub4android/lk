@@ -37,8 +37,8 @@
 #include <bits.h>
 #include <debug.h>
 #include <assert.h>
-#include <sdhci.h>
-#include <sdhci_msm.h>
+#include <platform/msm_shared/sdhci.h>
+#include <platform/msm_shared/sdhci_msm.h>
 
 static void sdhci_dumpregs(struct sdhci_host *host)
 {

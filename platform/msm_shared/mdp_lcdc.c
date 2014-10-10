@@ -33,9 +33,9 @@
 #include <target/msm_shared.h>
 #include <target/display.h>
 #include <dev/lcdc.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 #include <err.h>
-#include <mdp4.h>
+#include <platform/msm_shared/mdp4.h>
 #include <bits.h>
 
 int mdp_lcdc_config(struct msm_panel_info *pinfo,

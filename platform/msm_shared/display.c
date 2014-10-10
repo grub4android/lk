@@ -28,15 +28,15 @@
 
 #include <debug.h>
 #include <err.h>
-#include <msm_panel.h>
-#include <mdp4.h>
-#include <mipi_dsi.h>
-#include <boot_stats.h>
+#include <platform/msm_shared/msm_panel.h>
+#include <platform/msm_shared/mdp4.h>
+#include <platform/msm_shared/mipi_dsi.h>
+#include <platform/msm_shared/boot_stats.h>
 #include <target/msm_shared.h>
 #include <platform/msm_shared.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <malloc.h>
-#include <splash.h>
+#include <platform/msm_shared/splash.h>
 
 static struct msm_fb_panel_data *panel;
 

@@ -26,7 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <bam.h>
+#include <platform/msm_shared/bam.h>
 #include <reg.h>
 #include <debug.h>
 #include <assert.h>

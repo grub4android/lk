@@ -38,7 +38,7 @@
 #include <platform/gpio.h>
 #include <platform/msm8960.h>
 #include <sys/types.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <smem.h>
 
 #define BITS_IN_ELEMENT(x) (sizeof(x) * 8)

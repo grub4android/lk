@@ -32,11 +32,11 @@
 #include <assert.h>
 #include <platform/iomap.h>
 #include <platform/clock.h>
-#include <uart_dm.h>
-#include <gsbi.h>
-#include <mmc.h>
-#include <clock.h>
-#include <board.h>
+#include <platform/msm_shared/uart_dm.h>
+#include <platform/msm_shared/gsbi.h>
+#include <platform/msm_shared/mmc.h>
+#include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/board.h>
 #include <smem.h>
 
 /* Set rate and enable the clock */

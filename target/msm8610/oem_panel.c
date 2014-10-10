@@ -31,9 +31,9 @@
 #include <err.h>
 #include <string.h>
 #include <smem.h>
-#include <msm_panel.h>
-#include <board.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/msm_panel.h>
+#include <platform/msm_shared/board.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <target/msm_shared.h>
 
 #include <panel.h>

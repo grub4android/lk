@@ -26,12 +26,12 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <mdp3.h>
+#include <platform/msm_shared/mdp3.h>
 #include <debug.h>
 #include <reg.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 #include <err.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <target/display.h>
 #include <target/msm_shared.h>
 #include <platform/timer.h>

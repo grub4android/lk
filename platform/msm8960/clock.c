@@ -31,9 +31,9 @@
 #include <reg.h>
 #include <err.h>
 #include <limits.h>
-#include <clock.h>
-#include <clock_pll.h>
-#include <clock-local.h>
+#include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/clock_pll.h>
+#include <platform/msm_shared/clock-local.h>
 #include <bits.h>
 #include <platform/iomap.h>
 #include <platform/clock.h>

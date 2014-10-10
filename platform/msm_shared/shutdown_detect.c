@@ -34,7 +34,7 @@
 #include <kernel/timer.h>
 #include <platform/timer.h>
 #include <platform/msm_shared.h>
-#include <shutdown_detect.h>
+#include <platform/msm_shared/shutdown_detect.h>
 
 /* sleep clock is 32.768 khz, 0x8000 count per second */
 #define MPM_SLEEP_TIMETICK_COUNT    0x8000

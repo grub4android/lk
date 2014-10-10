@@ -28,9 +28,9 @@
  */
 
 #include <debug.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <smem.h>
-#include <baseband.h>
+#include <platform/msm_shared/baseband.h>
 #include <assert.h>
 
 static struct board_data board = {UNKNOWN,

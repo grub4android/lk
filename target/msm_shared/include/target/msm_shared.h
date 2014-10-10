@@ -26,7 +26,7 @@
 #define __TARGET_MSM_SHARED_H
 
 #include <stdbool.h>
-#include <crypto_hash.h>
+#include <platform/msm_shared/crypto_hash.h>
 
 /* Target helper functions exposed to USB driver */
 typedef struct {

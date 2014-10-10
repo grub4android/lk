@@ -41,7 +41,7 @@
 #include <reg.h>
 #include <malloc.h>
 #include <assert.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <pm8x41.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>

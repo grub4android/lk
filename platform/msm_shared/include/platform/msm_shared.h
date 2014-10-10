@@ -25,7 +25,7 @@
 #ifndef __PLATFORM_MSM_SHARED_H
 #define __PLATFORM_MSM_SHARED_H
 
-#include <dload_util.h>
+#include <platform/msm_shared/dload_util.h>
 
 #define REBOOT_MODE_NORMAL     0x77665501
 #define REBOOT_MODE_RECOVERY   0x77665502

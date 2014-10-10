@@ -40,7 +40,7 @@
 #include <usb30_dwc.h>
 #include <usb30_dwc_hw.h>
 #include <smem.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 
 extern char* ss_link_state_lookup[20];
 extern char* hs_link_state_lookup[20];

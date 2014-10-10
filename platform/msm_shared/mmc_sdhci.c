@@ -31,10 +31,10 @@
 #include <debug.h>
 #include <assert.h>
 #include <reg.h>
-#include <mmc_sdhci.h>
-#include <sdhci.h>
-#include <sdhci_msm.h>
-#include <partition_parser.h>
+#include <platform/msm_shared/mmc_sdhci.h>
+#include <platform/msm_shared/sdhci.h>
+#include <platform/msm_shared/sdhci_msm.h>
+#include <platform/msm_shared/partition_parser.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>
 #include <platform/msm_shared.h>

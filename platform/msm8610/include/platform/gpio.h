@@ -30,7 +30,7 @@
 #define __PLATFORM_MSM8610_GPIO_H
 
 #include <bits.h>
-#include <gpio.h>
+#include <platform/msm_shared/gpio.h>
 
 /* GPIO TLMM: Direction */
 #define GPIO_INPUT      0

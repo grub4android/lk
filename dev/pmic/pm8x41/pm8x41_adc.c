@@ -29,7 +29,7 @@
 #include <bits.h>
 #include <debug.h>
 #include <reg.h>
-#include <spmi.h>
+#include <platform/msm_shared/spmi.h>
 #include <platform/timer.h>
 #include <pm8x41_adc.h>
 #include <pm8x41_hw.h>

@@ -33,8 +33,8 @@
 #include <reg.h>
 #include <platform/timer.h>
 #include <platform/iomap.h>
-#include <mmc.h>
-#include <clock.h>
+#include <platform/msm_shared/mmc.h>
+#include <platform/msm_shared/clock.h>
 #include <platform/clock.h>
 
 void hsusb_clock_init(void)

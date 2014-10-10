@@ -26,7 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <mdp4.h>
+#include <platform/msm_shared/mdp4.h>
 #include <debug.h>
 #include <reg.h>
 #include <target/msm_shared.h>
@@ -36,10 +36,10 @@
 #include <dev/lcdc.h>
 #include <dev/fbcon.h>
 #include <bits.h>
-#include <msm_panel.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/msm_panel.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <err.h>
-#include <clock.h>
+#include <platform/msm_shared/clock.h>
 
 static int mdp_rev;
 

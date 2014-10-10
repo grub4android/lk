@@ -29,15 +29,15 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <mmc_wrapper.h>
-#include <mmc_sdhci.h>
-#include <sdhci.h>
-#include <ufs.h>
+#include <platform/msm_shared/mmc_wrapper.h>
+#include <platform/msm_shared/mmc_sdhci.h>
+#include <platform/msm_shared/sdhci.h>
+#include <platform/msm_shared/ufs.h>
 #include <target.h>
 #include <target/msm_shared.h>
 #include <string.h>
-#include <partition_parser.h>
-#include <boot_device.h>
+#include <platform/msm_shared/partition_parser.h>
+#include <platform/msm_shared/boot_device.h>
 
 /*
  * Weak function for UFS.

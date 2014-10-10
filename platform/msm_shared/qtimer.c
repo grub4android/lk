@@ -29,7 +29,7 @@
 #include <debug.h>
 #include <reg.h>
 #include <compiler.h>
-#include <qtimer.h>
+#include <platform/msm_shared/qtimer.h>
 #include <kernel/thread.h>
 
 static uint32_t ticks_per_sec;

@@ -29,9 +29,9 @@
 #include <assert.h>
 #include <reg.h>
 #include <err.h>
-#include <clock.h>
-#include <clock_pll.h>
-#include <clock_lib2.h>
+#include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/clock_pll.h>
+#include <platform/msm_shared/clock_lib2.h>
 #include <platform/clock.h>
 #include <platform/iomap.h>
 

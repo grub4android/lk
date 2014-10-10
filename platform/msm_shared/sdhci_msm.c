@@ -37,9 +37,9 @@
 #include <bits.h>
 #include <debug.h>
 #include <assert.h>
-#include <mmc.h>
-#include <sdhci.h>
-#include <sdhci_msm.h>
+#include <platform/msm_shared/mmc.h>
+#include <platform/msm_shared/sdhci.h>
+#include <platform/msm_shared/sdhci_msm.h>
 
 
 #define MX_DRV_SUPPORTED_HS200 3

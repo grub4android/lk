@@ -30,7 +30,7 @@
 #include <err.h>
 #include <reg.h>
 #include <arch/defines.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <platform/iomap.h>
 
 #include "platform_p.h"

@@ -28,15 +28,15 @@
 
 #include <assert.h>
 #include <libfdt.h>
-#include <dev_tree.h>
+#include <platform/msm_shared/dev_tree.h>
 #include <lib/ptable_msm.h>
 #include <malloc.h>
-#include <qpic_nand.h>
+#include <platform/msm_shared/qpic_nand.h>
 #include <stdlib.h>
 #include <string.h>
 #include <target/msm_shared.h>
 #include <platform.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <list.h>
 #include <kernel/thread.h>
 #include <kernel/vm.h>

@@ -26,8 +26,8 @@
  * SUCH DAMAGE.
  */
 
-#include <qpic_nand.h>
-#include <bam.h>
+#include <platform/msm_shared/qpic_nand.h>
+#include <platform/msm_shared/bam.h>
 #include <dev/flash.h>
 #include <lib/ptable_msm.h>
 #include <debug.h>

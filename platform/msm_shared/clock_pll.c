@@ -33,8 +33,8 @@
 #include <bits.h>
 #include <limits.h>
 #include <platform/timer.h>
-#include <clock.h>
-#include <clock_pll.h>
+#include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/clock_pll.h>
 
 /*
  * pll_vote_clk functions

@@ -29,7 +29,7 @@
 #define __DEV_LCDC_H
 
 #include <platform/iomap.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 
 #define DEFAULT_LCD_TIMING 0
 

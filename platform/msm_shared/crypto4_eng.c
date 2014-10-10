@@ -34,10 +34,10 @@
 #include <bits.h>
 #include <platform/iomap.h>
 #include <crypto4_eng.h>
-#include <crypto_hash.h>
-#include <scm.h>
+#include <platform/msm_shared/crypto_hash.h>
+#include <platform/msm_shared/scm.h>
 #include <smem.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 
 extern void ce_async_reset();
 

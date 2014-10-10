@@ -25,7 +25,7 @@
 #include <err.h>
 #include <debug.h>
 #include <platform.h>
-#include <boot_stats.h>
+#include <platform/msm_shared/boot_stats.h>
 #include <platform/iomap.h>
 #include <assert.h>
 

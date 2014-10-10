@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 #include <reg.h>
-#include <dload_util.h>
+#include <platform/msm_shared/dload_util.h>
 
 #define NORMAL_DLOAD_COOKIE_0       0xE47B337D
 #define NORMAL_DLOAD_COOKIE_1       0xCE14091A

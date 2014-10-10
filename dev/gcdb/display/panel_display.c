@@ -31,9 +31,9 @@
 /* HEADER files                                                              */
 /*---------------------------------------------------------------------------*/
 #include <stdint.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 #include <target/msm_display.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <sys/types.h>
 #include <platform/iomap.h>
 #include <err.h>

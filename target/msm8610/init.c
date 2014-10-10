@@ -35,27 +35,27 @@
 #include <target.h>
 #include <target/msm_shared.h>
 #include <platform.h>
-#include <dload_util.h>
-#include <uart_dm.h>
-#include <mmc.h>
+#include <platform/msm_shared/dload_util.h>
+#include <platform/msm_shared/uart_dm.h>
+#include <platform/msm_shared/mmc.h>
 #include <platform/gpio.h>
-#include <spmi.h>
-#include <board.h>
+#include <platform/msm_shared/spmi.h>
+#include <platform/msm_shared/board.h>
 #include <smem.h>
-#include <baseband.h>
+#include <platform/msm_shared/baseband.h>
 #include <dev/keys.h>
 #include <pm8x41.h>
 #include <hsusb.h>
 #include <kernel/thread.h>
 #include <arch/defines.h>
 #include <stdlib.h>
-#include <scm.h>
-#include <partition_parser.h>
+#include <platform/msm_shared/scm.h>
+#include <platform/msm_shared/partition_parser.h>
 #include <platform/clock.h>
 #include <platform/timer.h>
 
 #if LONG_PRESS_POWER_ON
-#include <shutdown_detect.h>
+#include <platform/msm_shared/shutdown_detect.h>
 #endif
 
 #if PON_VIB_SUPPORT

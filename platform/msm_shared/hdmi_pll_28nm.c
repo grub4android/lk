@@ -32,7 +32,7 @@
 #include <reg.h>
 #include <smem.h>
 #include <bits.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 #include <platform/timer.h>
 #include <platform/iomap.h>
 

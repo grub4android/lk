@@ -30,15 +30,15 @@
 #include <debug.h>
 #include <reg.h>
 #include <assert.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <platform/iomap.h>
 #include <platform/gpio.h>
 #include <platform/msm8960.h>
-#include <gsbi.h>
+#include <platform/msm_shared/gsbi.h>
 #include <dev/pm8921.h>
 #include <sys/types.h>
 #include <smem.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 
 typedef struct gpioregs gpioregs;
 

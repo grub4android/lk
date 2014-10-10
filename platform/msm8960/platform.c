@@ -34,12 +34,12 @@
 #include <platform/msm8960.h>
 #include <platform.h>
 #include <platform/msm_shared.h>
-#include <qgic.h>
-#include <uart_dm.h>
+#include <platform/msm_shared/qgic.h>
+#include <platform/msm_shared/uart_dm.h>
 #include <dev/fbcon.h>
 #include <kernel/vm.h>
 #include <arch/arm/mmu.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 
 #include "platform_p.h"
 

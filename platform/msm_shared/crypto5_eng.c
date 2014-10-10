@@ -33,7 +33,7 @@
 #include <arch/ops.h>
 #include <platform.h>
 #include <platform/iomap.h>
-#include <clock.h>
+#include <platform/msm_shared/clock.h>
 #include <platform/clock.h>
 #include <crypto5_eng.h>
 

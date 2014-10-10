@@ -33,8 +33,8 @@
 #include <limits.h>
 #include <bits.h>
 #include <assert.h>
-#include <clock.h>
-#include <clock-local.h>
+#include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/clock-local.h>
 #include <platform/timer.h>
 
 /*

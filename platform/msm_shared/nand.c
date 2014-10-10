@@ -33,7 +33,7 @@
 #include <string.h>
 #include <dev/flash.h>
 #include <lib/ptable_msm.h>
-#include <nand.h>
+#include <platform/msm_shared/nand.h>
 
 #include "dmov.h"
 

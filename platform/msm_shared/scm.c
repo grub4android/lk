@@ -34,7 +34,7 @@
 #include <asm.h>
 #include <bits.h>
 #include <arch/ops.h>
-#include "scm.h"
+#include <platform/msm_shared/scm.h>
 
 #pragma GCC optimize ("O0")
 

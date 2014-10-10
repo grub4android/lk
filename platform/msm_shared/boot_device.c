@@ -26,10 +26,10 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <debug.h>
-#include <mmc.h>
-#include <ufs.h>
+#include <platform/msm_shared/mmc.h>
+#include <platform/msm_shared/ufs.h>
 #include <platform/iomap.h>
-#include <boot_device.h>
+#include <platform/msm_shared/boot_device.h>
 
 static uint32_t boot_device;
 

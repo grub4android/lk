@@ -33,7 +33,7 @@
 #include <qmp_phy.h>
 #include <reg.h>
 #include <bits.h>
-#include <clock.h>
+#include <platform/msm_shared/clock.h>
 #include <debug.h>
 
 #define HS_PHY_COMMON_CTRL             0xEC

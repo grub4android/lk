@@ -31,11 +31,11 @@
 #include <smem.h>
 #include <err.h>
 #include <string.h>
-#include <msm_panel.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/msm_panel.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <pm8x41.h>
 #include <pm8x41_wled.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 #include <platform/gpio.h>
 #include <platform/iomap.h>
 #include <platform/clock.h>

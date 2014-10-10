@@ -30,8 +30,8 @@
 #include <stdlib.h>
 #include <debug.h>
 #include <reg.h>
-#include "mmc.h"
-#include <partition_parser.h>
+#include <platform/msm_shared/mmc.h>
+#include <platform/msm_shared/partition_parser.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>
 #include <platform/msm_device.h>
@@ -39,12 +39,12 @@
 #include <bits.h>
 
 #if MMC_BOOT_ADM
-#include "adm.h"
+#include <platform/msm_shared/adm.h>
 #endif
 
 #if MMC_BOOT_BAM
-#include "bam.h"
-#include "mmc_dml.h"
+#include <platform/msm_shared/bam.h>
+#include <platform/msm_shared/mmc_dml.h>
 #endif
 
 #ifndef NULL

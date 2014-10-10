@@ -32,7 +32,7 @@
 #include <err.h>
 #include <limits.h>
 #include <bits.h>
-#include <clock.h>
+#include <platform/msm_shared/clock.h>
 #include <string.h>
 
 static struct clk_list msm_clk_list;

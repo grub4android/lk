@@ -37,7 +37,7 @@
 #include <arch/arm.h>
 #include <kernel/thread.h>
 #include <platform/irqs.h>
-#include <qgic.h>
+#include <platform/msm_shared/qgic.h>
 
 static struct ihandler handler[NR_IRQS];
 

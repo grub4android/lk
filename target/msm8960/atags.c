@@ -31,8 +31,8 @@
 #include <assert.h>
 #include <smem.h>
 #include <stdint.h>
-#include "board.h"
-#include "baseband.h"
+#include <platform/msm_shared/board.h>
+#include <platform/msm_shared/baseband.h>
 
 #define SIZE_1M     (1024 * 1024)
 #define SIZE_2M     (2 * SIZE_1M)

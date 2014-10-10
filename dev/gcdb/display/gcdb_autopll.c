@@ -30,8 +30,8 @@
 #include <debug.h>
 #include <err.h>
 #include <smem.h>
-#include <msm_panel.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/msm_panel.h>
+#include <platform/msm_shared/mipi_dsi.h>
 
 #include "gcdb_autopll.h"
 

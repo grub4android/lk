@@ -29,7 +29,7 @@
 
 #include <reg.h>
 #include <endian.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <dev/fbcon.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,7 +40,7 @@
 #include <platform/clock.h>
 #include <platform/timer.h>
 #include <err.h>
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 
 extern void mdp_disable(void);
 extern void mdp_start_dma(void);

@@ -25,7 +25,7 @@
 #include <printf.h>
 #include <target/msm_shared.h>
 #include <compiler.h>
-#include <dload_util.h>
+#include <platform/msm_shared/dload_util.h>
 
 /*
  * default implementations of these routines, if the target code

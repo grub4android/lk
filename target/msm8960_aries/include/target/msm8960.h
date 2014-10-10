@@ -23,7 +23,7 @@
 #ifndef __TARGET_MSM8960_H
 #define __TARGET_MSM8960_H
 
-#include <mmc.h>
+#include <platform/msm_shared/mmc.h>
 
 void apq8064_keypad_init(void);
 void msm8960_keypad_init(void);

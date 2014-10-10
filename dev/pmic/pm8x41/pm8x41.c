@@ -31,7 +31,7 @@
 #include <debug.h>
 #include <assert.h>
 #include <reg.h>
-#include <spmi.h>
+#include <platform/msm_shared/spmi.h>
 #include <string.h>
 #include <pm8x41_hw.h>
 #include <pm8x41.h>

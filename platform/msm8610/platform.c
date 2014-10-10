@@ -30,14 +30,14 @@
 #include <reg.h>
 #include <platform/iomap.h>
 #include <platform/msm_shared.h>
-#include <qgic.h>
-#include <qtimer.h>
+#include <platform/msm_shared/qgic.h>
+#include <platform/msm_shared/qtimer.h>
 #include <platform/clock.h>
 #include <kernel/vm.h>
 #include <arch/arm/mmu.h>
 #include <smem.h>
-#include <board.h>
-#include <boot_stats.h>
+#include <platform/msm_shared/board.h>
+#include <platform/msm_shared/boot_stats.h>
 
 #define MSM_IOMAP_SIZE ((MSM_IOMAP_END - MSM_IOMAP_BASE)/MB)
 

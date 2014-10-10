@@ -30,7 +30,7 @@
 #include <assert.h>
 #include <malloc.h>
 #include <reg.h>
-#include <spmi.h>
+#include <platform/msm_shared/spmi.h>
 #include <bits.h>
 #include <platform/iomap.h>
 #include <platform/irqs.h>

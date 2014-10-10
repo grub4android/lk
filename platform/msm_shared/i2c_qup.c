@@ -40,8 +40,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <gsbi.h>
-#include <i2c_qup.h>
+#include <platform/msm_shared/gsbi.h>
+#include <platform/msm_shared/i2c_qup.h>
 #include <platform/irqs.h>
 #include <platform/iomap.h>
 #include <platform/gpio.h>

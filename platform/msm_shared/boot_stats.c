@@ -26,7 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <boot_stats.h>
+#include <platform/msm_shared/boot_stats.h>
 #include <debug.h>
 #include <assert.h>
 #include <reg.h>

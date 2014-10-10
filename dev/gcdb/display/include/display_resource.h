@@ -35,7 +35,7 @@
 /*---------------------------------------------------------------------------*/
 #include <debug.h>
 #include <smem.h>
-#include <board.h>
+#include <platform/msm_shared/board.h>
 
 #define TOTAL_LDO_CTRL 5
 

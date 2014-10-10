@@ -26,14 +26,14 @@
  */
 
 #include <stdlib.h>
-#include <crypto_hash.h>
+#include <platform/msm_shared/crypto_hash.h>
 #include <boot_verifier.h>
 #include <image_verify.h>
-#include <mmc.h>
+#include <platform/msm_shared/mmc.h>
 #include <oem_keystore.h>
 #include <openssl/asn1t.h>
 #include <openssl/x509.h>
-#include <partition_parser.h>
+#include <platform/msm_shared/partition_parser.h>
 #include <rsa.h>
 #include <string.h>
 

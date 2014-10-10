@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <mdp5.h>
+#include <platform/msm_shared/mdp5.h>
 #include <debug.h>
 #include <reg.h>
 #include <target/display.h>
@@ -34,11 +34,11 @@
 #include <dev/lcdc.h>
 #include <dev/fbcon.h>
 #include <bits.h>
-#include <msm_panel.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared/msm_panel.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <err.h>
-#include <clock.h>
-#include <scm.h>
+#include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/scm.h>
 
 int restore_secure_cfg(uint32_t id);
 

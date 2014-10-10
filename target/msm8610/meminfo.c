@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include <libfdt.h>
 #include <platform/iomap.h>
-#include <dev_tree.h>
+#include <platform/msm_shared/dev_tree.h>
 
 /* Funtion to add the ram partition entries into device tree.
  * The function assumes that all the entire fixed memory regions should

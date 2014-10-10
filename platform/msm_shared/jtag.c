@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#include <jtag.h>
+#include <platform/msm_shared/jtag.h>
 
 #define STATUS_NOMSG 0
 #define STATUS_OKAY  1

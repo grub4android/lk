@@ -38,7 +38,7 @@
 #include <dev/fbcon.h>
 #include <dev/lcdc.h>
 
-#include <msm_panel.h>
+#include <platform/msm_shared/msm_panel.h>
 #define MDP_OUTP(addr, val)		writel(val, addr);
 
 void lvds_init(struct msm_panel_info *pinfo)
