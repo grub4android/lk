@@ -172,7 +172,7 @@ struct mdss_dsi_phy_ctrl {
 	int is_pll_20nm;
 };
 
-typedef struct mdss_dsi_pll_config {
+struct mdss_dsi_pll_config {
 	uint32_t  pixel_clock;
 	uint32_t  pixel_clock_mhz;
 	uint32_t  byte_clock;
@@ -217,10 +217,6 @@ struct mipi_dsi_panel_config {
 	uint32_t signature;
 };
 
-static char read_id_a1h_cmd[4] = { 0xA1, 0x00, 0x06, 0xA0 };	/* DTYPE_DCS_READ */
-static struct mipi_dsi_cmd read_ddb_start_cmd =
-	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd};
-
 enum {		/* mipi dsi panel */
 	DSI_VIDEO_MODE,
 	DSI_CMD_MODE,
@@ -254,11 +250,11 @@ int mdss_dsi_video_mode_config(uint16_t disp_width,
 	uint8_t interleav,
 	uint32_t ctl_base);
 
-int mipi_dsi_on();
+int mipi_dsi_on(void);
 int mipi_dsi_off(struct msm_panel_info *pinfo);
 int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count);
 int mipi_dsi_cmds_rx(char **rp, int len);
-int mipi_cmd_trigger();
+int mipi_cmd_trigger(void);
 int mipi_dsi_phy_init(struct mipi_dsi_panel_config *);
 int mipi_dsi_cmd_bta_sw_trigger(void);
 
@@ -267,8 +263,8 @@ void trigger_mdp_dsi(void);
 #endif
 
 int mdss_hdmi_on(void);
-int mdp_get_revision();
-int mdp_dsi_cmd_off();
+int mdp_get_revision(void);
+int mdp_dsi_cmd_off(void);
 int mdp_dma_on(struct msm_panel_info *pinfo);
 int mdp_dma_off(void);
 int mdss_hdmi_init(void);

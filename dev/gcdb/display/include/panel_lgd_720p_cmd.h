@@ -47,7 +47,7 @@
 
 static struct panel_config lgd_720p_cmd_panel_data = {
   "qcom,mipi_dsi_lgd_720p_cmd", "dsi:0:", "qcom,mipi-dsi-panel",
-  10, 1, "DISPLAY_1", 0, 384000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+  10, 1, "DISPLAY_1", 0, 384000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -299,78 +299,79 @@ static char lgd_wcabcctrl[8] = {
 };
 
 static struct mipi_dsi_cmd lgd_720p_cmd_on_command[] = {
-	{sizeof(lgd_mca), lgd_mca},
-	{sizeof(lgd_seqctrl), lgd_seqctrl},
-	{sizeof(lgd_fmis1), lgd_fmis1},
-	{sizeof(lgd_fmis2), lgd_fmis2},
-	{sizeof(lgd_fmis3), lgd_fmis3},
-	{sizeof(lgd_gip), lgd_gip},
-	{sizeof(lgd_dispset1common), lgd_dispset1common},
-	{sizeof(lgd_dispset2), lgd_dispset2},
-	{sizeof(lgd_srctimming), lgd_srctimming},
-	{sizeof(lgd_giptimming), lgd_giptimming},
-	{sizeof(lgd_pwmfreq), lgd_pwmfreq},
-	{sizeof(lgd_pwrsetchargepump), lgd_pwrsetchargepump},
-	{sizeof(lgd_pwrsetinternal), lgd_pwrsetinternal},
-	{sizeof(lgd_sleepout), lgd_sleepout},
-	{sizeof(lgd_coladdr), lgd_coladdr},
-	{sizeof(lgd_pageaddr), lgd_pageaddr},
-	{sizeof(lgd_teon), lgd_teon},
-	{sizeof(lgd_setaddr), lgd_setaddr},
-	{sizeof(lgd_setpixfmt), lgd_setpixfmt},
-	{sizeof(lgd_dispon), lgd_dispon},
-	{sizeof(lgd_wdispbrightness), lgd_wdispbrightness},
-	{sizeof(lgd_wctrldisp), lgd_wctrldisp},
-	{sizeof(lgd_wcabcctrl), lgd_wcabcctrl},
+	{sizeof(lgd_mca), lgd_mca, 0},
+	{sizeof(lgd_seqctrl), lgd_seqctrl, 0},
+	{sizeof(lgd_fmis1), lgd_fmis1, 0},
+	{sizeof(lgd_fmis2), lgd_fmis2, 0},
+	{sizeof(lgd_fmis3), lgd_fmis3, 0},
+	{sizeof(lgd_gip), lgd_gip, 0},
+	{sizeof(lgd_dispset1common), lgd_dispset1common, 0},
+	{sizeof(lgd_dispset2), lgd_dispset2, 0},
+	{sizeof(lgd_srctimming), lgd_srctimming, 0},
+	{sizeof(lgd_giptimming), lgd_giptimming, 0},
+	{sizeof(lgd_pwmfreq), lgd_pwmfreq, 0},
+	{sizeof(lgd_pwrsetchargepump), lgd_pwrsetchargepump, 0},
+	{sizeof(lgd_pwrsetinternal), lgd_pwrsetinternal, 0},
+	{sizeof(lgd_sleepout), lgd_sleepout, 0},
+	{sizeof(lgd_coladdr), lgd_coladdr, 0},
+	{sizeof(lgd_pageaddr), lgd_pageaddr, 0},
+	{sizeof(lgd_teon), lgd_teon, 0},
+	{sizeof(lgd_setaddr), lgd_setaddr, 0},
+	{sizeof(lgd_setpixfmt), lgd_setpixfmt, 0},
+	{sizeof(lgd_dispon), lgd_dispon, 0},
+	{sizeof(lgd_wdispbrightness), lgd_wdispbrightness, 0},
+	{sizeof(lgd_wctrldisp), lgd_wctrldisp, 0},
+	{sizeof(lgd_wcabcctrl), lgd_wcabcctrl, 0},
 };
 #define LGD_720P_CMD_ON_COMMAND 23
 
 static struct mipi_dsi_cmd auo_720p_cmd_on_command[] = {
-	{sizeof(lgd_sleepout1), lgd_sleepout1},
-	{sizeof(lgd_sleepout2), lgd_sleepout2},
-	{sizeof(lgd_sleepout21), lgd_sleepout21},
-	{sizeof(lgd_sleepout22), lgd_sleepout22},
-	{sizeof(lgd_sleepout23), lgd_sleepout23},
-	{sizeof(lgd_sleepout231), lgd_sleepout231},
-	{sizeof(lgd_sleepout232), lgd_sleepout232},
-	{sizeof(lgd_sleepout233), lgd_sleepout233},
-	{sizeof(lgd_sleepout234), lgd_sleepout234},
-	{sizeof(lgd_sleepout235), lgd_sleepout235},
-	{sizeof(lgd_sleepout24), lgd_sleepout24},
-	{sizeof(lgd_sleepout25), lgd_sleepout25},
-	{sizeof(lgd_sleepout26), lgd_sleepout26},
-	{sizeof(lgd_sleepout27), lgd_sleepout27},
-	{sizeof(lgd_sleepout28), lgd_sleepout28},
-	{sizeof(lgd_sleepout3), lgd_sleepout3},
-	{sizeof(lgd_sleepout4), lgd_sleepout4},
-	{sizeof(lgd_sleepout), lgd_sleepout},
-	{sizeof(lgd_sleepout41), lgd_sleepout41},
-	{sizeof(lgd_sleepout42), lgd_sleepout42},
-	{sizeof(lgd_sleepout43), lgd_sleepout43},
-	{sizeof(auo_wdispbrightness), auo_wdispbrightness},
-	{sizeof(auo_wctrldisp), auo_wctrldisp},
-	{sizeof(auo_wcabcctrl), auo_wcabcctrl},
-	{sizeof(lgd_coladdr), lgd_coladdr},
-	{sizeof(lgd_pageaddr), lgd_pageaddr},
-	{sizeof(lgd_teon), lgd_teon},
-	{sizeof(lgd_dispon), lgd_dispon},
+	{sizeof(lgd_sleepout1), lgd_sleepout1, 0},
+	{sizeof(lgd_sleepout2), lgd_sleepout2, 0},
+	{sizeof(lgd_sleepout21), lgd_sleepout21, 0},
+	{sizeof(lgd_sleepout22), lgd_sleepout22, 0},
+	{sizeof(lgd_sleepout23), lgd_sleepout23, 0},
+	{sizeof(lgd_sleepout231), lgd_sleepout231, 0},
+	{sizeof(lgd_sleepout232), lgd_sleepout232, 0},
+	{sizeof(lgd_sleepout233), lgd_sleepout233, 0},
+	{sizeof(lgd_sleepout234), lgd_sleepout234, 0},
+	{sizeof(lgd_sleepout235), lgd_sleepout235, 0},
+	{sizeof(lgd_sleepout24), lgd_sleepout24, 0},
+	{sizeof(lgd_sleepout25), lgd_sleepout25, 0},
+	{sizeof(lgd_sleepout26), lgd_sleepout26, 0},
+	{sizeof(lgd_sleepout27), lgd_sleepout27, 0},
+	{sizeof(lgd_sleepout28), lgd_sleepout28, 0},
+	{sizeof(lgd_sleepout3), lgd_sleepout3, 0},
+	{sizeof(lgd_sleepout4), lgd_sleepout4, 0},
+	{sizeof(lgd_sleepout), lgd_sleepout, 0},
+	{sizeof(lgd_sleepout41), lgd_sleepout41, 0},
+	{sizeof(lgd_sleepout42), lgd_sleepout42, 0},
+	{sizeof(lgd_sleepout43), lgd_sleepout43, 0},
+	{sizeof(auo_wdispbrightness), auo_wdispbrightness, 0},
+	{sizeof(auo_wctrldisp), auo_wctrldisp, 0},
+	{sizeof(auo_wcabcctrl), auo_wcabcctrl, 0},
+	{sizeof(lgd_coladdr), lgd_coladdr, 0},
+	{sizeof(lgd_pageaddr), lgd_pageaddr, 0},
+	{sizeof(lgd_teon), lgd_teon, 0},
+	{sizeof(lgd_dispon), lgd_dispon, 0},
 };
 #define AUO_720P_CMD_ON_COMMAND 28
 
 static struct mipi_dsi_cmd jdi_720p_cmd_on_command[] = {
-	{sizeof(lgd_sleepout), lgd_sleepout},
-	{sizeof(lgd_coladdr), lgd_coladdr},
-	{sizeof(lgd_pageaddr), lgd_pageaddr},
-	{sizeof(lgd_teon), lgd_teon},
-	{sizeof(lgd_setaddr), lgd_setaddr},
-	{sizeof(lgd_setpixfmt), lgd_setpixfmt},
-	{sizeof(lgd_dispon), lgd_dispon},
-	{sizeof(lgd_wdispbrightness), lgd_wdispbrightness},
-	{sizeof(lgd_wctrldisp), lgd_wctrldisp},
-	{sizeof(lgd_wcabcctrl), lgd_wcabcctrl},
+	{sizeof(lgd_sleepout), lgd_sleepout, 0},
+	{sizeof(lgd_coladdr), lgd_coladdr, 0},
+	{sizeof(lgd_pageaddr), lgd_pageaddr, 0},
+	{sizeof(lgd_teon), lgd_teon, 0},
+	{sizeof(lgd_setaddr), lgd_setaddr, 0},
+	{sizeof(lgd_setpixfmt), lgd_setpixfmt, 0},
+	{sizeof(lgd_dispon), lgd_dispon, 0},
+	{sizeof(lgd_wdispbrightness), lgd_wdispbrightness, 0},
+	{sizeof(lgd_wctrldisp), lgd_wctrldisp, 0},
+	{sizeof(lgd_wcabcctrl), lgd_wcabcctrl, 0},
 };
 #define JDI_720P_CMD_ON_COMMAND 10
 
+/*
 static char lgd_720p_cmdoff_cmd0[] = {
 0x28, 0x00, 0x05, 0x80 };
 
@@ -382,7 +383,7 @@ static struct mipi_dsi_cmd lgd_720p_cmd_off_command[] = {
 { 0x4 , lgd_720p_cmdoff_cmd0, 0},
 { 0x4 , lgd_720p_cmdoff_cmd1, 0}
 };
-#define LGD_720P_CMD_OFF_COMMAND 2
+#define LGD_720P_CMD_OFF_COMMAND 2*/
 
 
 static struct command_state lgd_720p_cmd_state = {
@@ -421,12 +422,12 @@ const uint32_t lgd_720p_cmd_timings[] = {
 };
 
 
-
+/*
 static struct mipi_dsi_cmd lgd_720p_cmd_rotation[] = {
 
 };
 #define TOSHIBA_720P_VIDEO_ROTATION 0
-
+*/
 
 static struct panel_timing lgd_720p_cmd_timing_info = {
   0x04, 0x04, 34, 59

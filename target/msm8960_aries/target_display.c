@@ -297,7 +297,7 @@ void target_display_init(const char *panel_name)
 	}
 
 	do {
-		ret = gcdb_display_init(panel_name, MDP_REV_44, MIPI_FB_ADDR);
+		ret = gcdb_display_init(panel_name, MDP_REV_44, (void*)MIPI_FB_ADDR);
 		if (ret) {
 			/*Panel signature did not match, turn off the display*/
 			target_force_cont_splash_disable(true);

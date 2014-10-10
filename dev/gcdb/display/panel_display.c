@@ -38,7 +38,6 @@
 #include <platform/iomap.h>
 #include <err.h>
 #include <reg.h>
-#include <mdp5.h>
 #include <string.h>
 
 
@@ -168,17 +167,17 @@ int dsi_panel_init(struct msm_panel_info *pinfo,
 /* Panel Callbacks                                                           */
 /*---------------------------------------------------------------------------*/
 
-int dsi_panel_pre_on()
+int dsi_panel_pre_on(void)
 {
 	return target_display_pre_on();
 }
 
-int dsi_panel_pre_off()
+int dsi_panel_pre_off(void)
 {
 	return target_display_pre_off();
 }
 
-int dsi_panel_post_on()
+int dsi_panel_post_on(void)
 {
 	int ret = NO_ERROR;
 
@@ -189,7 +188,7 @@ int dsi_panel_post_on()
 	return oem_panel_on();
 }
 
-int dsi_panel_post_off()
+int dsi_panel_post_off(void)
 {
 	int ret = NO_ERROR;
 
@@ -200,7 +199,7 @@ int dsi_panel_post_off()
 	return oem_panel_off();
 }
 
-int dsi_panel_rotation()
+int dsi_panel_rotation(void)
 {
 	return oem_panel_rotation();
 }

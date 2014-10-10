@@ -173,7 +173,7 @@ uint8_t platform_pmic_type(uint32_t pmic_type)
 	uint8_t num_ent = 0;
 	struct board_pmic_data pmic_info[SMEM_V7_SMEM_MAX_PMIC_DEVICES];
 
-	num_ent = board_pmic_info(&pmic_info, SMEM_V7_SMEM_MAX_PMIC_DEVICES);
+	num_ent = board_pmic_info((struct board_pmic_data*)&pmic_info, SMEM_V7_SMEM_MAX_PMIC_DEVICES);
 
 	for(i = 0; i < num_ent; i++) {
 		if (pmic_info[i].pmic_type == pmic_type) {

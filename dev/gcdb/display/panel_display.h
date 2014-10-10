@@ -50,7 +50,7 @@
 /*---------------------------------------------------------------------------*/
 /* struct definition                                                         */
 /*---------------------------------------------------------------------------*/
-typedef struct panel_struct{
+typedef struct panel_struct {
 	struct panel_config         *paneldata;
 	struct panel_resolution     *panelres;
 	struct color_info           *color;
@@ -61,7 +61,7 @@ typedef struct panel_struct{
 	struct panel_timing         *paneltiminginfo;
 	struct panel_reset_sequence *panelresetseq;
 	struct backlight            *backlightinfo;
-};
+} panel_struct_t;
 
 struct panel_list {
 	char name[MAX_PANEL_ID_LEN];
@@ -74,17 +74,17 @@ struct panel_list {
 int dsi_panel_init(struct msm_panel_info *pinfo,
 		struct panel_struct *pstruct);
 
-int dsi_panel_pre_on();
-int dsi_panel_post_on();
-int dsi_panel_pre_off();
-int dsi_panel_post_off();
-int dsi_panel_rotation();
+int dsi_panel_pre_on(void);
+int dsi_panel_post_on(void);
+int dsi_panel_pre_off(void);
+int dsi_panel_post_off(void);
+int dsi_panel_rotation(void);
 int dsi_panel_config(void *);
 
 /* This should be implemented by oem */
-int oem_panel_rotation();
-int oem_panel_on();
-int oem_panel_off();
+int oem_panel_rotation(void);
+int oem_panel_on(void);
+int oem_panel_off(void);
 
 /* OEM support API */
 int32_t panel_name_to_id(struct panel_list supp_panels[],

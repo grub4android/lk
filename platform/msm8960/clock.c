@@ -66,6 +66,7 @@ static struct fixed_clk pxo_clk = {
 	},
 };
 
+#ifdef DEBUG_CLOCK
 static struct fixed_clk cxo_clk = {
 	.rate = 19200000,
 	.c = {
@@ -73,6 +74,7 @@ static struct fixed_clk cxo_clk = {
 		.ops = &clk_ops_xo,
 	},
 };
+#endif
 
 /*
  * PLL Clocks
@@ -880,7 +882,7 @@ static int measure_clk_set_parent(struct clk *clk, struct clk *parent)
 	return ERR_INVALID_ARGS;
 }
 
-static unsigned long measure_clk_get_rate(struct clk *clk)
+static unsigned measure_clk_get_rate(struct clk *clk)
 {
 	return 0;
 }
@@ -988,7 +990,7 @@ static int sr_pll_clk_enable(struct clk *clk)
 
 static unsigned msm_num_clocks_8960 = ARRAY_SIZE(msm_clocks_8960);
 
-void msm_clocks_init()
+void msm_clocks_init(void)
 {
 	clk_ops_pll.enable = sr_pll_clk_enable;
 	clk_init(msm_clocks_8960, msm_num_clocks_8960);

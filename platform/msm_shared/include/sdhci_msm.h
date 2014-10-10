@@ -30,6 +30,7 @@
 #define __SDHCI_MSM_H__
 
 #include <kernel/event.h>
+#include <mmc_sdhci.h>
 
 #define SDHCI_HC_START_BIT                         0x0
 #define SDHCI_HC_WIDTH                             0x1

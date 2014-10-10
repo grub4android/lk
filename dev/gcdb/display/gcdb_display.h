@@ -36,6 +36,7 @@
 #include <debug.h>
 #include <display_resource.h>
 #include <panel.h>
+#include <panel_display.h>
 
 #define TIMING_SIZE 48
 #define REGULATOR_SIZE 28
@@ -59,7 +60,7 @@ int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo);
 
 int gcdb_display_init(const char *panel_name, uint32_t rev, void *base);
 bool gcdb_display_cmdline_arg(char *panel_name, char *pbuf, uint16_t buf_size);
-void gcdb_display_shutdown();
+void gcdb_display_shutdown(void);
 
 int oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 			struct msm_panel_info *pinfo,

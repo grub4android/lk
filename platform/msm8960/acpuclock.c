@@ -213,7 +213,6 @@ void clock_config_mmc(uint32_t interface, uint32_t freq)
 {
 	char sdc_clk[64];
 	unsigned rate;
-	uint32_t reg = 0;
 
 	snprintf(sdc_clk, 64, "sdc%u_clk", interface);
 
@@ -269,7 +268,7 @@ void ce_clock_init(void)
 	}
 }
 /* Async Reset CE1 */
-void ce_async_reset()
+void ce_async_reset(void)
 {
 	/* Enable Async reset bit for HCLK CE1 */
 	writel((1<<7) | (1 << 4), CE1_HCLK_CTL_REG);

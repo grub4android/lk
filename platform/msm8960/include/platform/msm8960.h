@@ -31,7 +31,7 @@
 #define MAX_INT NR_IRQS
 
 uint8_t platform_pmic_type(uint32_t pmic_type);
-void apq8064_keypad_gpio_init();
+void apq8064_keypad_gpio_init(void);
 void clock_config_mmc(uint32_t interface, uint32_t freq);
 void clock_init_mmc(uint32_t interface);
 void msm_clocks_init(void);
@@ -39,7 +39,7 @@ void mmss_clock_init(void);
 void mmss_clock_disable(void);
 
 #if TARGET_MSM8960_ARIES
-void mi_display_gpio_init();
+void mi_display_gpio_init(void);
 #endif
 
 #endif

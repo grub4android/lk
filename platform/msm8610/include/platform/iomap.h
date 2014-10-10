@@ -163,6 +163,7 @@
 #define MDP_MAX_RD_PENDING_CMD_CONFIG  REG_MDP(0x0004C)
 #define MDP_INTR_ENABLE                REG_MDP(0x00020)
 #define MDP_INTR_CLEAR                 REG_MDP(0x00028)
+
 #define MDP_DSI_CMD_MODE_ID_MAP        REG_MDP(0xF1000)
 #define MDP_DSI_CMD_MODE_TRIGGER_EN    REG_MDP(0XF1004)
 
@@ -181,7 +182,7 @@
 #define COMMAND_MODE_MDP_STREAM1_CTRL   0x05C
 #define COMMAND_MODE_MDP_STREAM1_TOTAL  0x060
 #define ERR_INT_MASK0               0x108
-#define RDBK_DATA0                  0x068
+//#define RDBK_DATA0                  0x068
 
 #define LANE_SWAP_CTL               0x0AC
 #define TIMING_CTL                  0x0C0

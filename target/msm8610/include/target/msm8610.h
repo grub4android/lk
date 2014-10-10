@@ -24,7 +24,7 @@
 #define __TARGET_MSM8610_H
 
 void target_force_cont_splash_disable(uint8_t override);
-uint32_t oem_panel_max_auto_detect_panels();
+uint32_t oem_panel_max_auto_detect_panels(void);
 
 #endif
 

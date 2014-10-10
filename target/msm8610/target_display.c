@@ -150,8 +150,8 @@ int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 			0x100 * ldo_entry_array[ldocounter].ldo_id),
 			ldo_entry_array[ldocounter].ldo_type);
 
-		dprintf(SPEW, "Setting %s\n",
-				ldo_entry_array[ldocounter].ldo_id);
+		dprintf(SPEW, "Setting %s(%u)\n",
+				ldo_entry_array[ldocounter].ldo_name, ldo_entry_array[ldocounter].ldo_id);
 
 		/* Set voltage during power on */
 		if (enable) {
@@ -183,7 +183,7 @@ void target_display_init(const char *panel_name)
 	}
 
 	do {
-		ret = gcdb_display_init(panel_name, MDP_REV_304, MIPI_FB_ADDR);
+		ret = gcdb_display_init(panel_name, MDP_REV_304, (void*)MIPI_FB_ADDR);
 		if (ret) {
 			/*Panel signature did not match, turn off the display*/
 			target_force_cont_splash_disable(true);

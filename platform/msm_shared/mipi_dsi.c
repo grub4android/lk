@@ -41,16 +41,21 @@
 #include <platform/timer.h>
 #include <err.h>
 #include <msm_panel.h>
-#include <mdp4.h>
 
 extern void mdp_disable(void);
+extern void mdp_start_dma(void);
+extern int mipi_dsi_cmd_config(struct fbcon_config mipi_fb_cfg,
+			unsigned short num_of_lanes);
 
-#if (DISPLAY_TYPE_MDSS == 0)
+#ifndef MIPI_DSI0_BASE
 #define MIPI_DSI0_BASE MIPI_DSI_BASE
+#endif
+
+#ifndef MIPI_DSI1_BASE
 #define MIPI_DSI1_BASE MIPI_DSI_BASE
 #endif
 
-static struct fbcon_config mipi_fb_cfg = {
+static struct fbcon_config mipi_fb_cfg __UNUSED = {
 	.height = 0,
 	.width = 0,
 	.stride = 0,
@@ -60,17 +65,20 @@ static struct fbcon_config mipi_fb_cfg = {
 	.update_done = NULL,
 };
 
-static int cmd_mode_status = 0;
 void secure_writel(uint32_t, uint32_t);
 uint32_t secure_readl(uint32_t);
 
 static uint32_t response_value = 0;
 
+static char read_id_a1h_cmd[4] = { 0xA1, 0x00, 0x06, 0xA0 };	/* DTYPE_DCS_READ */
+static struct mipi_dsi_cmd read_ddb_start_cmd __UNUSED =
+	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd, 0};
+
 uint32_t mdss_dsi_read_panel_signature(uint32_t panel_signature)
 {
 	uint32_t rec_buf[1];
-	uint32_t *lp = rec_buf, data;
-	int ret = response_value;
+	uint32_t *lp __UNUSED = rec_buf, data __UNUSED;
+	uint32_t ret = response_value;
 
 #if (DISPLAY_TYPE_MDSS == 1)
 	if (ret && ret != panel_signature)
@@ -96,10 +104,10 @@ exit_read_signature:
 	return ret;
 }
 
-int mdss_dual_dsi_cmd_dma_trigger_for_panel()
+int mdss_dual_dsi_cmd_dma_trigger_for_panel(void)
 {
-	uint32_t ReadValue;
-	uint32_t count = 0;
+	uint32_t ReadValue __UNUSED;
+	uint32_t count __UNUSED = 0;
 	int status = 0;
 
 #if (DISPLAY_TYPE_MDSS == 1)
@@ -130,7 +138,7 @@ int mdss_dual_dsi_cmd_dma_trigger_for_panel()
 	return status;
 }
 
-int dsi_cmd_dma_trigger_for_panel()
+int dsi_cmd_dma_trigger_for_panel(void)
 {
 	unsigned long ReadValue;
 	unsigned long count = 0;
@@ -161,18 +169,18 @@ int dsi_cmd_dma_trigger_for_panel()
 int mdss_dual_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 {
 	int ret = 0;
-	struct mipi_dsi_cmd *cm;
-	int i = 0;
-	char pload[256];
-	uint32_t off;
+	struct mipi_dsi_cmd *cm __UNUSED;
+	int i __UNUSED = 0;
+	char pload[256] __UNUSED;
+	uint32_t off __UNUSED;
 
 #if (DISPLAY_TYPE_MDSS == 1)
 	/* Align pload at 8 byte boundry */
-	off = pload;
+	off = (uint32_t)pload;
 	off &= 0x07;
 	if (off)
 		off = 8 - off;
-	off += pload;
+	off += (uint32_t)pload;
 
 	cm = cmds;
 	for (i = 0; i < count; i++) {
@@ -238,7 +246,7 @@ int mdss_dsi_cmds_rx(uint32_t **rp, int rp_len, int rdbk_len)
 	if (rdbk_len > 2) {
 		/*First 4 bytes + paded bytes will be header next len bytes would be payload */
 		for (i = 0; i < rdbk_len; i++) {
-			dp = *rp;
+			dp = (char*)*rp;
 			dp[i] = dp[(res + i) >> 2];
 		}
 	}
@@ -254,11 +262,11 @@ int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 	uint32_t off;
 
 	/* Align pload at 8 byte boundry */
-	off = pload;
+	off = (uint32_t)pload;
 	off &= 0x07;
 	if (off)
 		off = 8 - off;
-	off += pload;
+	off += (uint32_t)pload;
 
 	cm = cmds;
 	for (i = 0; i < count; i++) {
@@ -354,17 +362,17 @@ int mipi_dsi_cmd_bta_sw_trigger(void)
 int mdss_dsi_host_init(struct mipi_dsi_panel_config *pinfo, uint32_t
 		dual_dsi, uint32_t broadcast)
 {
-	uint8_t DMA_STREAM1 = 0;	// for mdp display processor path
-	uint8_t EMBED_MODE1 = 1;	// from frame buffer
-	uint8_t POWER_MODE2 = 1;	// from frame buffer
-	uint8_t PACK_TYPE1;		// long packet
-	uint8_t VC1 = 0;
-	uint8_t DT1 = 0;	// non embedded mode
-	uint8_t WC1 = 0;	// for non embedded mode only
-	uint8_t DLNx_EN;
-	uint8_t lane_swap = 0;
-	uint32_t timing_ctl = 0;
-	uint32_t lane_swap_dsi1 = 0;
+	uint8_t DMA_STREAM1 __UNUSED = 0;	// for mdp display processor path
+	uint8_t EMBED_MODE1 __UNUSED = 1;	// from frame buffer
+	uint8_t POWER_MODE2 __UNUSED = 1;	// from frame buffer
+	uint8_t PACK_TYPE1 __UNUSED;		// long packet
+	uint8_t VC1 __UNUSED = 0;
+	uint8_t DT1 __UNUSED = 0;	// non embedded mode
+	uint8_t WC1 __UNUSED = 0;	// for non embedded mode only
+	uint8_t DLNx_EN __UNUSED;
+	uint8_t lane_swap __UNUSED = 0;
+	uint32_t timing_ctl __UNUSED = 0;
+	uint32_t lane_swap_dsi1 __UNUSED = 0;
 
 #if (DISPLAY_TYPE_MDSS == 1)
 	switch (pinfo->num_of_lanes) {
@@ -520,7 +528,6 @@ config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 		    unsigned short traffic_mode, unsigned short datalane_num, int rgb_swap)
 {
 	unsigned char DST_FORMAT;
-	unsigned char TRAFIC_MODE;
 	unsigned char DLNx_EN;
 	// video mode data ctrl
 	int status = 0;
@@ -563,7 +570,6 @@ config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 		break;
 	}
 
-	TRAFIC_MODE = 0;	// non burst mode with sync pulses
 	dprintf(SPEW, "Traffic mode: non burst mode with sync pulses\n");
 
 	writel(0x02020202, DSI_INT_CTRL);
@@ -772,8 +778,8 @@ int mdss_dsi_video_mode_config(uint16_t disp_width,
 int mdss_dsi_config(struct msm_fb_panel_data *panel)
 {
 	int ret = NO_ERROR;
-	struct msm_panel_info *pinfo;
-	struct mipi_dsi_panel_config mipi_pinfo;
+	struct msm_panel_info *pinfo __UNUSED;
+	struct mipi_dsi_panel_config mipi_pinfo __UNUSED;
 
 #if (DISPLAY_TYPE_MDSS == 1)
 	if (!panel)
@@ -822,6 +828,7 @@ int mdss_dsi_config(struct msm_fb_panel_data *panel)
 		pinfo->rotate();
 #endif
 
+goto error;
 error:
 	return ret;
 }
@@ -836,7 +843,7 @@ int mdss_dsi_cmd_mode_config(uint16_t disp_width,
 	uint8_t interleav,
 	uint32_t ctl_base)
 {
-	uint16_t dst_fmt = 0;
+	uint16_t dst_fmt __UNUSED = 0;
 
 	switch (dst_format) {
 	case DSI_VIDEO_DST_FORMAT_RGB565:

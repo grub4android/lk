@@ -32,6 +32,7 @@
 #define __BOARD_H
 
 #include <smem.h>
+#include <arch/arm/mmu.h>
 
 #define LINUX_MACHTYPE_UNKNOWN 0
 #define BOARD_SOC_VERSION2     0x20000
@@ -87,15 +88,15 @@ struct board_data {
 	uint32_t platform_hlos_subtype;
 };
 
-void board_init();
+void board_init(void);
 void target_detect(struct board_data *);
 void target_baseband_detect(struct board_data *);
-uint32_t board_platform_id();
-uint32_t board_target_id();
-uint32_t board_baseband();
-uint32_t board_hardware_id();
+uint32_t board_platform_id(void);
+uint32_t board_target_id(void);
+uint32_t board_baseband(void);
+uint32_t board_hardware_id(void);
 uint8_t board_pmic_info(struct board_pmic_data *, uint8_t num_ent);
-uint32_t board_soc_version();
+uint32_t board_soc_version(void);
 uint32_t board_hardware_subtype(void);
 uint32_t board_get_ddr_subtype(void);
 uint32_t board_hlos_subtype(void);
@@ -108,7 +109,6 @@ uint32_t board_pmic_target(uint8_t num_ent);
  * subtype
  */
 
-#define MB             (1024 * 1024)
 #define DDR_512MB      (512 * MB)
 
 enum subtype_ddr {

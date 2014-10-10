@@ -215,7 +215,7 @@ qpic_nand_fetch_id(struct flash_info *flash)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_LOCK_FLAG | BAM_DESC_INT_FLAG |
 					 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG);
 
@@ -416,7 +416,7 @@ onfi_probe_cmd_exec(struct onfi_probe_params *params,
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((addr_t)(uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((addr_t)(uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 desc_flags);
 
 	cmd_list_ptr_start = cmd_list_ptr;
@@ -467,7 +467,7 @@ qpic_nand_onfi_probe_cleanup(uint32_t vld, uint32_t dev_cmd1)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_UNLOCK_FLAG | BAM_DESC_CMD_FLAG| BAM_DESC_INT_FLAG);
 
 	qpic_nand_wait_for_cmd_exec(1);
@@ -788,7 +788,7 @@ qpic_nand_block_isbad_exec(struct cfg_params *params,
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 desc_flags);
 
 	num_desc++;
@@ -895,7 +895,6 @@ qpic_nand_blk_erase(uint32_t page)
 	uint32_t status;
 	int num_desc = 0;
 	uint32_t blk_addr = page / flash.num_pages_per_blk;
-	int nand_ret;
 
 	/* Erase only if the block is not bad */
 	if (qpic_nand_block_isbad(page))
@@ -921,7 +920,7 @@ qpic_nand_blk_erase(uint32_t page)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG | BAM_DESC_INT_FLAG | BAM_DESC_LOCK_FLAG);
 
 	cmd_list_ptr_start = cmd_list_ptr;
@@ -945,7 +944,7 @@ qpic_nand_blk_erase(uint32_t page)
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_INT_FLAG | BAM_DESC_CMD_FLAG) ;
 
 	num_desc = 1;
@@ -954,7 +953,7 @@ qpic_nand_blk_erase(uint32_t page)
 	status = qpic_nand_check_status(status);
 
 	/* Dummy read to unlock pipe. */
-	nand_ret = qpic_nand_read_reg(NAND_FLASH_STATUS, BAM_DESC_UNLOCK_FLAG, cmd_list_ptr);
+	qpic_nand_read_reg(NAND_FLASH_STATUS, BAM_DESC_UNLOCK_FLAG, cmd_list_ptr);
 
 	/* Check for status errors*/
 	if (status)
@@ -1003,7 +1002,7 @@ qpic_nand_add_wr_page_cws_cmd_desc(struct cfg_params *cfg,
 	bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_CMD_FLAG | BAM_DESC_LOCK_FLAG);
 
 	num_desc++;
@@ -1021,7 +1020,7 @@ qpic_nand_add_wr_page_cws_cmd_desc(struct cfg_params *cfg,
 		bam_add_one_desc(&bam,
 						 CMD_PIPE_INDEX,
 						 (unsigned char*)cmd_list_ptr_start,
-						 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+						 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 						 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG);
 
 		num_desc++;
@@ -1043,7 +1042,7 @@ qpic_nand_add_wr_page_cws_cmd_desc(struct cfg_params *cfg,
 		bam_add_one_desc(&bam,
 						 CMD_PIPE_INDEX,
 						 (unsigned char*)cmd_list_ptr_start,
-						 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+						 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 						 int_flag | BAM_DESC_CMD_FLAG);
 		num_desc++;
 
@@ -1253,7 +1252,6 @@ void
 qpic_nand_init(struct qpic_nand_init_config *config)
 {
 	uint32_t i;
-	int nand_ret;
 
 	nand_base = config->nand_base;
 
@@ -1325,7 +1323,7 @@ flash_get_ptable(void)
 }
 
 void
-qpic_nand_uninit()
+qpic_nand_uninit(void)
 {
 	bam_pipe_reset(&bam, DATA_PRODUCER_PIPE_INDEX);
 	bam_pipe_reset(&bam, DATA_CONSUMER_PIPE_INDEX);
@@ -1359,7 +1357,6 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 	uint8_t flags = 0;
 	uint32_t *cmd_list_temp = NULL;
 
-	uint32_t temp_status = 0;
 	/* UD bytes in last CW is 512 - cws_per_page *4.
 	 * Since each of the CW read earlier reads 4 spare bytes.
 	 */
@@ -1426,14 +1423,14 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 			bam_add_one_desc(&bam,
 							 DATA_PRODUCER_PIPE_INDEX,
 							 (unsigned char *)kvaddr_to_paddr((addr_t)buffer),
-							 ud_bytes_in_last_cw,
+							 (uint32_t)ud_bytes_in_last_cw,
 							 0);
 			num_data_desc++;
 
 			bam_add_one_desc(&bam,
 							 DATA_PRODUCER_PIPE_INDEX,
 							 (unsigned char *)kvaddr_to_paddr((addr_t)spareaddr),
-							 oob_bytes,
+							 (uint32_t)oob_bytes,
 							 BAM_DESC_INT_FLAG);
 			num_data_desc++;
 
@@ -1468,13 +1465,13 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 		bam_add_one_desc(&bam,
 					 CMD_PIPE_INDEX,
 					 (unsigned char*)cmd_list_ptr_start,
-					 kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
+					 (uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_ptr_start),
 					 BAM_DESC_NWD_FLAG | BAM_DESC_CMD_FLAG);
 		num_cmd_desc++;
 
 		bam_add_cmd_element(cmd_list_ptr, NAND_FLASH_STATUS, (uint32_t)kvaddr_to_paddr((addr_t)&(flash_sts[i])), CE_READ_TYPE);
 
-		cmd_list_temp = cmd_list_ptr;
+		cmd_list_temp = (uint32_t*)cmd_list_ptr;
 
 		cmd_list_ptr++;
 
@@ -1492,7 +1489,7 @@ qpic_nand_read_page(uint32_t page, unsigned char* buffer, unsigned char* sparead
 		bam_add_one_desc(&bam,
 					CMD_PIPE_INDEX,
 					(unsigned char*)kvaddr_to_paddr((addr_t)cmd_list_temp),
-					kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_temp),
+					(uint32_t)kvaddr_to_paddr((uint32_t)cmd_list_ptr - (uint32_t)cmd_list_temp),
 					flags);
 		num_cmd_desc++;
 

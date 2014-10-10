@@ -47,7 +47,7 @@
 
 static struct panel_config nt35590_720p_video_panel_data = {
   "qcom,mdss_dsi_nt35590_720p_video", "dsi:0:", "qcom,mdss-dsi-panel",
-  10, 0, "DISPLAY_1", 0, 424000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  10, 0, "DISPLAY_1", 0, 424000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -2870,7 +2870,7 @@ static struct mipi_dsi_cmd nt35590_720p_video_on_command[] = {
 };
 #define NT35590_720P_VIDEO_ON_COMMAND 466
 
-
+/*
 static char nt35590_720p_videooff_cmd0[] = {
 0x28, 0x00, 0x05, 0x80 };
 
@@ -2886,7 +2886,7 @@ static struct mipi_dsi_cmd nt35590_720p_video_off_command[] = {
 { 0x4 , nt35590_720p_videooff_cmd1,  0x78}
 };
 #define NT35590_720P_VIDEO_OFF_COMMAND 2
-
+*/
 
 static struct command_state nt35590_720p_video_state = {
   0, 1
@@ -2925,12 +2925,12 @@ const uint32_t nt35590_720p_video_timings[] = {
 };
 
 
-
+/*
 static struct mipi_dsi_cmd nt35590_720p_video_rotation[] = {
 
 };
 #define NT35590_720P_VIDEO_ROTATION 0
-
+*/
 
 static struct panel_timing nt35590_720p_video_timing_info = {
   0, 4, 0x20, 0x2c

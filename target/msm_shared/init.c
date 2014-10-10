@@ -27,8 +27,6 @@
 #include <compiler.h>
 #include <dload_util.h>
 
-#define EXPAND(NAME) #NAME
-#define TARGET(NAME) EXPAND(NAME)
 /*
  * default implementations of these routines, if the target code
  * chooses not to implement.
@@ -84,7 +82,7 @@ __WEAK unsigned target_baseband()
 
 __WEAK void target_serialno(unsigned char *buf)
 {
-	snprintf((char *) buf, 13, "%s",TARGET(BOARD));
+	snprintf((char *) buf, 13, "%s", PROJECT);
 }
 
 __WEAK void target_fastboot_init()

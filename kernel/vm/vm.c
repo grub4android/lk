@@ -116,8 +116,10 @@ void *kvaddr_to_paddr(vaddr_t va)
 {
     paddr_t pa;
     uint flags;
-    status_t err = arch_mmu_query(va, &pa, &flags);
-    return pa;
+    status_t err =arch_mmu_query(va, &pa, &flags);
+	if(err) return NULL;
+
+    return (void*)pa;
 }
 
 /* Function to check if the memory address range falls within the aboot

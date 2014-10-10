@@ -233,6 +233,6 @@ struct msm_fb_panel_data {
 	int (*pre_init_func)(void);
 };
 
-int msm_display_off();
+int msm_display_off(void);
 
 #endif

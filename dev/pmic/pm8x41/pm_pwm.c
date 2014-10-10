@@ -177,8 +177,8 @@ static void pm_pwm_calc_pwm_value(struct pm_pwm_config *pwm_config,
 		pwm_config->pwm_value = duty_us / tmp;
 	}
 	max_pwm_value = (1 << pwm_config->pwm_size) - 1;
-	if (pwm_config->pwm_value > max_pwm_value)
-		pwm_config->pwm_value = max_pwm_value;
+	if (pwm_config->pwm_value > (int)max_pwm_value)
+		pwm_config->pwm_value = (int)max_pwm_value;
 }
 
 #define PM_PWM_SIZE_9_BIT	1

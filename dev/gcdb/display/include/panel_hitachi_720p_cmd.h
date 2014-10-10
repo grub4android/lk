@@ -47,7 +47,7 @@
 
 static struct panel_config hitachi_720p_cmd_panel_data = {
   "qcom,mipi_dsi_hitachi_720p_cmd", "dsi:0:", "qcom,mipi-dsi-panel",
-  10, 1, "DISPLAY_1", 0, 384000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+  10, 1, "DISPLAY_1", 0, 384000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -167,6 +167,7 @@ static struct mipi_dsi_cmd sharp_720p_cmd_on_command[] = {
 };
 #define SHARP_720P_CMD_ON_COMMAND 12
 
+/*
 static char hitachi_720p_cmdoff_cmd0[] = {
 0x28, 0x00, 0x05, 0x80 };
 
@@ -174,15 +175,12 @@ static char hitachi_720p_cmdoff_cmd0[] = {
 static char hitachi_720p_cmdoff_cmd1[] = {
 0x10, 0x00, 0x05, 0x80 };
 
-
-
-
 static struct mipi_dsi_cmd hitachi_720p_cmd_off_command[] = {
 { 0x4 , hitachi_720p_cmdoff_cmd0, 0},
 { 0x4 , hitachi_720p_cmdoff_cmd1, 0}
 };
 #define HITACHI_720P_CMD_OFF_COMMAND 2
-
+*/
 
 static struct command_state hitachi_720p_cmd_state = {
   0, 1
@@ -220,12 +218,12 @@ const uint32_t hitachi_720p_cmd_timings[] = {
 };
 
 
-
+/*
 static struct mipi_dsi_cmd hitachi_720p_cmd_rotation[] = {
 
 };
 #define TOSHIBA_720P_VIDEO_ROTATION 0
-
+*/
 
 static struct panel_timing hitachi_720p_cmd_timing_info = {
   0x04, 0x04, 34, 59

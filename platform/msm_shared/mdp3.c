@@ -83,7 +83,7 @@ int mdp_dsi_video_config(struct msm_panel_info *pinfo,
 	if (mdp_rev == MDP_REV_304) {
 		writel((pinfo->xres + lcdc->h_back_porch + \
 			lcdc->h_pulse_width - 1) << 16 | \
-			lcdc->h_back_porch + lcdc->h_pulse_width, \
+			(lcdc->h_back_porch + lcdc->h_pulse_width), \
 			MDP_DSI_VIDEO_DISPLAY_HCTL);
 		writel((lcdc->v_back_porch + lcdc->v_pulse_width) \
 			* hsync_period, MDP_DSI_VIDEO_DISPLAY_V_START);

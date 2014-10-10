@@ -87,7 +87,7 @@ static int mmc_bam_transfer_data();
 static unsigned int
 mmc_boot_bam_setup_desc(unsigned int *data_ptr,
 			    unsigned int data_len, unsigned char direction);
-uint32_t mmc_page_size();
+uint32_t mmc_page_size(void);
 
 #endif
 
@@ -161,12 +161,12 @@ unsigned int SWAP_ENDIAN(unsigned int val)
 									 24);
 }
 
-uint32_t mmc_page_size()
+uint32_t mmc_page_size(void)
 {
 	return BOARD_KERNEL_PAGESIZE;
 }
 
-void mmc_mclk_reg_wr_delay()
+void mmc_mclk_reg_wr_delay(void)
 {
 	if (mmc_host.mmc_cont_version)
 	{
@@ -1941,7 +1941,7 @@ unsigned int mmc_boot_init(struct mmc_host *host)
 	/* Wait for the MMC_BOOT_MCI_POWER write to go through. */
 	mmc_mclk_reg_wr_delay();
 
-	return MMC_BOOT_E_SUCCESS;
+	return mmc_ret;
 }
 
 /*
@@ -2273,7 +2273,6 @@ mmc_boot_init_and_identify_cards(struct mmc_host *host,
 {
 	unsigned int mmc_return = MMC_BOOT_E_SUCCESS;
 	unsigned int status;
-	uint8_t mmc_bus_width = 0;
 
 	/* Basic check */
 	if (host == NULL) {
@@ -2372,7 +2371,7 @@ mmc_boot_init_and_identify_cards(struct mmc_host *host,
 	if (MMC_BOOT_CARD_STATUS(status) != MMC_BOOT_TRAN_STATE)
 		return MMC_BOOT_E_FAILURE;
 
-	return MMC_BOOT_E_SUCCESS;
+	return mmc_return;
 }
 
 void mmc_display_ext_csd(void)
@@ -2742,12 +2741,15 @@ mmc_wp(unsigned int sector, unsigned int size, unsigned char set_clear_wp)
 	}
 	else
 		return MMC_BOOT_E_FAILURE;
+
+	return rc;
 }
 
-void mmc_wp_test(void)
+unsigned int mmc_wp_test(void)
 {
-	unsigned int mmc_ret = 0;
+	unsigned int mmc_ret = MMC_BOOT_E_SUCCESS;
 	mmc_ret = mmc_wp(0xE06000, 0x5000, 1);
+	return mmc_ret;
 }
 
 unsigned mmc_get_psn(void)
@@ -2884,7 +2886,7 @@ mmc_boot_fifo_write(unsigned int *mmc_ptr, unsigned int data_len)
 			sz = ((count >> 2) >  MMC_BOOT_MCI_HFIFO_COUNT) \
 				 ? MMC_BOOT_MCI_HFIFO_COUNT : (count >> 2);
 
-			for (int i = 0; i < sz; i++) {
+			for (unsigned i = 0; i < sz; i++) {
 				writel(*mmc_ptr, MMC_BOOT_MCI_FIFO);
 				mmc_ptr++;
 				/* increase mmc_count by word size */
@@ -3018,7 +3020,7 @@ static unsigned int mmc_boot_send_erase(struct mmc_card *card)
 	/* Checking for write protect */
 	if (cmd.resp[0] & MMC_BOOT_R1_WP_ERASE_SKIP) {
 		dprintf(CRITICAL, "Write protect enabled for sector \n");
-		return;
+		return MMC_BOOT_E_FAILURE;
 	}
 
 	/* Checking if the erase operation for the card is compelete */

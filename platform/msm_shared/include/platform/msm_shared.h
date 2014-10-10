@@ -37,7 +37,7 @@ void display_init(void);
 void display_shutdown(void);
 void display_image_on_screen(void);
 
-addr_t get_bs_info_addr();
+addr_t get_bs_info_addr(void);
 uint32_t platform_get_sclk_count(void);
 
 unsigned board_machtype(void);
@@ -47,7 +47,7 @@ void platform_uninit_timer(void);
 void shutdown_device(void);
 void reboot_device(unsigned);
 int set_download_mode(enum dload_mode mode);
-uint32_t platform_get_smem_base_addr();
+uint32_t platform_get_smem_base_addr(void);
 void clock_config_cdc(uint8_t slot);
 #endif
 

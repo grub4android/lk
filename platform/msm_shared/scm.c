@@ -59,7 +59,7 @@ static void scm_arm_support_available(uint32_t svc_id, uint32_t cmd_id)
 {
 	uint32_t ret;
 	scmcall_arg scm_arg = {0};
-	scmcall_arg scm_ret = {0};
+	scmcall_ret scm_ret = {0};
 	/* Make a call to check if SCM call available using new interface,
 	 * if this returns 0 then scm implementation as per arm spec
 	 * otherwise use the old interface for scm calls
@@ -75,7 +75,7 @@ static void scm_arm_support_available(uint32_t svc_id, uint32_t cmd_id)
 }
 
 
-void scm_init()
+void scm_init(void)
 {
 	scm_arm_support_available(SCM_SVC_INFO, IS_CALL_AVAIL_CMD);
 }
@@ -172,7 +172,7 @@ static int scm_call_atomic(uint32_t svc, uint32_t cmd, uint32_t arg1)
 {
 	uint32_t context_id;
 	register uint32_t r0 __asm__("r0") = SCM_ATOMIC(svc, cmd, 1);
-	register uint32_t r1 __asm__("r1") = &context_id;
+	register uint32_t r1 __asm__("r1") = (unsigned)&context_id;
 	register uint32_t r2 __asm__("r2") = arg1;
 
 	__asm__ volatile(
@@ -201,7 +201,7 @@ int scm_call_atomic2(uint32_t svc, uint32_t cmd, uint32_t arg1, uint32_t arg2)
 {
 	int context_id;
 	register uint32_t r0 __asm__("r0") = SCM_ATOMIC(svc, cmd, 2);
-	register uint32_t r1 __asm__("r1") = &context_id;
+	register uint32_t r1 __asm__("r1") = (unsigned)&context_id;
 	register uint32_t r2 __asm__("r2") = arg1;
 	register uint32_t r3 __asm__("r3") = arg2;
 
@@ -596,7 +596,7 @@ int scm_protect_keystore(uint32_t * img_ptr, uint32_t  img_len)
 	return ret;
 }
 
-void set_tamper_fuse_cmd()
+void set_tamper_fuse_cmd(void)
 {
 	uint32_t svc_id;
 	uint32_t cmd_id;
@@ -626,7 +626,7 @@ void set_tamper_fuse_cmd()
 	return;
 }
 
-uint8_t get_tamper_fuse_cmd()
+uint8_t get_tamper_fuse_cmd(void)
 {
 	uint32_t svc_id;
 	uint32_t cmd_id;
@@ -640,7 +640,7 @@ uint8_t get_tamper_fuse_cmd()
 	if (scm_arm_support)
 	{
 		dprintf(INFO, "%s:SCM call is not supported\n",__func__);
-		return;
+		return 0;
 	}
 
 	cmd_buf = (void *)&fuse_id;
@@ -700,7 +700,7 @@ void save_kernel_hash_cmd(void *digest)
 		scm_arg.x0 = MAKE_SIP_SCM_CMD(SCM_SVC_ES, SCM_SAVE_PARTITION_HASH_ID);
 		scm_arg.x1 = MAKE_SCM_ARGS(0x3, 0, SMC_PARAM_TYPE_BUFFER_READWRITE);
 		scm_arg.x2 = req.partition_id;
-		scm_arg.x3 = (uint8_t *)&req.digest;
+		scm_arg.x3 = (unsigned)&req.digest;
 		scm_arg.x4 = sizeof(req.digest);
 
 		if (scm_call2(&scm_arg, NULL))
@@ -748,7 +748,7 @@ uint8_t switch_ce_chn_cmd(enum ap_ce_channel_type channel)
 	return resp_buf;
 }
 
-int scm_halt_pmic_arbiter()
+int scm_halt_pmic_arbiter(void)
 {
 	int ret = 0;
 
@@ -803,7 +803,7 @@ void scm_elexec_call(paddr_t kernel_entry, paddr_t dtb_offset)
 	{
 		scm_arg.x0 = MAKE_SIP_SCM_CMD(SCM_SVC_MILESTONE_32_64_ID, SCM_SVC_MILESTONE_CMD_ID);
 		scm_arg.x1 = MAKE_SCM_ARGS(0x2, SMC_PARAM_TYPE_BUFFER_READ);
-		scm_arg.x2 = (void *)&param;
+		scm_arg.x2 = (unsigned)&param;
 		scm_arg.x3 = sizeof(el1_system_param);
 
 		scm_call2(&scm_arg, NULL);
@@ -840,7 +840,7 @@ int scm_random(uint32_t * rbuf, uint32_t  r_len)
 	{
 		scm_arg.x0 = MAKE_SIP_SCM_CMD(TZ_SVC_CRYPTO, PRNG_CMD_ID);
 		scm_arg.x1 = MAKE_SCM_ARGS(0x2,SMC_PARAM_TYPE_BUFFER_READWRITE);
-		scm_arg.x2 = (uint8_t *) rbuf;
+		scm_arg.x2 = (unsigned) rbuf;
 		scm_arg.x3 = r_len;
 
 		ret = scm_call2(&scm_arg, NULL);
@@ -853,10 +853,10 @@ int scm_random(uint32_t * rbuf, uint32_t  r_len)
 	return ret;
 }
 
-void * get_canary()
+void * get_canary(void)
 {
 	void * canary;
-	if(scm_random(&canary, sizeof(canary))) {
+	if(scm_random((uint32_t*)&canary, sizeof(canary))) {
 		dprintf(CRITICAL,"scm_call for random failed !!!");
 		/*
 		* fall back to use lib rand API if scm call failed.
@@ -867,7 +867,7 @@ void * get_canary()
 	return canary;
 }
 
-int scm_xpu_err_fatal_init()
+int scm_xpu_err_fatal_init(void)
 {
 	uint32_t ret = 0;
 	uint32_t response = 0;

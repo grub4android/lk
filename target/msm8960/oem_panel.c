@@ -63,7 +63,7 @@ static struct panel_list supp_panels[] = {
 
 static uint32_t panel_id;
 
-int oem_panel_rotation()
+int oem_panel_rotation(void)
 {
 	/* OEM can keep there panel spefic on instructions in this
 	function */
@@ -71,14 +71,14 @@ int oem_panel_rotation()
 }
 
 
-int oem_panel_on()
+int oem_panel_on(void)
 {
 	/* OEM can keep there panel spefic on instructions in this
 	function */
 	return NO_ERROR;
 }
 
-int oem_panel_off()
+int oem_panel_off(void)
 {
 	/* OEM can keep there panel spefic off instructions in this
 	function */
@@ -107,7 +107,7 @@ static int init_panel_data(struct panel_struct *panelstruct,
 	return pan_type;
 }
 
-uint32_t oem_panel_max_auto_detect_panels()
+uint32_t oem_panel_max_auto_detect_panels(void)
 {
 	return target_panel_auto_detect_enabled() ?
 				DISPLAY_MAX_PANEL_DETECTION : 0;
@@ -120,7 +120,6 @@ int oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 	uint32_t hw_id = board_hardware_id();
 	uint32_t target_id = board_target_id();
 	int32_t panel_override_id;
-	uint32_t *manu_id, *manu_id0;
 
 	if (panel_name) {
 		panel_override_id = panel_name_to_id(supp_panels,

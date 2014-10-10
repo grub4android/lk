@@ -34,16 +34,16 @@
 #include <platform.h>
 
 int mdp_lcdc_config(void);
-int lvds_on();
-int mdp_lcdc_on();
-int mdp_lcdc_off();
-int target_display_pre_on();
-int target_display_post_on();
-int target_display_pre_off();
-int target_display_post_off();
+int lvds_on(void);
+int mdp_lcdc_on(void);
+int mdp_lcdc_off(void);
+int target_display_pre_on(void);
+int target_display_post_on(void);
+int target_display_pre_off(void);
+int target_display_post_off(void);
 int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo);
 void target_edp_panel_init(struct msm_panel_info *pinfo);
-int target_edp_panel_clock(uint8_t enable, struct msm_panel_info *pinfo);
+int target_edp_panel_clock(uint8_t enable);
 int target_edp_panel_enable(void);
 int target_edp_panel_disable(void);
 int target_edp_bl_ctrl(int enable);
