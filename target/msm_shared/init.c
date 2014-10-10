@@ -94,15 +94,6 @@ __WEAK int emmc_recovery_init(void)
 	return 0;
 }
 
-__WEAK bool target_use_signed_kernel(void)
-{
-#if _SIGNED_KERNEL
-	return 1;
-#else
-	return 0;
-#endif
-}
-
 __WEAK bool target_is_ssd_enabled(void)
 {
 #ifdef SSD_ENABLE
@@ -182,10 +173,5 @@ __WEAK bool target_warm_boot(void)
 __WEAK uint32_t target_get_hlos_subtype(void)
 {
 	return 0;
-}
-
-/* Initialize crypto parameters */
-__WEAK void target_crypto_init_params()
-{
 }
 

@@ -65,15 +65,6 @@
 #define PMIC_ARB_CHANNEL_NUM    0
 #define PMIC_ARB_OWNER_ID       0
 
-#define CRYPTO_ENGINE_INSTANCE             1
-#define CRYPTO_ENGINE_EE                   1
-#define CRYPTO_ENGINE_FIFO_SIZE            64
-#define CRYPTO_ENGINE_READ_PIPE            3
-#define CRYPTO_ENGINE_WRITE_PIPE           2
-#define CRYPTO_READ_PIPE_LOCK_GRP          0
-#define CRYPTO_WRITE_PIPE_LOCK_GRP         0
-#define CRYPTO_ENGINE_CMD_ARRAY_SIZE       20
-
 #define TLMM_VOL_UP_BTN_GPIO    72
 
 #if PON_VIB_SUPPORT
@@ -518,9 +509,4 @@ void shutdown_device(void)
 	dprintf(CRITICAL, "shutdown failed\n");
 
 	ASSERT(0);
-}
-
-crypto_engine_type board_ce_type(void)
-{
-	return CRYPTO_ENGINE_TYPE_HW;
 }

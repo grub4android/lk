@@ -37,24 +37,15 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/mmc.c
 endif
 
-ifeq ($(ENABLE_VERIFIED_BOOT),1)
-MODULE_SRCS += \
-	$(LOCAL_DIR)/boot_verifier.c
-endif
-
 ifeq ($(PLATFORM),msm8x60)
 MODULE_SRCS += $(LOCAL_DIR)/mipi_dsi.c \
 		$(LOCAL_DIR)/i2c_qup.c \
 		$(LOCAL_DIR)/uart_dm.c \
-		$(LOCAL_DIR)/crypto_eng.c \
-		$(LOCAL_DIR)/crypto_hash.c \
 		$(LOCAL_DIR)/scm.c \
 		$(LOCAL_DIR)/lcdc.c \
 		$(LOCAL_DIR)/mddi.c \
 		$(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/mdp4.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
 		$(LOCAL_DIR)/hdmi.c \
 		$(LOCAL_DIR)/interrupts.c \
 		$(LOCAL_DIR)/timer.c \
@@ -80,10 +71,6 @@ MODULE_SRCS += \
 		$(LOCAL_DIR)/timer.c \
 		$(LOCAL_DIR)/mdp_lcdc.c \
 		$(LOCAL_DIR)/nand.c
-#		$(LOCAL_DIR)/crypto4_eng.c \
-#		$(LOCAL_DIR)/crypto_hash.c \
-#		$(LOCAL_DIR)/certificate.c \
-#		$(LOCAL_DIR)/image_verify.c
 endif
 
 ifeq ($(PLATFORM),msm8974)
@@ -107,11 +94,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/bam.c \
 		$(LOCAL_DIR)/qpic_nand.c \
 		$(LOCAL_DIR)/dev_tree.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
-		$(LOCAL_DIR)/crypto_hash.c \
-		$(LOCAL_DIR)/crypto5_eng.c \
-		$(LOCAL_DIR)/crypto5_wrapper.c \
 		$(LOCAL_DIR)/i2c_qup.c \
 		$(LOCAL_DIR)/gpio.c \
 		$(LOCAL_DIR)/dload_util.c \
@@ -141,11 +123,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/spmi.c \
 		$(LOCAL_DIR)/bam.c \
 		$(LOCAL_DIR)/qpic_nand.c \
-        $(LOCAL_DIR)/certificate.c \
-        $(LOCAL_DIR)/image_verify.c \
-        $(LOCAL_DIR)/crypto_hash.c \
-        $(LOCAL_DIR)/crypto5_eng.c \
-        $(LOCAL_DIR)/crypto5_wrapper.c \
 		$(LOCAL_DIR)/dev_tree.c \
 		$(LOCAL_DIR)/gpio.c \
 		$(LOCAL_DIR)/dload_util.c \
@@ -176,11 +153,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 	$(LOCAL_DIR)/mipi_dsi_phy.c \
 	$(LOCAL_DIR)/mipi_dsi_autopll.c \
 	$(LOCAL_DIR)/shutdown_detect.c \
-	$(LOCAL_DIR)/certificate.c \
-	$(LOCAL_DIR)/image_verify.c \
-	$(LOCAL_DIR)/crypto_hash.c \
-	$(LOCAL_DIR)/crypto5_eng.c \
-	$(LOCAL_DIR)/crypto5_wrapper.c \
 	$(LOCAL_DIR)/i2c_qup.c
 
 endif
@@ -209,11 +181,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
         $(LOCAL_DIR)/gpio.c \
         $(LOCAL_DIR)/dload_util.c \
         $(LOCAL_DIR)/shutdown_detect.c
-#       $(LOCAL_DIR)/certificate.c \
-#       $(LOCAL_DIR)/image_verify.c \
-#       $(LOCAL_DIR)/crypto_hash.c \
-#       $(LOCAL_DIR)/crypto5_eng.c \
-#       $(LOCAL_DIR)/crypto5_wrapper.c
 endif
 
 ifeq ($(PLATFORM),apq8084)
@@ -246,11 +213,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/ucs.c \
 		$(LOCAL_DIR)/ufs_hci.c \
 		$(LOCAL_DIR)/dme.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
-		$(LOCAL_DIR)/crypto_hash.c \
-		$(LOCAL_DIR)/crypto5_eng.c \
-		$(LOCAL_DIR)/crypto5_wrapper.c \
 		$(LOCAL_DIR)/edp.c \
 		$(LOCAL_DIR)/edp_util.c \
 		$(LOCAL_DIR)/edp_aux.c \
@@ -264,10 +226,6 @@ MODULE_SRCS += $(LOCAL_DIR)/uart.c \
 		$(LOCAL_DIR)/proc_comm.c \
 		$(LOCAL_DIR)/mdp3.c \
 		$(LOCAL_DIR)/mipi_dsi.c \
-		$(LOCAL_DIR)/crypto_eng.c \
-		$(LOCAL_DIR)/crypto_hash.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
 		$(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/interrupts.c \
 		$(LOCAL_DIR)/timer.c \
@@ -287,15 +245,11 @@ MODULE_SRCS += $(LOCAL_DIR)/uart.c \
 endif
 
 ifeq ($(PLATFORM),msm7x30)
-MODULE_SRCS += $(LOCAL_DIR)/crypto_eng.c \
-		$(LOCAL_DIR)/crypto_hash.c \
-		$(LOCAL_DIR)/uart.c \
+MODULE_SRCS += $(LOCAL_DIR)/uart.c \
 		$(LOCAL_DIR)/nand.c \
 		$(LOCAL_DIR)/proc_comm.c \
 		$(LOCAL_DIR)/lcdc.c \
 		$(LOCAL_DIR)/mddi.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
 		$(LOCAL_DIR)/timer.c
 endif
 
@@ -378,11 +332,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/bam.c \
 		$(LOCAL_DIR)/qpic_nand.c \
 		$(LOCAL_DIR)/dev_tree.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
-		$(LOCAL_DIR)/crypto_hash.c \
-		$(LOCAL_DIR)/crypto5_eng.c \
-		$(LOCAL_DIR)/crypto5_wrapper.c \
 		$(LOCAL_DIR)/i2c_qup.c \
 		$(LOCAL_DIR)/gpio.c \
 		$(LOCAL_DIR)/dload_util.c
@@ -403,11 +352,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/bam.c \
 		$(LOCAL_DIR)/qpic_nand.c \
 		$(LOCAL_DIR)/dev_tree.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
-		$(LOCAL_DIR)/crypto_hash.c \
-		$(LOCAL_DIR)/crypto5_eng.c \
-		$(LOCAL_DIR)/crypto5_wrapper.c \
 		$(LOCAL_DIR)/i2c_qup.c \
 		$(LOCAL_DIR)/gpio.c \
 		$(LOCAL_DIR)/dload_util.c
@@ -437,11 +381,6 @@ MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 		$(LOCAL_DIR)/ufs_hci.c \
 		$(LOCAL_DIR)/dme.c \
 		$(LOCAL_DIR)/qmp_usb30_phy.c \
-		$(LOCAL_DIR)/certificate.c \
-		$(LOCAL_DIR)/image_verify.c \
-		$(LOCAL_DIR)/crypto_hash.c \
-		$(LOCAL_DIR)/crypto5_eng.c \
-		$(LOCAL_DIR)/crypto5_wrapper.c \
 		$(LOCAL_DIR)/qusb2_phy.c \
 		$(LOCAL_DIR)/mdp5.c \
 		$(LOCAL_DIR)/display.c \

@@ -26,7 +26,6 @@
 #define __TARGET_MSM_SHARED_H
 
 #include <stdbool.h>
-#include <platform/msm_shared/crypto_hash.h>
 
 /* Target helper functions exposed to USB driver */
 typedef struct {
@@ -78,9 +77,4 @@ uint32_t target_hw_interposer(void);
 uint32_t target_override_pll(void);
 uint32_t target_get_hlos_subtype(void);
 uint8_t target_is_edp(void);
-
-crypto_engine_type board_ce_type(void);
-void target_crypto_init_params(void);
-void crypto_eng_cleanup(void);
-bool target_use_signed_kernel(void);
 #endif

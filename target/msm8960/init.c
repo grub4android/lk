@@ -49,7 +49,6 @@
 #include <platform.h>
 #include <platform/msm_shared/baseband.h>
 #include <platform/msm_shared/uart_dm.h>
-#include <platform/msm_shared/crypto_hash.h>
 #include <platform/msm_shared/board.h>
 #include <target/board.h>
 #include <assert.h>
@@ -59,15 +58,6 @@ static unsigned mmc_sdc_base[] =
     { MSM_SDC1_BASE, MSM_SDC2_BASE, MSM_SDC3_BASE, MSM_SDC4_BASE };
 
 static pm8921_dev_t pmic;
-
-/* Setting this variable to different values defines the
- * behavior of CE engine:
- * platform_ce_type = CRYPTO_ENGINE_TYPE_NONE : No CE engine
- * platform_ce_type = CRYPTO_ENGINE_TYPE_SW : Software CE engine
- * platform_ce_type = CRYPTO_ENGINE_TYPE_HW : Hardware CE engine
- * Behavior is determined in the target code.
- */
-static crypto_engine_type platform_ce_type = CRYPTO_ENGINE_TYPE_SW;
 
 static void target_uart_init(void);
 
@@ -142,15 +132,6 @@ void target_init(void)
 		dprintf(CRITICAL,"Keyboard is not supported for platform: %d\n",platform_id);
 	};
 
-	if ((platform_id == MSM8960) || (platform_id == MSM8960AB) ||
-		(platform_id == APQ8060AB) || (platform_id == MSM8260AB) ||
-		(platform_id == MSM8660AB) || (platform_id == MSM8660A) ||
-		(platform_id == MSM8260A) || (platform_id == APQ8060A) ||
-		(platform_id == APQ8064) || (platform_id == APQ8064AA) ||
-		(platform_id == APQ8064AB))
-		/* Enable Hardware CE */
-		platform_ce_type = CRYPTO_ENGINE_TYPE_HW;
-
 	/* Trying Slot 1 first */
 	slot = 1;
 	base_addr = mmc_sdc_base[slot - 1];
@@ -168,11 +149,6 @@ void target_init(void)
 unsigned board_machtype(void)
 {
 	return board_target_id();
-}
-
-crypto_engine_type board_ce_type(void)
-{
-	return platform_ce_type;
 }
 
 unsigned target_baseband(void)

@@ -58,18 +58,6 @@ __WEAK void platform_uninit(void)
 {
 }
 
-__WEAK int image_verify(unsigned char * image_ptr,
-			unsigned char * signature_ptr,
-			unsigned int image_size,
-			unsigned hash_type)
-{
-	return 0;
-}
-
-__WEAK void ce_clock_init(void)
-{
-}
-
 __WEAK addr_t get_bs_info_addr(void)
 {
 	return 0;
