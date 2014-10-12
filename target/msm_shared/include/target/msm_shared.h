@@ -77,4 +77,5 @@ uint32_t target_hw_interposer(void);
 uint32_t target_override_pll(void);
 uint32_t target_get_hlos_subtype(void);
 uint8_t target_is_edp(void);
+bool target_warm_boot(void);
 #endif
