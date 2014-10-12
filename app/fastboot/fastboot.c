@@ -434,6 +434,28 @@ static void cmd_getvar(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
+static void cmd_help(const char *arg, void *data, unsigned sz)
+{
+	struct fastboot_cmd *cmd;
+	char response[128];
+
+	// print commands
+	fastboot_info("commands:");
+	for (cmd = cmdlist; cmd; cmd = cmd->next) {
+		char buf[cmd->prefix_len+1];
+
+		if (!memcpy(buf, cmd->prefix, cmd->prefix_len))
+			continue;
+
+		buf[cmd->prefix_len] = '\0';
+
+		snprintf(response, sizeof(response), "\t%s", buf);
+		fastboot_info(response);
+	}
+
+	fastboot_okay("");
+}
+
 static void cmd_download(const char *arg, void *data, unsigned sz)
 {
 	STACKBUF_DMA_ALIGN(__response, MAX_RSP_SIZE);
@@ -626,6 +648,7 @@ static void fastboot_init(const struct app_descriptor *app)
 	if (usb_if.udc_register_gadget(&fastboot_gadget))
 		goto fail_udc_register;
 
+	fastboot_register("oem help", cmd_help);
 	fastboot_register("getvar:", cmd_getvar);
 	fastboot_register("download:", cmd_download);
 	fastboot_register("reboot", cmd_reboot);
