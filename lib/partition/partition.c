@@ -151,7 +151,7 @@ int partition_publish(const char *device, off_t offset)
 					break;
 				}
 
-				sprintf(subdevice, "%s,%d", device, i);
+				sprintf(subdevice, "%s,%d", device, i+1);
 
 				err = bio_publish_subdevice(device, subdevice, part[i].lba_start, part[i].lba_length);
 				if (err < 0) {
@@ -268,7 +268,7 @@ int partition_unpublish(const char *device)
 
 	count = 0;
 	for (i=0; i < 16; i++) {
-		sprintf(devname, "%s,%d", device, i);
+		sprintf(devname, "%s,%d", device, i+1);
 
 		dev = bio_open(devname);
 		if (!dev)
