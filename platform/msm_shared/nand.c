@@ -3318,7 +3318,7 @@ _flash_write_page(dmov_s * cmdlist, unsigned *ptrlist,
 static unsigned *flash_ptrlist;
 static dmov_s *flash_cmdlist;
 
-static struct ptable *flash_ptable = NULL;
+static struct ptable_msm *flash_ptable = NULL;
 
 void flash_init(void)
 {
@@ -3351,12 +3351,12 @@ void flash_init(void)
 		bbtbl[i] = -1;
 }
 
-struct ptable *flash_get_ptable(void)
+struct ptable_msm *flash_get_ptable(void)
 {
 	return flash_ptable;
 }
 
-void flash_set_ptable(struct ptable *new_ptable)
+void flash_set_ptable(struct ptable_msm *new_ptable)
 {
 	ASSERT(flash_ptable == NULL && new_ptable != NULL);
 	flash_ptable = new_ptable;
@@ -3367,7 +3367,7 @@ struct flash_info *flash_get_info(void)
 	return &flash_info;
 }
 
-int flash_erase(struct ptentry *ptn)
+int flash_erase(struct ptentry_msm *ptn)
 {
 	unsigned block = ptn->start;
 	unsigned count = ptn->length;
@@ -3385,7 +3385,7 @@ int flash_erase(struct ptentry *ptn)
 }
 
 int
-flash_read_ext(struct ptentry *ptn, unsigned extra_per_page,
+flash_read_ext(struct ptentry_msm *ptn, unsigned extra_per_page,
 	       unsigned offset, void *data, unsigned bytes)
 {
 	unsigned page =
@@ -3461,7 +3461,7 @@ flash_read_ext(struct ptentry *ptn, unsigned extra_per_page,
 }
 
 int
-flash_write(struct ptentry *ptn, unsigned write_extra_bytes, const void *data,
+flash_write(struct ptentry_msm *ptn, unsigned write_extra_bytes, const void *data,
 	    unsigned bytes)
 {
 	unsigned page = ptn->start * num_pages_per_blk;

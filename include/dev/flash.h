@@ -60,18 +60,18 @@ struct flash_info {
 };
 
 void flash_init(void);
-struct ptable *flash_get_ptable(void);
-void flash_set_ptable(struct ptable *ptable);
+struct ptable_msm *flash_get_ptable(void);
+void flash_set_ptable(struct ptable_msm *ptable);
 struct flash_info *flash_get_info(void);
 
 /* flash operations */
-int flash_erase(struct ptentry *ptn);
-int flash_read_ext(struct ptentry *ptn, unsigned extra_per_page,
+int flash_erase(struct ptentry_msm *ptn);
+int flash_read_ext(struct ptentry_msm *ptn, unsigned extra_per_page,
 		   unsigned offset, void *data, unsigned bytes);
-int flash_write(struct ptentry *ptn, unsigned write_extra_bytes, const void *data,
+int flash_write(struct ptentry_msm *ptn, unsigned write_extra_bytes, const void *data,
 		unsigned bytes);
 
-static inline int flash_read(struct ptentry *ptn, unsigned offset, void *data,
+static inline int flash_read(struct ptentry_msm *ptn, unsigned offset, void *data,
 			     unsigned bytes)
 {
 	return flash_read_ext(ptn, 0, offset, data, bytes);

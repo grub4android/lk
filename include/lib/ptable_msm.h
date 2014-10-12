@@ -29,22 +29,22 @@
  */
 
 
-#ifndef __LIB_PTABLE_H
-#define __LIB_PTABLE_H
+#ifndef __LIB_PTABLE_MSM_H
+#define __LIB_PTABLE_MSM_H
 
 /* flash partitions are defined in terms of blocks
  * (flash erase units)
  */
-#define MAX_PTENTRY_NAME	16
-#define MAX_PTABLE_PARTS	32
+#define MAX_PTENTRY_MSM_NAME	16
+#define MAX_PTABLE_MSM_PARTS	32
 
 #define TYPE_MODEM_PARTITION	1
 #define TYPE_APPS_PARTITION	0
 #define PERM_NON_WRITEABLE	0
 #define PERM_WRITEABLE		1
-struct ptentry
+struct ptentry_msm
 {
-	char name[MAX_PTENTRY_NAME];
+	char name[MAX_PTENTRY_MSM_NAME];
 	unsigned start;
 	unsigned length;
 	unsigned flags;
@@ -52,20 +52,20 @@ struct ptentry
 	char perm;
 };
 
-struct ptable
+struct ptable_msm
 {
-	struct ptentry parts[MAX_PTABLE_PARTS];
+	struct ptentry_msm parts[MAX_PTABLE_MSM_PARTS];
 	int count;
 };
 
 /* tools to populate and query the partition table */
-void ptable_init(struct ptable *ptable);
-void ptable_add(struct ptable *ptable, char *name, unsigned start,
+void ptable_msm_init(struct ptable_msm *ptable);
+void ptable_msm_add(struct ptable_msm *ptable, char *name, unsigned start,
 		unsigned length, unsigned flags, char type, char perm);
-struct ptentry *ptable_find(struct ptable *ptable, const char *name);
-struct ptentry *ptable_get(struct ptable *ptable, int n);
-int ptable_get_index(struct ptable *ptable, const char *name);
-int ptable_size(struct ptable *ptable);
-void ptable_dump(struct ptable *ptable);
+struct ptentry_msm *ptable_msm_find(struct ptable_msm *ptable, const char *name);
+struct ptentry_msm *ptable_msm_get(struct ptable_msm *ptable, int n);
+int ptable_msm_get_index(struct ptable_msm *ptable, const char *name);
+int ptable_msm_size(struct ptable_msm *ptable);
+void ptable_msm_dump(struct ptable_msm *ptable);
 
-#endif /* __LIB_PTABLE_H */
+#endif /* __LIB_PTABLE_MSM_H */

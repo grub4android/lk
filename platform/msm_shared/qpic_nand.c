@@ -40,7 +40,7 @@
 #include <platform/clock.h>
 
 static uint32_t nand_base;
-static struct ptable *flash_ptable;
+static struct ptable_msm *flash_ptable;
 static struct flash_info flash;
 static unsigned char *flash_spare_bytes;
 static uint32_t cfg0;
@@ -1316,7 +1316,7 @@ flash_num_blocks(void)
     return flash.num_blocks;
 }
 
-struct ptable *
+struct ptable_msm *
 flash_get_ptable(void)
 {
 	return flash_ptable;
@@ -1331,7 +1331,7 @@ qpic_nand_uninit(void)
 
 }
 void
-flash_set_ptable(struct ptable *new_ptable)
+flash_set_ptable(struct ptable_msm *new_ptable)
 {
 	ASSERT(flash_ptable == NULL && new_ptable != NULL);
 	flash_ptable = new_ptable;
@@ -1525,7 +1525,7 @@ return nand_ret;
  */
  /* TODO: call this func read_partition. */
 int
-flash_read_ext(struct ptentry *ptn,
+flash_read_ext(struct ptentry_msm *ptn,
 			   unsigned extra_per_page,
 			   unsigned offset,
 			   void *data,
@@ -1625,7 +1625,7 @@ flash_read_ext(struct ptentry *ptn,
 }
 
 int
-flash_erase(struct ptentry *ptn)
+flash_erase(struct ptentry_msm *ptn)
 {
 	int ret = 0;
 
@@ -1644,7 +1644,7 @@ flash_ecc_bch_enabled()
 }
 
 int
-flash_write(struct ptentry *ptn,
+flash_write(struct ptentry_msm *ptn,
 			unsigned write_extra_bytes,
 			const void *data,
 			unsigned bytes)

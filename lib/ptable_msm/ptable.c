@@ -34,25 +34,25 @@
 #include <assert.h>
 #include <lib/ptable_msm.h>
 
-void ptable_init(struct ptable *ptable)
+void ptable_msm_init(struct ptable_msm *ptable)
 {
 	ASSERT(ptable);
 
-	memset(ptable, 0, sizeof(struct ptable));
+	memset(ptable, 0, sizeof(struct ptable_msm));
 }
 
 char* ptype[] = {"Apps", "Modem"};
 char* pperm[] = {"No", "Yes"};
 
-void ptable_add(struct ptable *ptable, char *name, unsigned start,
+void ptable_msm_add(struct ptable_msm *ptable, char *name, unsigned start,
 		unsigned length, unsigned flags, char type, char perm)
 {
-	struct ptentry *ptn;
+	struct ptentry_msm *ptn;
 
-	ASSERT(ptable && ptable->count < MAX_PTABLE_PARTS);
+	ASSERT(ptable && ptable->count < MAX_PTABLE_MSM_PARTS);
 
 	ptn = &ptable->parts[ptable->count++];
-	strlcpy(ptn->name, name, MAX_PTENTRY_NAME);
+	strlcpy(ptn->name, name, MAX_PTENTRY_MSM_NAME);
 	ptn->start = start;
 	ptn->length = length;
 	ptn->flags = flags;
@@ -60,9 +60,9 @@ void ptable_add(struct ptable *ptable, char *name, unsigned start,
 	ptn->perm = perm;
 }
 
-void ptable_dump(struct ptable *ptable)
+void ptable_msm_dump(struct ptable_msm *ptable)
 {
-	struct ptentry *ptn;
+	struct ptentry_msm *ptn;
 	int i;
 
 	for (i = 0; i < ptable->count; ++i) {
@@ -73,9 +73,9 @@ void ptable_dump(struct ptable *ptable)
 	}
 }
 
-struct ptentry *ptable_find(struct ptable *ptable, const char *name)
+struct ptentry_msm *ptable_msm_find(struct ptable_msm *ptable, const char *name)
 {
-	struct ptentry *ptn;
+	struct ptentry_msm *ptn;
 	int i;
 
 	for (i = 0; i < ptable->count; ++i) {
@@ -87,19 +87,19 @@ struct ptentry *ptable_find(struct ptable *ptable, const char *name)
 	return NULL;
 }
 
-struct ptentry *ptable_get(struct ptable *ptable, int n)
+struct ptentry_msm *ptable_msm_get(struct ptable_msm *ptable, int n)
 {
 	if (n >= ptable->count)
 		return NULL;
 	return &ptable->parts[n];
 }
 
-int ptable_size(struct ptable *ptable)
+int ptable_msm_size(struct ptable_msm *ptable)
 {
     return ptable->count;
 }
 
-int ptable_get_index(struct ptable *ptable, const char *name)
+int ptable_msm_get_index(struct ptable_msm *ptable, const char *name)
 {
 	for(int i=0; i < ptable->count; i++) {
 		if (!strcmp(ptable->parts[i].name, name))

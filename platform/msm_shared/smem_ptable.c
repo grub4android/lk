@@ -125,7 +125,7 @@ unsigned smem_get_apps_flash_start(void)
 	return smem_apps_flash_start;
 }
 
-void smem_add_modem_partitions(struct ptable *flash_ptable)
+void smem_add_modem_partitions(struct ptable_msm *flash_ptable)
 {
 	unsigned i;
 
@@ -145,7 +145,7 @@ void smem_add_modem_partitions(struct ptable *flash_ptable)
 			token = strtok(NULL, ":");
 		}
 		if (pname) {
-			ptable_add(flash_ptable, pname, p->start,
+			ptable_msm_add(flash_ptable, pname, p->start,
 				   p->size, 0, TYPE_MODEM_PARTITION,
 				   PERM_WRITEABLE);
 		}
