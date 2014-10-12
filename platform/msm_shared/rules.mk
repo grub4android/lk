@@ -70,7 +70,8 @@ MODULE_SRCS += \
 		$(LOCAL_DIR)/mipi_dsi_phy.c \
 		$(LOCAL_DIR)/timer.c \
 		$(LOCAL_DIR)/mdp_lcdc.c \
-		$(LOCAL_DIR)/nand.c
+		$(LOCAL_DIR)/nand.c \
+		$(LOCAL_DIR)/dload_util.c
 endif
 
 ifeq ($(PLATFORM),msm8974)

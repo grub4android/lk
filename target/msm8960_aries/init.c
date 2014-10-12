@@ -31,6 +31,7 @@
  * SUCH DAMAGE.
  */
 
+#include <err.h>
 #include <debug.h>
 #include <printf.h>
 #include <lib/ptable_msm.h>
@@ -51,6 +52,7 @@
 #include <platform/msm_shared/baseband.h>
 #include <platform/msm_shared/uart_dm.h>
 #include <platform/msm_shared/board.h>
+#include <platform/msm_shared/dload_util.h>
 #include <target/board.h>
 #include <assert.h>
 #include <arch/defines.h>
@@ -172,6 +174,16 @@ static unsigned target_check_power_on_reason(void)
 	}
 	dprintf(INFO, "Power on reason %u\n", power_on_status);
 	return power_on_status;
+}
+
+int set_download_mode(enum dload_mode mode)
+{
+	mode = NORMAL_DLOAD;
+
+	dload_util_write_cookie(mode == NORMAL_DLOAD ?
+		DLOAD_MODE_ADDR : EMERGENCY_DLOAD_MODE_ADDR, mode);
+
+	return 0;
 }
 
 void reboot_device(unsigned reboot_reason)
@@ -516,4 +528,28 @@ void target_mmc_caps(struct mmc_host *host)
 	host->caps.hs200_mode = 1;
 	host->caps.bus_width = MMC_BOOT_BUS_WIDTH_8_BIT;
 	host->caps.hs_clk_rate = MMC_CLK_96MHZ;
+}
+
+int target_volume_up(void)
+{
+	uint8_t key_status;
+	pm8921_gpio_get(0, &key_status);
+
+	return key_status;
+}
+
+uint32_t target_volume_down(void)
+{
+	uint8_t key_status;
+	pm8921_gpio_get(1, &key_status);
+
+	return key_status;
+}
+
+int target_power_key(void)
+{
+	uint8_t ret = 0;
+
+	pm8921_pwrkey_status(&ret);
+	return ret;
 }

@@ -175,3 +175,20 @@ __WEAK uint32_t target_get_hlos_subtype(void)
 	return 0;
 }
 
+/* Return 1 if vol_up pressed */
+__WEAK int target_volume_up(void)
+{
+	return 0;
+}
+
+/* Return 1 if vol_down pressed */
+__WEAK uint32_t target_volume_down(void)
+{
+	return 0;
+}
+
+/* Return 1 if power key pressed */
+__WEAK int target_power_key(void)
+{
+	return 0;
+}
