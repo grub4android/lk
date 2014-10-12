@@ -209,11 +209,11 @@ static void ptentry_to_tag(unsigned **ptr, struct ptentry_msm *ptn)
 	*ptr += sizeof(struct atag_ptbl_entry) / sizeof(unsigned);
 }
 
-unsigned char *update_cmdline(const char * cmdline)
+char *update_cmdline(const char * cmdline)
 {
 	int cmdline_len = 0;
 	int have_cmdline = 0;
-	unsigned char *cmdline_final = NULL;
+	char *cmdline_final = NULL;
 	int pause_at_bootup = 0;
 	bool warm_boot = false;
 	bool gpt_exists = partition_gpt_exists();
@@ -319,9 +319,9 @@ unsigned char *update_cmdline(const char * cmdline)
 
 	if (cmdline_len > 0) {
 		const char *src;
-		unsigned char *dst;
+		char *dst;
 
-		cmdline_final = (unsigned char*) malloc((cmdline_len + 4) & (~3));
+		cmdline_final = (char*) malloc((cmdline_len + 4) & (~3));
 		ASSERT(cmdline_final != NULL);
 		dst = cmdline_final;
 
@@ -550,7 +550,7 @@ void boot_linux(void *kernel, unsigned *tags,
 		const char *cmdline, unsigned machtype,
 		void *ramdisk, unsigned ramdisk_size)
 {
-	unsigned char *final_cmdline;
+	char *final_cmdline;
 #if DEVICE_TREE
 	int ret = 0;
 #endif
@@ -559,9 +559,9 @@ void boot_linux(void *kernel, unsigned *tags,
 	uint32_t tags_phys = (uint32_t)kvaddr_to_paddr((addr_t)tags);
 	struct kernel64_hdr *kptr = (struct kernel64_hdr*)kernel;
 
-	ramdisk = kvaddr_to_paddr(ramdisk);
+	ramdisk = kvaddr_to_paddr((addr_t)ramdisk);
 
-	final_cmdline = update_cmdline((const char*)cmdline);
+	final_cmdline = update_cmdline(cmdline);
 
 #if DEVICE_TREE
 	dprintf(INFO, "Updating device tree: start\n");
@@ -590,7 +590,7 @@ void boot_linux(void *kernel, unsigned *tags,
 
 
 	dprintf(INFO, "booting linux @ %p, ramdisk @ %p (%d), tags/device tree @ %p\n",
-		entry, ramdisk, ramdisk_size, tags_phys);
+		entry, ramdisk, ramdisk_size, (void*)tags_phys);
 
 	enter_critical_section();
 
@@ -612,26 +612,6 @@ void boot_linux(void *kernel, unsigned *tags,
 		entry(0, machtype, (unsigned*)tags_phys);
 }
 
-/* Function to check if the memory address range falls within the aboot
- * boundaries.
- * start: Start of the memory region
- * size: Size of the memory region
- */
-int check_aboot_addr_range_overlap(uint32_t start, uint32_t size)
-{
-	/* Check for boundary conditions. */
-	if ((UINT_MAX - start) < size)
-		return -1;
-
-	/* Check for memory overlap. */
-	if ((start < MEMBASE) && ((start + size) <= MEMBASE))
-		return 0;
-	else if (start >= (MEMBASE + MEMSIZE))
-		return 0;
-	else
-		return -1;
-}
-
 #define ROUND_TO_PAGE(x,y) (((x) + (y)) & (~(y)))
 
 BUF_DMA_ALIGN(buf, BOOT_IMG_MAX_PAGE_SIZE); //Equal to max-supported pagesize
@@ -639,7 +619,7 @@ BUF_DMA_ALIGN(buf, BOOT_IMG_MAX_PAGE_SIZE); //Equal to max-supported pagesize
 BUF_DMA_ALIGN(dt_buf, BOOT_IMG_MAX_PAGE_SIZE);
 #endif
 
-static bool check_format_bit()
+static bool check_format_bit(void)
 {
 	bool ret = false;
 	int index;
@@ -695,7 +675,7 @@ int boot_linux_from_mmc(void)
 	unsigned kernel_actual;
 	unsigned ramdisk_actual;
 	unsigned imagesize_actual;
-	unsigned second_actual = 0;
+	unsigned second_actual __UNUSED = 0;
 
 #if DEVICE_TREE
 	struct dt_table *table;
@@ -781,23 +761,23 @@ int boot_linux_from_mmc(void)
 	update_ker_tags_rdisk_addr(hdr, IS_ARM64(kptr));
 
 	/* Get virtual addresses since the hdr saves physical addresses. */
-	hdr->kernel_addr = paddr_to_kvaddr((addr_t)(hdr->kernel_addr));
-	hdr->ramdisk_addr = paddr_to_kvaddr((addr_t)(hdr->ramdisk_addr));
-	hdr->tags_addr = paddr_to_kvaddr((addr_t)(hdr->tags_addr));
+	hdr->kernel_addr = (unsigned)paddr_to_kvaddr((addr_t)(hdr->kernel_addr));
+	hdr->ramdisk_addr = (unsigned)paddr_to_kvaddr((addr_t)(hdr->ramdisk_addr));
+	hdr->tags_addr = (unsigned)paddr_to_kvaddr((addr_t)(hdr->tags_addr));
 
 	kernel_actual  = ROUND_TO_PAGE(hdr->kernel_size,  page_mask);
 	ramdisk_actual = ROUND_TO_PAGE(hdr->ramdisk_size, page_mask);
 
 	/* Check if the addresses in the header are valid. */
-	if (check_aboot_addr_range_overlap(hdr->kernel_addr, kernel_actual) ||
-		check_aboot_addr_range_overlap(hdr->ramdisk_addr, ramdisk_actual))
+	if (check_lk_addr_range_overlap(hdr->kernel_addr, kernel_actual) ||
+		check_lk_addr_range_overlap(hdr->ramdisk_addr, ramdisk_actual))
 	{
 		dprintf(CRITICAL, "kernel/ramdisk addresses overlap with aboot addresses.\n");
 		return -1;
 	}
 
 #ifndef DEVICE_TREE
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+	if (check_lk_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
 	{
 		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 		return -1;
@@ -812,7 +792,7 @@ int boot_linux_from_mmc(void)
 		dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
 		imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
 
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+		if (check_lk_addr_range_overlap(hdr->tags_addr, dt_actual))
 		{
 			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
 			return -1;
@@ -821,7 +801,7 @@ int boot_linux_from_mmc(void)
 		imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
 
 #endif
-		if (check_aboot_addr_range_overlap(image_addr, imagesize_actual))
+		if (check_lk_addr_range_overlap((unsigned)image_addr, imagesize_actual))
 		{
 			dprintf(CRITICAL, "Boot image buffer address overlaps with aboot addresses.\n");
 			return -1;
@@ -868,7 +848,7 @@ int boot_linux_from_mmc(void)
 			}
 
 			/* Validate and Read device device tree in the tags_addr */
-			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_entry.size))
+			if (check_lk_addr_range_overlap(hdr->tags_addr, dt_entry.size))
 			{
 				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
 				return -1;
@@ -877,7 +857,7 @@ int boot_linux_from_mmc(void)
 			memmove((void *)hdr->tags_addr, (char *)dt_table_offset + dt_entry.offset, dt_entry.size);
 		} else {
 			/* Validate the tags_addr */
-			if (check_aboot_addr_range_overlap(hdr->tags_addr, kernel_actual))
+			if (check_lk_addr_range_overlap(hdr->tags_addr, kernel_actual))
 			{
 				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
 				return -1;
@@ -915,10 +895,10 @@ int boot_linux_from_flash(void)
 	struct ptable_msm *ptable;
 	unsigned offset = 0;
 
-	unsigned char *image_addr = 0;
+	unsigned char *image_addr __UNUSED = 0;
 	unsigned kernel_actual;
 	unsigned ramdisk_actual;
-	unsigned imagesize_actual;
+	unsigned imagesize_actual __UNUSED;
 	unsigned second_actual;
 
 #if DEVICE_TREE
@@ -984,23 +964,23 @@ int boot_linux_from_flash(void)
 	update_ker_tags_rdisk_addr(hdr, false);
 
 	/* Get virtual addresses since the hdr saves physical addresses. */
-	hdr->kernel_addr = paddr_to_kvaddr((addr_t)(hdr->kernel_addr));
-	hdr->ramdisk_addr = paddr_to_kvaddr((addr_t)(hdr->ramdisk_addr));
-	hdr->tags_addr = paddr_to_kvaddr((addr_t)(hdr->tags_addr));
+	hdr->kernel_addr = (unsigned)paddr_to_kvaddr((addr_t)(hdr->kernel_addr));
+	hdr->ramdisk_addr = (unsigned)paddr_to_kvaddr((addr_t)(hdr->ramdisk_addr));
+	hdr->tags_addr = (unsigned)paddr_to_kvaddr((addr_t)(hdr->tags_addr));
 
 	kernel_actual  = ROUND_TO_PAGE(hdr->kernel_size,  page_mask);
 	ramdisk_actual = ROUND_TO_PAGE(hdr->ramdisk_size, page_mask);
 
 	/* Check if the addresses in the header are valid. */
-	if (check_aboot_addr_range_overlap(hdr->kernel_addr, kernel_actual) ||
-		check_aboot_addr_range_overlap(hdr->ramdisk_addr, ramdisk_actual))
+	if (check_lk_addr_range_overlap(hdr->kernel_addr, kernel_actual) ||
+		check_lk_addr_range_overlap(hdr->ramdisk_addr, ramdisk_actual))
 	{
 		dprintf(CRITICAL, "kernel/ramdisk addresses overlap with aboot addresses.\n");
 		return -1;
 	}
 
 #ifndef DEVICE_TREE
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+		if (check_lk_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
 		{
 			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 			return -1;
@@ -1074,7 +1054,7 @@ int boot_linux_from_flash(void)
 			}
 
 			/* Validate and Read device device tree in the "tags_add */
-			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_entry.size))
+			if (check_lk_addr_range_overlap(hdr->tags_addr, dt_entry.size))
 			{
 				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
 				return -1;
@@ -1256,7 +1236,7 @@ void read_device_info(device_info *dev)
 	}
 }
 
-void reset_device_info()
+void reset_device_info(void)
 {
 	dprintf(ALWAYS, "reset_device_info called.");
 	write_device_info(&device);
@@ -1304,7 +1284,7 @@ int copy_dtb(uint8_t *boot_image_start)
 		}
 
 		/* Validate and Read device device tree in the "tags_add */
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_entry.size))
+		if (check_lk_addr_range_overlap(hdr->tags_addr, dt_entry.size))
 		{
 			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
 			return -1;
@@ -1331,8 +1311,8 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	struct boot_img_hdr *hdr;
 	struct kernel64_hdr *kptr;
 	char *ptr = ((char*) data);
-	int ret = 0;
-	uint8_t dtb_copied = 0;
+	int ret __UNUSED = 0;
+	uint8_t dtb_copied __UNUSED = 0;
 
 	if (sz < sizeof(hdr)) {
 		fastboot_fail("invalid bootimage header");
@@ -1374,13 +1354,13 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	update_ker_tags_rdisk_addr(hdr, IS_ARM64(kptr));
 
 	/* Get virtual addresses since the hdr saves physical addresses. */
-	hdr->kernel_addr = paddr_to_kvaddr(hdr->kernel_addr);
-	hdr->ramdisk_addr = paddr_to_kvaddr(hdr->ramdisk_addr);
-	hdr->tags_addr = paddr_to_kvaddr(hdr->tags_addr);
+	hdr->kernel_addr = (unsigned)paddr_to_kvaddr(hdr->kernel_addr);
+	hdr->ramdisk_addr = (unsigned)paddr_to_kvaddr(hdr->ramdisk_addr);
+	hdr->tags_addr = (unsigned)paddr_to_kvaddr(hdr->tags_addr);
 
 	/* Check if the addresses in the header are valid. */
-	if (check_aboot_addr_range_overlap(hdr->kernel_addr, kernel_actual) ||
-		check_aboot_addr_range_overlap(hdr->ramdisk_addr, ramdisk_actual))
+	if (check_lk_addr_range_overlap(hdr->kernel_addr, kernel_actual) ||
+		check_lk_addr_range_overlap(hdr->ramdisk_addr, ramdisk_actual))
 	{
 		dprintf(CRITICAL, "kernel/ramdisk addresses overlap with aboot addresses.\n");
 		return;
@@ -1392,7 +1372,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 
 	dtb_copied = !ret ? 1 : 0;
 #else
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+	if (check_lk_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
 	{
 		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 		return;
@@ -1422,7 +1402,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 #endif
 
 #ifndef DEVICE_TREE
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+	if (check_lk_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
 	{
 		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 		return;
@@ -1512,8 +1492,9 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 	char *pname = NULL;
 	uint8_t lun = 0;
 	bool lun_set = false;
+	char* tmp = strdup(arg);
 
-	token = strtok(arg, ":");
+	token = strtok(tmp, ":");
 	pname = token;
 	token = strtok(NULL, ":");
 	if(token)
@@ -1522,6 +1503,7 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 		mmc_set_lun(lun);
 		lun_set = true;
 	}
+	free(tmp);
 
 	if (pname)
 	{
@@ -1583,7 +1565,7 @@ void cmd_flash_mmc_sparse_img(const char *arg, void *data, unsigned sz)
 	unsigned long long ptn = 0;
 	unsigned long long size = 0;
 	int index = INVALID_PTN;
-	int i;
+	unsigned int i;
 	uint8_t lun = 0;
 
 	index = partition_get_index(arg);
@@ -1928,8 +1910,8 @@ void cmd_preflash(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
-static struct fbimage logo_header = {0};
-struct fbimage* splash_screen_flash();
+static struct fbimage logo_header = {{{0},0,0,0,{0}}, NULL};
+struct fbimage* splash_screen_flash(void);
 
 int splash_screen_check_header(struct fbimage *logo)
 {
@@ -1940,7 +1922,7 @@ int splash_screen_check_header(struct fbimage *logo)
 	return 0;
 }
 
-struct fbimage* splash_screen_flash()
+struct fbimage* splash_screen_flash(void)
 {
 	struct ptentry_msm *ptn;
 	struct ptable_msm *ptable;
@@ -1989,7 +1971,7 @@ struct fbimage* splash_screen_flash()
 	return logo;
 }
 
-struct fbimage* splash_screen_mmc()
+struct fbimage* splash_screen_mmc(void)
 {
 	int index = INVALID_PTN;
 	unsigned long long ptn = 0;
@@ -2025,7 +2007,7 @@ struct fbimage* splash_screen_mmc()
 				base += LOGO_IMG_OFFSET;
 
 		if (mmc_read(ptn + sizeof(logo->header),
-			base,
+			(unsigned int *)base,
 			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
 			fbcon_clear();
 			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
@@ -2039,7 +2021,7 @@ struct fbimage* splash_screen_mmc()
 }
 
 
-struct fbimage* fetch_image_from_partition()
+struct fbimage* fetch_image_from_partition(void)
 {
 	if (target_is_emmc_boot()) {
 		return splash_screen_mmc();
@@ -2262,7 +2244,7 @@ normal_boot:
 	partition_dump();
 }
 
-uint32_t get_page_size()
+uint32_t get_page_size(void)
 {
 	return page_size;
 }

@@ -60,8 +60,8 @@ static char buf[4096];
 
 unsigned boot_into_recovery = 0;
 
-extern uint32_t get_page_size();
-extern void reset_device_info();
+extern uint32_t get_page_size(void);
+extern void reset_device_info(void);
 
 int get_recovery_message(struct recovery_message *out)
 {
@@ -76,7 +76,7 @@ int get_recovery_message(struct recovery_message *out)
 		dprintf(CRITICAL, "ERROR: Partition table not found\n");
 		return -1;
 	}
-	ptn = ptable_msm_get(ptable, "misc");
+	ptn = ptable_msm_find(ptable, "misc");
 
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: No misc partition found\n");
@@ -107,7 +107,7 @@ int set_recovery_message(const struct recovery_message *in)
 		dprintf(CRITICAL, "ERROR: Partition table not found\n");
 		return -1;
 	}
-	ptn = ptable_msm_get(ptable, "misc");
+	ptn = ptable_msm_find(ptable, "misc");
 
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: No misc partition found\n");
@@ -143,7 +143,7 @@ int read_update_header_for_bootloader(struct update_header *header)
 		dprintf(CRITICAL, "ERROR: Partition table not found\n");
 		return -1;
 	}
-	ptn = ptable_msm_get(ptable, "cache");
+	ptn = ptable_msm_find(ptable, "cache");
 
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: No cache partition found\n");
@@ -178,7 +178,7 @@ int update_firmware_image (struct update_header *header, char *name)
 		return -1;
 	}
 
-	ptn = ptable_msm_get(ptable, "cache");
+	ptn = ptable_msm_find(ptable, "cache");
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: No cache partition found\n");
 		return -1;
@@ -192,7 +192,7 @@ int update_firmware_image (struct update_header *header, char *name)
 		return -1;
 	}
 
-	ptn = ptable_msm_get(ptable, name);
+	ptn = ptable_msm_find(ptable, name);
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: No %s partition found\n", name);
 		return -1;
@@ -224,7 +224,7 @@ static int set_ssd_radio_update (char *name)
 
 	n = (sizeof(ssd_cookie) + pagemask) & (~pagemask);
 
-	ptn = ptable_msm_get(ptable, name);
+	ptn = ptable_msm_find(ptable, name);
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: No %s partition found\n", name);
 		return -1;
@@ -395,7 +395,7 @@ static int emmc_set_recovery_msg(struct recovery_message *out)
 	unsigned char data[size];
 	int index = INVALID_PTN;
 
-	index = partition_get_index((unsigned char *) ptn_name);
+	index = partition_get_index(ptn_name);
 	ptn = partition_get_offset(index);
 	if(ptn == 0) {
 		dprintf(CRITICAL,"partition %s doesn't exist\n",ptn_name);
@@ -417,7 +417,7 @@ static int emmc_get_recovery_msg(struct recovery_message *in)
 	int index = INVALID_PTN;
 
 	size = mmc_get_device_blocksize();
-	index = partition_get_index((unsigned char *) ptn_name);
+	index = partition_get_index(ptn_name);
 	ptn = partition_get_offset(index);
 	if(ptn == 0) {
 		dprintf(CRITICAL,"partition %s doesn't exist\n",ptn_name);
@@ -592,7 +592,7 @@ int write_misc(unsigned page_offset, void *buf, unsigned size)
 			return -1;
 		}
 
-		ptn = ptable_msm_get(ptable, ptn_name);
+		ptn = ptable_msm_find(ptable, ptn_name);
 		if (ptn == NULL)
 		{
 			dprintf(CRITICAL, "No '%s' partition found\n", ptn_name);
