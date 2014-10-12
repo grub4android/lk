@@ -28,10 +28,14 @@
 
 #include <debug.h>
 #include <err.h>
+#include <string.h>
+#include <dev/flash.h>
 #include <platform/msm_shared/msm_panel.h>
 #include <platform/msm_shared/mdp4.h>
 #include <platform/msm_shared/mipi_dsi.h>
 #include <platform/msm_shared/boot_stats.h>
+#include <platform/msm_shared/mmc.h>
+#include <platform/msm_shared/partition_parser.h>
 #include <target/msm_shared.h>
 #include <platform/msm_shared.h>
 #include <platform/msm_shared/board.h>
@@ -386,15 +390,147 @@ msm_display_off_out:
 	return ret;
 }
 
-int platform_get_splash_image(struct fbimage* fbimg, bool* flag) {
-	fbimg->header.width = SPLASH_IMAGE_HEIGHT;
-	fbimg->header.height = SPLASH_IMAGE_WIDTH;
-#if DISPLAY_TYPE_MIPI
-	fbimg->image = (unsigned char *)imageBuffer_rgb888;
-#else
-	fbimg->image = (unsigned char *)imageBuffer;
-#endif
+static struct fbimage logo_header = {{{0},0,0,0,{0}}, NULL};
+struct fbimage* splash_screen_flash(void);
 
-	*flag = false;
+int splash_screen_check_header(struct fbimage *logo)
+{
+	if (memcmp(logo->header.magic, LOGO_IMG_MAGIC, 8))
+		return -1;
+	if (logo->header.width == 0 || logo->header.height == 0)
+		return -1;
+	return 0;
+}
+
+struct fbimage* splash_screen_flash(void)
+{
+	struct ptentry_msm *ptn;
+	struct ptable_msm *ptable;
+	struct fbcon_config *fb_display = NULL;
+	struct fbimage *logo = &logo_header;
+
+
+	ptable = flash_get_ptable();
+	if (ptable == NULL) {
+	dprintf(CRITICAL, "ERROR: Partition table not found\n");
+	return NULL;
+	}
+	ptn = ptable_msm_find(ptable, "splash");
+	if (ptn == NULL) {
+		dprintf(CRITICAL, "ERROR: splash Partition not found\n");
+		return NULL;
+	}
+
+	if (flash_read(ptn, 0,(unsigned int *) logo, sizeof(logo->header))) {
+		dprintf(CRITICAL, "ERROR: Cannot read boot image header\n");
+		return NULL;
+	}
+
+	if (splash_screen_check_header(logo)) {
+		dprintf(CRITICAL, "ERROR: Boot image header invalid\n");
+		return NULL;
+	}
+
+	fb_display = fbcon_display();
+	if (fb_display) {
+		uint8_t *base = (uint8_t *) fb_display->base;
+		if (logo->header.width != fb_display->width || logo->header.height != fb_display->height) {
+				base += LOGO_IMG_OFFSET;
+		}
+
+		if (flash_read(ptn + sizeof(logo->header), 0,
+			base,
+			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
+			fbcon_clear();
+			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
+			return NULL;
+		}
+		logo->image = base;
+	}
+
+	return logo;
+}
+
+struct fbimage* splash_screen_mmc(void)
+{
+	int index = INVALID_PTN;
+	unsigned long long ptn = 0;
+	struct fbcon_config *fb_display = NULL;
+	struct fbimage *logo = &logo_header;
+
+	index = partition_get_index("splash");
+	if (index == 0) {
+		dprintf(CRITICAL, "ERROR: splash Partition table not found\n");
+		return NULL;
+	}
+
+	ptn = partition_get_offset(index);
+	if (ptn == 0) {
+		dprintf(CRITICAL, "ERROR: splash Partition invalid\n");
+		return NULL;
+	}
+
+	if (mmc_read(ptn, (unsigned int *) logo, sizeof(logo->header))) {
+		dprintf(CRITICAL, "ERROR: Cannot read splash image header\n");
+		return NULL;
+	}
+
+	if (splash_screen_check_header(logo)) {
+		dprintf(CRITICAL, "ERROR: Splash image header invalid\n");
+		return NULL;
+	}
+
+	fb_display = fbcon_display();
+	if (fb_display) {
+		uint8_t *base = (uint8_t *) fb_display->base;
+		if (logo->header.width != fb_display->width || logo->header.height != fb_display->height)
+				base += LOGO_IMG_OFFSET;
+
+		if (mmc_read(ptn + sizeof(logo->header),
+			(unsigned int *)base,
+			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
+			fbcon_clear();
+			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
+			return NULL;
+		}
+
+		logo->image = base;
+	}
+
+	return logo;
+}
+
+
+struct fbimage* fetch_image_from_partition(void)
+{
+	if (target_is_emmc_boot()) {
+		return splash_screen_mmc();
+	} else {
+		return splash_screen_flash();
+	}
+}
+
+int platform_get_splash_image(struct fbimage* fbimg, bool* flag) {
+	struct fbimage *partimg;
+
+	partimg = fetch_image_from_partition();
+	if(!partimg) {
+		*flag = false;
+		fbimg->header.width = SPLASH_IMAGE_HEIGHT;
+		fbimg->header.height = SPLASH_IMAGE_WIDTH;
+#if DISPLAY_TYPE_MIPI
+		fbimg->image = (unsigned char *)imageBuffer_rgb888;
+#else
+		fbimg->image = (unsigned char *)imageBuffer;
+#endif
+	}
+
+	else {
+		*flag = true;
+		fbimg->header.width = partimg->header.width;
+		fbimg->header.height = partimg->header.height;
+		fbimg->image = partimg->image;
+	}
+
 	return NO_ERROR;
 }
