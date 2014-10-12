@@ -38,6 +38,7 @@ typedef struct bdev {
 	size_t block_shift;
 	bnum_t block_count;
 	char *label;
+	bool is_gpt;
 
 	/* function pointers */
 	ssize_t (*read)(struct bdev *, void *buf, off_t offset, size_t len);
