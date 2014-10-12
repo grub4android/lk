@@ -387,6 +387,22 @@ static void fastboot_ack(const char *code, const char *reason)
 
 }
 
+void fastboot_code(const char *code, const char *reason)
+{
+	STACKBUF_DMA_ALIGN(__response, MAX_RSP_SIZE);
+	char* response = (char*)__response;
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (reason == 0)
+		reason = "";
+
+	snprintf(response, MAX_RSP_SIZE, "%s%s", code, reason);
+
+	usb_if.usb_write(response, strlen(response));
+}
+
 void fastboot_info(const char *reason)
 {
 	STACKBUF_DMA_ALIGN(__response, MAX_RSP_SIZE);
@@ -401,6 +417,45 @@ void fastboot_info(const char *reason)
 	snprintf(response, MAX_RSP_SIZE, "INFO%s", reason);
 
 	usb_if.usb_write(response, strlen(response));
+}
+
+void fastboot_write(void *data, unsigned len)
+{
+	STACKBUF_DMA_ALIGN(__response, MAX_RSP_SIZE);
+	char* response = (char*)__response;
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (!data)
+		return;
+
+	snprintf(response, MAX_RSP_SIZE, "PRNT");
+	memcpy(response+4, data, len);
+
+	usb_if.usb_write(response, len+4);
+}
+
+void fastboot_send_data(void *data, unsigned len)
+{
+	STACKBUF_DMA_ALIGN(__response, MAX_RSP_SIZE);
+	char* response = (char*)__response;
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (!data)
+		return;
+
+	// exit command mode
+	fastboot_code("OKAY", "");
+
+	// send header
+	snprintf(response, MAX_RSP_SIZE, "DATA%016x", len);
+	usb_if.usb_write(response, 20);
+
+	// send data
+	usb_if.usb_write(data, len);
 }
 
 void fastboot_fail(const char *reason)
@@ -501,6 +556,17 @@ void cmd_reboot_recovery(const char *arg, void *data, unsigned sz)
 	dprintf(INFO, "rebooting the device\n");
 	fastboot_okay("");
 	reboot_device(REBOOT_MODE_RECOVERY);
+}
+
+void cmd_oem_screenshot(const char *arg, void *unused, unsigned sz)
+{
+	struct fbcon_config* config = fbcon_display();
+	char *data = config->base;
+	unsigned size = config->width*config->height*config->bpp/8;
+
+	fastboot_send_data(data, size);
+
+	fastboot_okay("");
 }
 
 static void fastboot_command_loop(void)
@@ -656,6 +722,7 @@ static void fastboot_init(const struct app_descriptor *app)
 	fastboot_register("reboot", cmd_reboot);
 	fastboot_register("reboot-bootloader", cmd_reboot_bootloader);
 	fastboot_register("oem reboot-recovery", cmd_reboot_recovery);
+	fastboot_register("oem screenshot",    cmd_oem_screenshot);
 	fastboot_publish("version", "0.5");
 
 	fastboot_initialized = 1;
