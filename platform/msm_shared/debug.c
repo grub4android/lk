@@ -30,6 +30,7 @@
  * SUCH DAMAGE.
  */
 
+#include <string.h>
 #include <stdlib.h>
 #include <debug.h>
 #include <printf.h>
@@ -40,6 +41,8 @@
 #include <kernel/thread.h>
 #include <platform.h>
 #include <platform/msm_shared.h>
+#include <lk/init.h>
+#include <app/fastboot.h>
 
 #if PON_VIB_SUPPORT
 #include <vibrator.h>
@@ -96,6 +99,29 @@ static void log_putc(char c)
 	if (unlikely(log.header.idx >= log.header.max_size))
 		log.header.idx = 0;
 }
+
+void cmd_oem_lk_log(const char *arg, void *data, unsigned sz)
+{
+	char* pch;
+	char* buf = strdup(log.data);
+
+	pch = strtok(buf, "\n\r");
+	while (pch != NULL) {
+		char* ptr = pch;
+		while(ptr!=NULL) {
+			fastboot_info(ptr);
+			if(strlen(ptr)>MAX_RSP_SIZE-5)
+				ptr+=MAX_RSP_SIZE-5;
+			else ptr=NULL;
+		}
+
+		pch = strtok(NULL, "\n\r");
+	}
+
+	free(buf);
+	fastboot_okay("");
+}
+
 #endif /* WITH_DEBUG_LOG_BUF */
 
 void platform_dputc(char c)
@@ -162,3 +188,12 @@ void platform_halt(platform_halt_action suggested_action,
             break;
     }
 }
+
+static void platform_fastboot_init(uint level)
+{
+#if WITH_DEBUG_LOG_BUF
+	fastboot_register("oem lk_log", cmd_oem_lk_log);
+#endif
+}
+
+LK_INIT_HOOK(platform_msm, &platform_fastboot_init, LK_INIT_LEVEL_TARGET);
