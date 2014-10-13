@@ -35,6 +35,7 @@
 #include <platform/timer.h>
 #include <platform/msm_shared/clock.h>
 #include <platform/msm_shared/clock_pll.h>
+#include <platform/msm_shared/timer.h>
 
 /*
  * pll_vote_clk functions
@@ -99,14 +100,14 @@ int pll_clk_enable(struct clk *clk)
 	 * H/W requires a 5us delay between disabling the bypass and
 	 * de-asserting the reset. Delay 10us just to be safe.
 	 */
-	spin(10);
+	udelay(10);
 
 	/* De-assert active-low PLL reset. */
 	mode |= BIT(0xFFFFFFFF, 2);
 	writel_relaxed(mode, pll->mode_reg);
 
 	/* Wait until PLL is locked. */
-	spin(50);
+	udelay(50);
 
 	/* Enable PLL output. */
 	mode |= BIT(0xFFFFFFFF, 0);

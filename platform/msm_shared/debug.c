@@ -41,6 +41,7 @@
 #include <kernel/thread.h>
 #include <platform.h>
 #include <platform/msm_shared.h>
+#include <platform/msm_shared/timer.h>
 #include <lk/init.h>
 #include <app/fastboot.h>
 
@@ -59,7 +60,7 @@ static void write_dcc(char c)
 	{
 		if (dcc_putc(c) == 0)
 			break;
-		spin(50);
+		udelay(50);
 		timeout--;
 	}
 }

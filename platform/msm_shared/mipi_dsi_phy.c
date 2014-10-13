@@ -31,6 +31,7 @@
 #include <reg.h>
 #include <arch/defines.h>
 #include <platform/msm_shared/mipi_dsi.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/iomap.h>
 
 #ifndef MIPI_DSI0_BASE
@@ -195,7 +196,7 @@ int mipi_dsi_phy_init(struct mipi_dsi_panel_config *pinfo)
 
 		/* Check that PHY is ready */
 		while (!(readl(DSIPHY_PLL_RDY) & 0x01))
-			spin(1);
+			udelay(1);
 
 		writel(0x202D, DSI_CLKOUT_TIMING_CTRL);
 
@@ -212,11 +213,11 @@ void mdss_dsi_phy_sw_reset(uint32_t ctl_base)
 {
 	/* start phy sw reset */
 	writel(0x0001, ctl_base + 0x012c);
-	spin(1000);
+	udelay(1000);
 
 	/* end phy sw reset */
 	writel(0x0000, ctl_base + 0x012c);
-	spin(100);
+	udelay(100);
 }
 
 int mdss_dsi_phy_regulator_init(struct mdss_dsi_phy_ctrl *pd)

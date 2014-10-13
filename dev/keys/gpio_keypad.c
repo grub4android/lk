@@ -46,6 +46,7 @@
 #include <platform/timer.h>
 #include <platform.h>
 #include <platform/msm_shared.h>
+#include <platform/msm_shared/timer.h>
 
 #define LINUX_MACHTYPE_8660_QT      3298
 
@@ -427,7 +428,7 @@ void ssbi_keypad_init(struct qwerty_keypad_info  *qwerty_kp)
 
     if(mach_id == LINUX_MACHTYPE_8660_QT)
     {
-        spin((qwerty_keypad->keypad_info)->settle_time*1000);
+        mdelay((qwerty_keypad->keypad_info)->settle_time);
 #ifdef QT_8660_KEYPAD_HW_BUG
         timer_set_oneshot(&qwerty_keypad->timer, 0, scan_qt_keypad, NULL);
 #endif

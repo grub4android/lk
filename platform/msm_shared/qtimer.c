@@ -89,7 +89,7 @@ static void delay(uint64_t ticks)
 }
 
 
-void platform_timer_mdelay(unsigned msecs)
+void mdelay(unsigned msecs)
 {
 	uint64_t ticks;
 
@@ -98,7 +98,7 @@ void platform_timer_mdelay(unsigned msecs)
 	delay(ticks);
 }
 
-void platform_timer_udelay(unsigned usecs)
+void udelay(unsigned usecs)
 {
 	uint64_t ticks;
 

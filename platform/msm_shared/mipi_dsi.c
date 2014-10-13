@@ -41,6 +41,7 @@
 #include <platform/timer.h>
 #include <err.h>
 #include <platform/msm_shared/msm_panel.h>
+#include <platform/msm_shared/timer.h>
 
 extern void mdp_disable(void);
 extern void mdp_start_dma(void);
@@ -192,9 +193,9 @@ int mdss_dual_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 		dsb();
 		ret += mdss_dual_dsi_cmd_dma_trigger_for_panel();
 		if (cm->wait)
-			spin(cm->wait*1000);
+			mdelay(cm->wait);
 		else
-			spin(80);
+			udelay(80);
 		cm++;
 	}
 #endif
@@ -277,9 +278,9 @@ int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 		ret += dsi_cmd_dma_trigger_for_panel();
 		dsb();
 		if (cm->wait)
-			spin(cm->wait*1000);
+			mdelay(cm->wait);
 		else
-			spin(80);
+			udelay(80);
 		cm++;
 	}
 	return ret;
@@ -516,7 +517,7 @@ void trigger_mdp_dsi(void)
 {
 	dsb();
 	mdp_start_dma();
-	spin(10000);
+	mdelay(10);
 	dsb();
 	writel(0x1, DSI_CMD_MODE_MDP_SW_TRIGGER);
 }
@@ -592,7 +593,7 @@ config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 	writel(0x13c2c, DSI_COMMAND_MODE_MDP_DCS_CMD_CTRL);
 	writel(interleav << 30 | 0 << 24 | 0 << 20 | DLNx_EN << 4 | 0x105,
 	       DSI_CTRL);
-	spin(10000);
+	mdelay(10);
 	writel(0x14000000, DSI_COMMAND_MODE_DMA_CTRL);
 	writel(0x10000000, DSI_MISR_CMD_CTRL);
 	writel(0x13ff3fe0, DSI_ERR_INT_MASK0);
@@ -627,7 +628,7 @@ void mipi_dsi_cmd_trigger(struct msm_fb_panel_data *pdata)
 	mipi_fb_cfg.height = display_ht;
 
 	mipi_dsi_cmd_config(mipi_fb_cfg, num_of_lanes);
-	spin(50000);
+	mdelay(50);
 	config_dsi_cmd_mode(display_wd, display_ht, image_wd, image_ht,
 			dst_format, traffic_mode,
 			num_of_lanes, /* num_of_lanes */
@@ -669,7 +670,7 @@ int mipi_config(struct msm_fb_panel_data *panel)
 
 #if TARGET_MSM8960_ARIES
 	mipi_dsi_cmd_trigger(panel);
-	spin(34000);
+	mdelay(34);
 #endif
 
 	return ret;
@@ -905,7 +906,7 @@ int mipi_dsi_on()
 
 	ReadValue = readl(DSI_INT_CTRL) & 0x00010000;
 
-	spin(10000);
+	mdelay(10);
 
 	while (ReadValue != 0x00010000) {
 		ReadValue = readl(DSI_INT_CTRL) & 0x00010000;
@@ -926,7 +927,7 @@ int mipi_dsi_off(struct msm_panel_info *pinfo)
 	{
 		writel(0, DSI_CLK_CTRL);
 		writel(0x1F1, DSI_CTRL);
-		spin(10000);
+		mdelay(10);
 		writel(0x0001, DSI_SOFT_RESET);
 		writel(0x0000, DSI_SOFT_RESET);
 		writel(0, DSI_CTRL);

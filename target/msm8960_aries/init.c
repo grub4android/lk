@@ -53,6 +53,7 @@
 #include <platform/msm_shared/uart_dm.h>
 #include <platform/msm_shared/board.h>
 #include <platform/msm_shared/dload_util.h>
+#include <platform/msm_shared/timer.h>
 #include <target/board.h>
 #include <assert.h>
 #include <arch/defines.h>
@@ -78,7 +79,7 @@ void shutdown_device(void)
 
 	/* Actually reset the chip */
 	writel(0, MSM_PSHOLD_CTL_SU);
-	spin(5000*1000);
+	mdelay(5000);
 
 	dprintf(CRITICAL, "Shutdown failed.\n");
 }
@@ -193,7 +194,7 @@ void reboot_device(unsigned reboot_reason)
 	/* Actually reset the chip */
 	pm8921_config_reset_pwr_off(1);
 	writel(0, MSM_PSHOLD_CTL_SU);
-	spin(10000*1000);
+	mdelay(10000);
 
 	dprintf(CRITICAL, "PSHOLD failed, trying watchdog reset\n");
 	writel(1, MSM_WDT0_RST);
@@ -202,7 +203,7 @@ void reboot_device(unsigned reboot_reason)
 	writel(3, MSM_WDT0_EN);
 	dmb();
 	writel(3, MSM_TCSR_BASE + TCSR_WDOG_CFG);
-	spin(10000*1000);
+	mdelay(10000);
 
 	dprintf(CRITICAL, "Rebooting failed\n");
 }

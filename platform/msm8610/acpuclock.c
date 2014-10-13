@@ -35,6 +35,7 @@
 #include <platform/iomap.h>
 #include <platform/msm_shared/mmc.h>
 #include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/clock.h>
 
 void hsusb_clock_init(void)
@@ -57,7 +58,7 @@ void hsusb_clock_init(void)
 	}
 
 	/* Wait for the clocks to be stable since we are disabling soon after. */
-	spin(1000);
+	mdelay(1);
 
 	iclk = clk_get("usb_iface_clk");
 	cclk = clk_get("usb_core_clk");
@@ -66,19 +67,19 @@ void hsusb_clock_init(void)
 	clk_disable(cclk);
 
 	/* Wait for the clock disable to complete. */
-	spin(1000);
+	mdelay(1);
 
 	/* Start the block reset for usb */
 	writel(1, USB_HS_BCR);
 
 	/* Wait for reset to complete. */
-	spin(1000);
+	mdelay(1);
 
 	/* Take usb block out of reset */
 	writel(0, USB_HS_BCR);
 
 	/* Wait for the block to be brought out of reset. */
-	spin(1000);
+	mdelay(1);
 
 	ret = clk_enable(iclk);
 
@@ -339,7 +340,7 @@ void dsi_setup_dividers(uint32_t val, uint32_t cfg_rcgr,
 					"exceeded polling TIMEOUT!\n");
 			break;
 		}
-		spin(1);
+		udelay(1);
 		reg = readl(cmd_rcgr);
 	}
 }
@@ -350,7 +351,7 @@ void vco_enable(int enable)
 	{
 		writel(0x1, DSIPHY_PLL_CTRL(0));
 		while (!(readl(DSIPHY_PLL_READY) & 0x01))
-			spin(1);
+			udelay(1);
 	} else {
 		writel(0x0, DSIPHY_PLL_CTRL(0));
 	}
@@ -487,7 +488,7 @@ void clock_ce_enable(uint8_t instance)
 	 * pipe key storage memory. If pipe key initialization writes are attempted
 	 * during this time, they may be overwritten by the internal clearing logic.
 	 */
-	spin(1);
+	udelay(1);
 }
 
 void clock_ce_disable(uint8_t instance)
@@ -516,7 +517,7 @@ void clock_ce_disable(uint8_t instance)
 	clk_disable(src_clk);
 
 	/* Some delay for the clocks to stabalize. */
-	spin(1);
+	udelay(1);
 }
 
 /* Function to asynchronously reset CE.
@@ -529,12 +530,12 @@ static void ce_async_reset(uint8_t instance)
 		/* Start the block reset for CE */
 		writel(1, GCC_CE1_BCR);
 
-		spin(2);
+		udelay(2);
 
 		/* Take CE block out of reset */
 		writel(0, GCC_CE1_BCR);
 
-		spin(2);
+		udelay(2);
 	}
 	else
 	{

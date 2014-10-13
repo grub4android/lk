@@ -39,6 +39,7 @@
 #include <platform/msm_shared/mdp5.h>
 #include <platform/gpio.h>
 #include <platform/msm_shared/mipi_dsi.h>
+#include <platform/msm_shared/timer.h>
 
 #include <display_resource.h>
 #include <panel.h>
@@ -145,7 +146,7 @@ static int mdss_dsi_panel_pre_init(void)
 	}
 
 	if(panelstruct.paneldata->panel_init_delay)
-		spin(panelstruct.paneldata->panel_init_delay);
+		udelay(panelstruct.paneldata->panel_init_delay);
 
 	dprintf(SPEW, "Panel pre init done\n");
 	return ret;

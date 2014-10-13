@@ -41,6 +41,7 @@
 #include <platform/msm_shared/mipi_dsi.h>
 #include <err.h>
 #include <platform/msm_shared/clock.h>
+#include <platform/msm_shared/timer.h>
 
 static int mdp_rev;
 
@@ -226,7 +227,7 @@ void mdp_disable(void)
 void mdp_shutdown(void)
 {
 	mdp_disable();
-	spin(60000);
+	mdelay(60);
 	writel(0x00000000, MDP_INTR_ENABLE);
 	writel(0x00000003, MDP_OVERLAYPROC0_CFG);
 }
@@ -378,7 +379,7 @@ int mdp_dsi_video_off()
 	if(!target_cont_splash_screen())
 	{
 		writel(0x00000000, MDP_DSI_VIDEO_EN);
-		spin(60000);
+		mdelay(60);
 		writel(0x00000000, MDP_INTR_ENABLE);
 		writel(0x00000003, MDP_OVERLAYPROC0_CFG);
 	}
@@ -395,7 +396,7 @@ int mdp_dsi_cmd_off()
 		 * Allow sometime for the DMA channel to
 		 * stop the data transfer
 		 */
-		spin(10000);
+		mdelay(10);
 		writel(0x00000000, MDP_INTR_ENABLE);
 		writel(0x00000003, MDP_OVERLAYPROC0_CFG);
 	}

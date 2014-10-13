@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <reg.h>
 #include <platform/msm_shared/spmi.h>
+#include <platform/msm_shared/timer.h>
 #include <string.h>
 #include <pm8x41_hw.h>
 #include <pm8x41.h>
@@ -168,7 +169,7 @@ void pm8x41_resin_s2_reset_enable(void)
 	REG_WRITE(PON_RESIN_N_RESET_S2_CTL, 0x0);
 
 	/* Delay needed for disable to kick in. */
-	spin(300);
+	udelay(300);
 
 	/* configure s1 timer to 0 */
 	REG_WRITE(PON_RESIN_N_RESET_S1_TIMER, 0x0);
@@ -193,7 +194,7 @@ void pm8x41_resin_s2_reset_disable(void)
 	REG_WRITE(PON_RESIN_N_RESET_S2_CTL, 0x0);
 
 	/* Delay needed for disable to kick in. */
-	spin(300);
+	udelay(300);
 }
 
 /* Resin irq status for faulty pmic*/
@@ -207,7 +208,7 @@ uint32_t pm8x41_v2_resin_status(void)
 	/* Delay before interrupt triggering.
 	 * See PON_DEBOUNCE_CTL reg.
 	 */
-	spin(100000);
+	mdelay(100);
 
 	rt_sts = REG_READ(PON_INT_RT_STS);
 
@@ -250,7 +251,7 @@ void pm8x41_v2_reset_configure(uint8_t reset_type)
 	REG_WRITE(PON_PS_HOLD_RESET_CTL, 0x0);
 
 	/* Delay needed for disable to kick in. */
-	spin(300);
+	udelay(300);
 
 	/* configure reset type */
 	REG_WRITE(PON_PS_HOLD_RESET_CTL, reset_type);
@@ -268,7 +269,7 @@ void pm8x41_reset_configure(uint8_t reset_type)
 	REG_WRITE(PON_PS_HOLD_RESET_CTL2, 0x0);
 
 	/* Delay needed for disable to kick in. */
-	spin(300);
+	udelay(300);
 
 	/* configure reset type */
 	REG_WRITE(PON_PS_HOLD_RESET_CTL, reset_type);
@@ -503,7 +504,7 @@ int pm8xxx_is_battery_broken(void)
 	/* Force trickle charging (SMBB_CHGR_TRKL_CHG_TEST = 0x01) */
 	pm8x41_reg_write(PM8XXX_TRKL_CHG_TEST, CHG_TRICKLE_FORCED_ON);
 	/* Wait for vbat to rise */
-	spin(12000);
+	mdelay(12);
 
 	/* Check Above VBAT_DET_HIGH status */
 	if (pm8x41_reg_read(PM8XXX_VBAT_IN_TSTS) & VBAT_DET_HI_RT_STS)

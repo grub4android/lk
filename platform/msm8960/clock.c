@@ -34,6 +34,7 @@
 #include <platform/msm_shared/clock.h>
 #include <platform/msm_shared/clock_pll.h>
 #include <platform/msm_shared/clock-local.h>
+#include <platform/msm_shared/timer.h>
 #include <bits.h>
 #include <platform/iomap.h>
 #include <platform/clock.h>
@@ -971,7 +972,7 @@ static int sr_pll_clk_enable(struct clk *clk)
 	 * de-asserting the reset. Delay 10us just to be safe.
 	 */
 	dmb();
-	spin(10);
+	udelay(10);
 
 	/* Disable PLL bypass mode. */
 	mode |= BIT(0xFFFFFFFF, 1);
@@ -979,7 +980,7 @@ static int sr_pll_clk_enable(struct clk *clk)
 
 	/* Wait until PLL is locked. */
 	dmb();
-	spin(60);
+	udelay(60);
 
 	/* Enable PLL output. */
 	mode |= BIT(0xFFFFFFFF, 0);

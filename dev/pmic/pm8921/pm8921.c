@@ -34,6 +34,7 @@
 #include <dev/pm8921.h>
 #include <dev/pm8921_pwm.h>
 #include <platform/timer.h>
+#include <platform/msm_shared/timer.h>
 #include "pm8921_hw.h"
 
 static pm8921_dev_t *dev;
@@ -620,7 +621,7 @@ int pm89xx_bat_alarm_set(bat_vol_t up_thresh_vol, bat_vol_t low_thresh_vol)
 	}
 
 	/* Wait for the comparator o/p to settle */
-	spin(10000);
+	mdelay(10);
 
 	return rc;
 }

@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <platform/msm_shared/scm.h>
 #include <platform/msm_shared/partition_parser.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/clock.h>
 #include <platform/timer.h>
 
@@ -361,7 +362,7 @@ void reboot_device(unsigned reboot_reason)
 	/* Drop PS_HOLD for MSM */
 	writel(0x00, MPM2_MPM_PS_HOLD);
 
-	spin(5000*1000);
+	mdelay(5000);
 
 	dprintf(CRITICAL, "Rebooting failed\n");
 }
@@ -509,7 +510,7 @@ void shutdown_device(void)
 	/* Drop PS_HOLD for MSM */
 	writel(0x00, MPM2_MPM_PS_HOLD);
 
-	spin(5000*1000);
+	mdelay(5000);
 
 	dprintf(CRITICAL, "shutdown failed\n");
 

@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <platform/msm_shared/clock.h>
 #include <platform/msm_shared/clock-local.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/timer.h>
 
 /*
@@ -69,7 +70,7 @@ static void __branch_clk_enable_reg(const struct branch *clk, const char *name)
 
 	/* Wait for clock to enable before returning. */
 	if (clk->halt_check == DELAY)
-		spin(HALT_CHECK_DELAY_US);
+		udelay(HALT_CHECK_DELAY_US);
 	else if (clk->halt_check == ENABLE || clk->halt_check == HALT
 			|| clk->halt_check == ENABLE_VOTED
 			|| clk->halt_check == HALT_VOTED) {
@@ -78,7 +79,7 @@ static void __branch_clk_enable_reg(const struct branch *clk, const char *name)
 		/* Wait up to HALT_CHECK_MAX_LOOPS for clock to enable. */
 		for (count = HALT_CHECK_MAX_LOOPS; branch_clk_is_halted(clk)
 					&& count > 0; count--)
-			spin(1);
+			udelay(1);
 	}
 }
 
@@ -360,7 +361,7 @@ void set_rate_mnd_banked(struct rcg_clk *clk, struct clk_freq_tbl *nf)
 		 * Wait at least 6 cycles of slowest bank's clock
 		 * for the glitch-free MUX to fully switch sources.
 		 */
-		spin(1);
+		udelay(1);
 
 		/* Disable old bank's MN counter. */
 		ctl_reg_val &= ~(old_bank_masks->mnd_en_mask);

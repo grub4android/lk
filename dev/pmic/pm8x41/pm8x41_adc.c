@@ -30,6 +30,7 @@
 #include <debug.h>
 #include <reg.h>
 #include <platform/msm_shared/spmi.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/timer.h>
 #include <pm8x41_adc.h>
 #include <pm8x41_hw.h>
@@ -106,7 +107,7 @@ static void adc_measure(struct adc_conf *adc, uint16_t *result)
 			break;
 		}
 		/* Wait for sometime before polling for the status again */
-		spin(10);
+		udelay(10);
 	} while(1);
 
 	/* Now read the conversion result */

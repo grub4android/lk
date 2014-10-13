@@ -32,7 +32,8 @@
 void platform_init_timer(void);
 void platform_uninit_timer(void);
 uint32_t platform_tick_rate(void);
-void platform_timer_mdelay(unsigned msecs);
-void platform_timer_udelay(unsigned usecs);
+
+void mdelay(unsigned msecs);
+void udelay(unsigned usecs);
 
 #endif

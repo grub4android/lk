@@ -32,18 +32,16 @@
  */
 
 #include <debug.h>
+#include <reg.h>
 #include <sys/types.h>
-#include <err.h>
-#include <assert.h>
-#include <trace.h>
-#include <kernel/thread.h>
-#include <platform.h>
-#include <platform/interrupts.h>
-#include <platform/timer.h>
-#include <platform/msm8960.h>
-#include <platform/msm_shared/timer.h>
 
-#define LOCAL_TRACE 0
+#include <platform/timer.h>
+#include <platform/irqs.h>
+#include <platform/iomap.h>
+#include <platform/interrupts.h>
+#include <kernel/thread.h>
+
+#include <platform/msm_shared/timer.h>
 
 #define GPT_ENABLE_CLR_ON_MATCH_EN        2
 #define GPT_ENABLE_EN                     1
@@ -52,64 +50,44 @@
 
 #define SPSS_TIMER_STATUS_DGT_EN    (1 << 0)
 
-static platform_timer_callback t_callback;
-static lk_time_t periodic_interval;
+static platform_timer_callback timer_callback;
+static void *timer_arg;
+static lk_time_t timer_interval;
 
-static volatile uint ticks = 0;
+static volatile uint32_t ticks;
 
-static enum handler_return platform_tick(void *arg)
+static enum handler_return timer_irq(void *arg)
 {
-	ticks++;
-
-	if (t_callback) {
-		return t_callback(arg, current_time());
-	} else {
-		return INT_NO_RESCHEDULE;
-	}
+	ticks += timer_interval;
+	return timer_callback(timer_arg, ticks);
 }
 
 status_t
 platform_set_periodic_timer(platform_timer_callback callback,
-			 void *arg, lk_time_t interval)
+			    void *arg, lk_time_t interval)
 {
+	uint32_t tick_count = interval * platform_tick_rate() / 1000;
+
 	enter_critical_section();
 
-    LTRACEF("callback %p, arg %p, interval %lu\n", callback, arg, interval);
+	timer_callback = callback;
+	timer_arg = arg;
+	timer_interval = interval;
 
-    t_callback = callback;
-
-    periodic_interval = interval;
-
-    uint32_t tick_count = periodic_interval * platform_tick_rate() / 1000;
-
-    writel(tick_count, DGT_MATCH_VAL);
+	writel(tick_count, DGT_MATCH_VAL);
 	writel(0, DGT_CLEAR);
 	writel(DGT_ENABLE_EN | DGT_ENABLE_CLR_ON_MATCH_EN, DGT_ENABLE);
 
-	register_int_handler(INT_DEBUG_TIMER_EXP, &platform_tick, NULL);
+	register_int_handler(INT_DEBUG_TIMER_EXP, timer_irq, 0);
 	unmask_interrupt(INT_DEBUG_TIMER_EXP);
 
-    exit_critical_section();
-
-    return NO_ERROR;
-}
-
-lk_bigtime_t current_time_hires(void)
-{
-	lk_bigtime_t time;
-
-    time = ticks * periodic_interval * 1000ULL;
-
-    return time;
+	exit_critical_section();
+	return 0;
 }
 
 lk_time_t current_time(void)
 {
-	lk_time_t time;
-
-    time = ticks * periodic_interval;
-
-    return time;
+	return ticks;
 }
 
 static void wait_for_timer_op(void)
@@ -125,9 +103,11 @@ void platform_uninit_timer(void)
 	wait_for_timer_op();
 }
 
-void platform_timer_mdelay(unsigned msecs)
+void mdelay(unsigned msecs)
 {
 	msecs *= 33;
+
+	enter_critical_section();
 
 	writel(0, GPT_CLEAR);
 	writel(0, GPT_ENABLE);
@@ -138,12 +118,15 @@ void platform_timer_mdelay(unsigned msecs)
 
 	writel(0, GPT_ENABLE);
 	writel(0, GPT_CLEAR);
+
+	exit_critical_section();
 }
 
-void platform_timer_udelay(unsigned usecs)
+void udelay(unsigned usecs)
 {
 	usecs = (usecs * 33 + 1000 - 33) / 1000;
 
+	enter_critical_section();
 	writel(0, GPT_CLEAR);
 	writel(0, GPT_ENABLE);
 	while (readl(GPT_COUNT_VAL) != 0) ;
@@ -153,4 +136,12 @@ void platform_timer_udelay(unsigned usecs)
 
 	writel(0, GPT_ENABLE);
 	writel(0, GPT_CLEAR);
+
+	exit_critical_section();
+}
+
+/* Return current time in micro seconds */
+lk_bigtime_t current_time_hires(void)
+{
+	return ticks * 1000ULL;
 }

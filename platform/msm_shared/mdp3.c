@@ -32,6 +32,7 @@
 #include <platform/msm_shared/msm_panel.h>
 #include <err.h>
 #include <platform/msm_shared/mipi_dsi.h>
+#include <platform/msm_shared/timer.h>
 #include <target/display.h>
 #include <target/msm_shared.h>
 #include <platform/timer.h>
@@ -124,7 +125,7 @@ int mdp_dsi_cmd_config(struct msm_panel_info *pinfo,
 
 	writel(0x10, MDP_DSI_CMD_MODE_ID_MAP);
 	writel(0x11, MDP_DSI_CMD_MODE_TRIGGER_EN);
-	spin(10000);
+	mdelay(10);
 
 	return ret;
 }
@@ -139,7 +140,7 @@ int mdp_dsi_video_off(void)
 {
 	if (!target_cont_splash_screen()) {
 		mdp_disable();
-		spin(60000);
+		mdelay(60);
 	}
 	writel(0x00000000, MDP_INTR_ENABLE);
 	writel(0x01ffffff, MDP_INTR_CLEAR);
@@ -154,7 +155,7 @@ int mdp_dsi_cmd_off(void)
 		 * Allow sometime for the DMA channel to
 		 * stop the data transfer
 		 */
-		spin(10000);
+		mdelay(10);
 	}
 	writel(0x00000000, MDP_INTR_ENABLE);
 	writel(0x01ffffff, MDP_INTR_CLEAR);
@@ -183,7 +184,7 @@ int mdp_dsi_video_on(struct msm_panel_info *pinfo)
 int mdp_dma_on(struct msm_panel_info *pinfo)
 {
 	int ret = 0;
-	spin(100000);
+	mdelay(100);
 	writel(0x00000001, MDP_DMA_P_START);
 
 	return ret;

@@ -32,6 +32,7 @@
 #include <reg.h>
 #include <platform/msm_shared/mmc.h>
 #include <platform/msm_shared/partition_parser.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>
 #include <platform/msm_device.h>
@@ -174,7 +175,7 @@ void mmc_mclk_reg_wr_delay(void)
 		while(readl(MMC_BOOT_MCI_STATUS2) & MMC_BOOT_MCI_MCLK_REG_WR_ACTIVE);
 	}
 	else
-		spin((1 + ((3 * USEC_PER_SEC) / (mmc_host.mclk_rate? mmc_host.mclk_rate : MMC_CLK_400KHZ))));
+		udelay((1 + ((3 * USEC_PER_SEC) / (mmc_host.mclk_rate? mmc_host.mclk_rate : MMC_CLK_400KHZ))));
 }
 
 /* Sets a timeout for read operation.
@@ -2091,7 +2092,7 @@ static unsigned int mmc_boot_sd_init_card(struct mmc_card *card)
 			ocr_cmd_arg = MMC_BOOT_SD_NEG_OCR | MMC_BOOT_SD_HC_HCS;
 			break;
 		}
-		spin(1000);
+		mdelay(1);
 	}
 
 	/* Send ACMD41 to set operating condition */
@@ -2119,7 +2120,7 @@ static unsigned int mmc_boot_sd_init_card(struct mmc_card *card)
 			}
 			break;
 		}
-		spin(50000);
+		mdelay(50);
 	}
 	return MMC_BOOT_E_SUCCESS;
 }
@@ -2159,7 +2160,7 @@ mmc_boot_init_card(struct mmc_host *host, struct mmc_card *card)
 		/* Card returns busy status. We'll retry again! */
 		if (mmc_return == MMC_BOOT_E_CARD_BUSY) {
 			mmc_retry++;
-			spin(1000);
+			mdelay(1);
 			continue;
 		} else if (mmc_return == MMC_BOOT_E_SUCCESS) {
 			break;

@@ -33,6 +33,7 @@
 #include <string.h>
 #include <platform/msm_shared/msm_panel.h>
 #include <platform/msm_shared/mipi_dsi.h>
+#include <platform/msm_shared/timer.h>
 #include <pm8x41.h>
 #include <pm8x41_wled.h>
 #include <platform/msm_shared/board.h>
@@ -81,7 +82,7 @@ int target_backlight_ctrl(struct backlight *bl, uint8_t enable)
 		pm8x41_enable_mpp(&mpp, MPP_DISABLE);
 	}
 	/* Need delay before power on regulators */
-	spin(20000);
+	mdelay(20);
 	return 0;
 }
 
@@ -126,7 +127,7 @@ int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
 				gpio_set(reset_gpio.pin_id, GPIO_STATE_LOW);
 			else
 				gpio_set(reset_gpio.pin_id, GPIO_STATE_HIGH);
-			spin(resetseq->sleep[i]*1000);
+			mdelay(resetseq->sleep[i]);
 		}
 
 		if (pinfo->mipi.mode_gpio_state == MODE_GPIO_STATE_ENABLE)

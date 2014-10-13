@@ -37,6 +37,7 @@
 #include <platform/clock.h>
 #include <dev/fbcon.h>
 #include <dev/lcdc.h>
+#include <platform/msm_shared/timer.h>
 
 #include <platform/msm_shared/msm_panel.h>
 #define MDP_OUTP(addr, val)		writel(val, addr);
@@ -45,7 +46,7 @@ void lvds_init(struct msm_panel_info *pinfo)
 {
 	unsigned int lvds_intf = 0, lvds_phy_cfg0 = 0;
 	MDP_OUTP(MDP_BASE + 0xc2034, 0x33);
-	spin(1000);
+	udelay(1000);
 
 	/*1. Configure LVDS PHY PLL through MDP_LVDSPHY_PLL_CTRL_* registers*/
 	/* LVDS PHY PLL configuration */
@@ -78,7 +79,7 @@ void lvds_init(struct msm_panel_info *pinfo)
 	/*3. Poll the MDP_LVDSPHY_PLL_RDY register until it is 1*/
 	/* Wait until LVDS PLL is locked and ready */
 	while (!readl(MDP_BASE + 0xc3080))
-		spin(1);
+		udelay(1);
 
 	/*4. Enable dsi2_pixel domain clocks*/
 	writel(0x00, REG_MM(0x0264));
@@ -88,7 +89,7 @@ void lvds_init(struct msm_panel_info *pinfo)
 
 	writel((0x80 | readl(REG_MM(0x00E4))),
 			REG_MM(0x00E4));
-	spin(1000);
+	udelay(1000);
 	writel((~0x80 & readl(REG_MM(0x00E4))),
 			REG_MM(0x00E4));
 
@@ -159,7 +160,7 @@ void lvds_init(struct msm_panel_info *pinfo)
 
 	/* Wait until LVDS PHY registers are configured */
 	dsb();
-	spin(1);
+	udelay(1);
 	/* MDP_LVDSPHY_CFG0, enable serialization */
 	MDP_OUTP(MDP_BASE +  0xc3100, lvds_phy_cfg0);
 }

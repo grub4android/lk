@@ -42,6 +42,7 @@
 
 #include <platform/msm_shared/gsbi.h>
 #include <platform/msm_shared/i2c_qup.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/irqs.h>
 #include <platform/iomap.h>
 #include <platform/gpio.h>
@@ -210,10 +211,10 @@ static int qup_i2c_poll_writeready(struct qup_i2c_dev *dev)
 			if (!(status & I2C_STATUS_BUS_ACTIVE))
 				return 0;
 			else	/* 1-bit delay before we check for bus busy */
-				spin(dev->one_bit_t);
+				udelay(dev->one_bit_t);
 		}
 		if (retries++ == 1000)
-			spin(100);
+			udelay(100);
 	}
 	qup_print_status(dev);
 	return -ETIMEDOUT;
@@ -232,7 +233,7 @@ static int qup_i2c_poll_state(struct qup_i2c_dev *dev, unsigned state)
 		    (QUP_STATE_VALID | state))
 			return 0;
 		else if (retries++ == 1000)
-			spin(100);
+			udelay(100);
 	}
 	return -ETIMEDOUT;
 }

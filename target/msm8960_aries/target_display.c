@@ -47,6 +47,7 @@
 #include <gcdb_display.h>
 #include <platform/msm_shared/i2c_qup.h>
 #include <platform/msm_shared/gsbi.h>
+#include <platform/msm_shared/timer.h>
 
 #include <panel.h>
 #include <display_resource.h>
@@ -159,15 +160,15 @@ static int target_panel_reset_mi2(uint8_t enable, struct panel_reset_sequence *r
 		/* Initial condition */
 		pmic8921_gpio_set(PM8921_GPIO_PANEL_RESET, 0);
 		pmic8921_gpio_set(PM8921_GPIO_LCD_DCDC_EN, 0);
-		spin(8000);
+		mdelay(8);
 
 		/* Enable VSP VSN */
 		pmic8921_gpio_set(PM8921_GPIO_LCD_DCDC_EN, 1);
-		spin(8000);
+		mdelay(8);
 
 		/* Reset */
 		pmic8921_gpio_set(PM8921_GPIO_PANEL_RESET, 1);
-		spin(3000);
+		mdelay(3);
 
 	} else if(!target_cont_splash_screen()) {
 		/* Reset down */
@@ -175,7 +176,7 @@ static int target_panel_reset_mi2(uint8_t enable, struct panel_reset_sequence *r
 
 		/* Disable VSP VSN */
 		pmic8921_gpio_set(PM8921_GPIO_LCD_DCDC_EN, 0);
-		spin(8000);
+		mdelay(8);
 	}
 
 	return ret;
@@ -198,7 +199,7 @@ static int target_panel_reset_mi2a(uint8_t enable, struct panel_reset_sequence *
 			.disable_pin = 0,
 		};
 		pm8921_gpio_config(PM_GPIO(43), &gpio43_param);
-		spin(5000);
+		mdelay(5);
 	}
 
 	return 0;
@@ -226,16 +227,16 @@ int target_ldo_ctrl_mi2(uint8_t enable, struct msm_panel_info *pinfo)
 	if (enable) {
 		/* Set and enabale LDO2 1.2V for  VDDA_MIPI_DSI0/1_PLL */
 		pm8921_ldo_set_voltage(LDO_2, LDO_VOLTAGE_1_2V);
-		spin(8000);
+		mdelay(8);
 
 		/* Initial condition */
 		pm8921_ldo_clear_voltage(LDO_23);
-		spin(8000);
+		mdelay(8);
 
 		/* Enable LVS7 */
 		pm8921_low_voltage_switch_enable(lvs_7);
 		pm8921_ldo_set_voltage(LDO_23, LDO_VOLTAGE_1_8V);
-		spin(10000);
+		mdelay(10);
 	} else {
 		if (!target_cont_splash_screen()) {
 			/* Disable 1V8 */
@@ -259,7 +260,7 @@ int target_ldo_ctrl_mi2a(uint8_t enable, struct msm_panel_info *pinfo)
 		/* Turn on LDO2 for vdda_mipi_dsi */
 		pm8921_ldo_set_voltage(LDO_2, LDO_VOLTAGE_1_2V);
 
-		spin(3000);
+		mdelay(3);
 	}
 
 	return 0;

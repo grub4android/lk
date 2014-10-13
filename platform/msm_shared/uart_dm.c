@@ -41,6 +41,7 @@
 #include <platform/msm_shared/uart_dm.h>
 #include <platform/msm_shared/gsbi.h>
 #include <platform/msm_shared/timer.h>
+#include <platform.h>
 
 #ifndef NULL
 #define NULL        0
@@ -111,9 +112,6 @@ static unsigned int msm_boot_uart_dm_reset(uint32_t base);
 /* Keep track of uart block vs port mapping.
  */
 static uint32_t port_lookup[4];
-
-/* Extern functions */
-void udelay(unsigned usecs);
 
 /*
  * Helper function to keep track of Line Feed char "\n" with
@@ -337,7 +335,7 @@ msm_boot_uart_dm_write(uint32_t base, char *data, unsigned int num_of_chars)
 	 * If not we'll wait for TX_READY interrupt. */
 	if (!(readl(MSM_BOOT_UART_DM_SR(base)) & MSM_BOOT_UART_DM_SR_TXEMT)) {
 		while (!(readl(MSM_BOOT_UART_DM_ISR(base)) & MSM_BOOT_UART_DM_TX_READY)) {
-			platform_timer_udelay(1);
+			udelay(1);
 			/* Kick watchdog? */
 		}
 	}
@@ -363,7 +361,7 @@ msm_boot_uart_dm_write(uint32_t base, char *data, unsigned int num_of_chars)
 
 		/* Wait till TX FIFO has space */
 		while (!(readl(MSM_BOOT_UART_DM_SR(base)) & MSM_BOOT_UART_DM_SR_TXRDY)) {
-			platform_timer_udelay(1);
+			udelay(1);
 		}
 
 		/* TX FIFO has space. Write the chars */

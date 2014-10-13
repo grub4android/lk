@@ -35,6 +35,7 @@
 #include <platform/msm_shared/sdhci.h>
 #include <platform/msm_shared/sdhci_msm.h>
 #include <platform/msm_shared/partition_parser.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>
 #include <platform/msm_shared.h>
@@ -396,7 +397,7 @@ static uint32_t mmc_send_op_cond(struct sdhci_host *host, struct mmc_card *card)
 		/* Check the response for busy status */
 		if (!(mmc_resp & MMC_OCR_BUSY)) {
 			mmc_retry++;
-			spin(1000);
+			mdelay(1);
 			continue;
 		} else
 			break;
@@ -1256,7 +1257,7 @@ uint32_t mmc_sd_card_init(struct sdhci_host *host, struct mmc_card *card)
 		/* As per SDCC the spec try for max three times with
 		 * 1 ms delay
 		 */
-		spin(1000);
+		mdelay(1);
 	}
 
 	if (i == SD_CMD8_MAX_RETRY && (cmd.resp[0] != MMC_SD_HC_VOLT_SUPPLIED))
@@ -1301,7 +1302,7 @@ uint32_t mmc_sd_card_init(struct sdhci_host *host, struct mmc_card *card)
 		/*
 		 * As per SDCC spec try for max 1 second
 		 */
-		spin(50000);
+		mdelay(50);
 	}
 
 	if (i == SD_ACMD41_MAX_RETRY && !(cmd.resp[0] & MMC_SD_DEV_READY))
@@ -2062,7 +2063,7 @@ static uint32_t mmc_send_erase(struct mmc_device *dev, uint64_t erase_timeout)
 			dprintf(CRITICAL, "Write Protect set for the region, only partial space was erased\n");
 
 		retry++;
-		spin(1000);
+		udelay(1000);
 		if (retry == MMC_MAX_CARD_STAT_RETRY)
 		{
 			dprintf(CRITICAL, "Card status check timed out after sending erase command\n");
@@ -2309,7 +2310,7 @@ uint32_t mmc_set_clr_power_on_wp_user(struct mmc_device *dev, uint32_t addr, uin
 
 		/* Time out for WP command */
 		retry++;
-		spin(1000);
+		udelay(1000);
 		if (retry == MMC_MAX_CARD_STAT_RETRY)
 		{
 			dprintf(CRITICAL, "Card status timed out after sending write protect command\n");
