@@ -29,6 +29,8 @@
 #ifndef __DEV_UDC_H
 #define __DEV_UDC_H
 
+#include <target/msm_shared.h>
+
 /* USB Device Controller Transfer Request */
 struct udc_request {
 	void *buf;
