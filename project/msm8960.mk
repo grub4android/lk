@@ -5,10 +5,8 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 TARGET := msm8960
 
 MODULES += \
-	app/tests \
-	app/stringtests \
-	app/shell \
-	app/fastboot
+	app/fastboot \
+	app/aboot
 
 ifeq ($(TARGET_BUILD_VARIANT),user)
 DEBUG := 0
@@ -19,6 +17,7 @@ endif
 #GLOBAL_DEFINES += WITH_DEBUG_DCC=1
 GLOBAL_DEFINES += WITH_DEBUG_UART=1
 #GLOBAL_DEFINES += WITH_DEBUG_FBCON=1
+GLOBAL_DEFINES += WITH_DEBUG_LOG_BUF=1
 
 EMMC_BOOT := 1
 ifeq ($(EMMC_BOOT),1)
