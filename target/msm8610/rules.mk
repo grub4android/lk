@@ -45,3 +45,6 @@ MODULE_SRCS += \
     $(LOCAL_DIR)/oem_panel.c
 
 include make/module.mk
+
+include target/$(TARGET)/tools/makefile
+EXTRA_BUILDDEPS += APPSBOOTHEADER

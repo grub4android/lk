@@ -48,3 +48,5 @@ MODULE_SRCS += \
 
 include make/module.mk
 
+include target/$(TARGET)/tools/makefile
+EXTRA_BUILDDEPS += APPSBOOTHEADER
