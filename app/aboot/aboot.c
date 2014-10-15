@@ -1615,7 +1615,8 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 	char *pname = NULL;
 	uint8_t lun = 0;
 	bool lun_set = false;
-	char* tmp = strdup(arg);
+	char tmp[2048];
+	strcpy(tmp, arg);
 
 	token = strtok(tmp, ":");
 	pname = token;
@@ -1626,7 +1627,6 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 		mmc_set_lun(lun);
 		lun_set = true;
 	}
-	free(tmp);
 
 	if (pname)
 	{
