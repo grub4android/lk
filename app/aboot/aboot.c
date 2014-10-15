@@ -156,7 +156,6 @@ static unsigned page_mask = 0;
 static char ffbm_mode_string[FFBM_MODE_BUF_SIZE];
 static bool boot_into_ffbm;
 static char target_boot_params[64];
-
 static device_info device = {DEVICE_MAGIC, 0, 0, 0, 0, {0}};
 
 struct atag_ptbl_entry
@@ -508,6 +507,7 @@ char *update_cmdline(const char * cmdline)
 	return cmdline_final;
 }
 
+#if !DEVICE_TREE
 unsigned *atag_core(unsigned *ptr)
 {
 	/* CORE */
@@ -590,6 +590,7 @@ void generate_atags(unsigned *ptr, const char *cmdline,
 	ptr = atag_cmdline(ptr, cmdline);
 	ptr = atag_end(ptr);
 }
+#endif
 
 typedef void entry_func_ptr(unsigned, unsigned, unsigned*);
 void boot_linux(void *kernel, unsigned *tags,
@@ -1001,7 +1002,6 @@ int boot_linux_from_flash(void)
 #if DEVICE_TREE
 	struct dt_table *table;
 	struct dt_entry dt_entry;
-	uint32_t dt_actual;
 	uint32_t dt_hdr_size;
 #endif
 
@@ -1567,7 +1567,6 @@ void cmd_erase(const char *arg, void *data, unsigned sz)
 
 void cmd_erase_mmc(const char *arg, void *data, unsigned sz)
 {
-	BUF_DMA_ALIGN(out, DEFAULT_ERASE_SIZE);
 	unsigned long long ptn = 0;
 	unsigned long long size = 0;
 	int index = INVALID_PTN;
@@ -1591,6 +1590,7 @@ void cmd_erase_mmc(const char *arg, void *data, unsigned sz)
 		return;
 	}
 #else
+	BUF_DMA_ALIGN(out, DEFAULT_ERASE_SIZE);
 	size = partition_get_size(index);
 	if (size > DEFAULT_ERASE_SIZE)
 		size = DEFAULT_ERASE_SIZE;
