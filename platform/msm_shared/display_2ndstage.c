@@ -27,10 +27,14 @@
  * SUCH DAMAGE.
  */
 
+#include <err.h>
 #include <debug.h>
+#include <malloc.h>
 #include <dev/fbcon.h>
-#include <mipi_dsi.h>
+#include <platform/msm_shared.h>
+#include <platform/msm_shared/mipi_dsi.h>
 #include <target/display.h>
+#include <panel.h>
 
 void target_display_init(const char *panel_name)
 {
@@ -43,7 +47,7 @@ void target_display_init(const char *panel_name)
 	struct fbcon_config *config = NULL;
 	config = (struct fbcon_config*)malloc(sizeof(struct fbcon_config));
 
-	config->base = fb_addr;
+	config->base = (void*)fb_addr;
 	config->width = DISPLAY_2NDSTAGE_WIDTH;
 	config->height = DISPLAY_2NDSTAGE_HEIGHT;
 	config->stride = config->width;
@@ -58,4 +62,29 @@ void target_display_init(const char *panel_name)
 #if TARGET_MSM8960_ARIES
 	trigger_mdp_dsi();
 #endif
+}
+
+int target_panel_reset(uint8_t enable, struct panel_reset_sequence *resetseq,
+						struct msm_panel_info *pinfo)
+{
+	PANIC_UNIMPLEMENTED;
+	return NO_ERROR;
+}
+
+int target_panel_clock(uint8_t enable, struct msm_panel_info *pinfo)
+{
+	PANIC_UNIMPLEMENTED;
+	return 0;
+}
+
+int target_backlight_ctrl(struct backlight *bl, uint8_t enable)
+{
+	PANIC_UNIMPLEMENTED;
+	return 0;
+}
+
+int panel_backlight_ctrl(struct backlight *bl, uint8_t enable)
+{
+	PANIC_UNIMPLEMENTED;
+	return 0;
 }
