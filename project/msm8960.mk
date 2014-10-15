@@ -13,13 +13,19 @@ DEBUG := 0
 else
 DEBUG := 1
 endif
+EMMC_BOOT := 1
 
 #GLOBAL_DEFINES += WITH_DEBUG_DCC=1
 GLOBAL_DEFINES += WITH_DEBUG_UART=1
-#GLOBAL_DEFINES += WITH_DEBUG_FBCON=1
 GLOBAL_DEFINES += WITH_DEBUG_LOG_BUF=1
+#GLOBAL_DEFINES += WITH_DEBUG_FBCON=1
 
-EMMC_BOOT := 1
+#Disable thumb mode
+#TODO: The gold linker has issues generating correct
+#thumb interworking code for LK. Confirm that the issue
+#is with the linker and file a bug rep
+ENABLE_THUMB := false
+
 ifeq ($(EMMC_BOOT),1)
 GLOBAL_DEFINES += _EMMC_BOOT=1
 endif
