@@ -45,6 +45,7 @@ SECTIONS
 	__exidx_start = .;
 	.ARM.exidx : { *(.ARM.exidx* .gnu.linkonce.armexidx.*) }
 	__exidx_end = .;
+
 	.rodata : ALIGN(4) {
 		__rodata_start = .;
 		*(.rodata .rodata.* .gnu.linkonce.r.*)

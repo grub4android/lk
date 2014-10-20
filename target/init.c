@@ -24,8 +24,10 @@
 #include <debug.h>
 #include <target.h>
 #include <compiler.h>
+#if WITH_PLATFORM_MSM_SHARED
 #include <dload_util.h>
 #include <sdhci_msm.h>
+#endif
 
 #define EXPAND(NAME) #NAME
 #define TARGET(NAME) EXPAND(NAME)
@@ -46,6 +48,7 @@ __WEAK void target_set_led(unsigned int led, bool on)
 {
 }
 
+#if WITH_PLATFORM_MSM_SHARED
 __WEAK void *target_get_scratch_address(void)
 {
     return (void *)(SCRATCH_ADDR);
@@ -208,3 +211,4 @@ __WEAK uint32_t target_ddr_cfg_val()
 {
 	return DDR_CONFIG_VAL;
 }
+#endif

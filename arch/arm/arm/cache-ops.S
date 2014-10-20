@@ -344,15 +344,6 @@ FUNCTION(arch_clean_invalidate_cache_range)
 #if WITH_DEV_CACHE_PL310
     b       pl310_clean_invalidate_range
 #else
-FUNCTION(arch_invalidate_cache_range)
-0:
-	/* invalidate cache line */
-	mcr		p15, 0, r0, c7, c6, 1
-	add		r0, r0, #CACHE_LINE
-	subs	r1, r1, #CACHE_LINE
-	bhs		0b
-	mov		r0, #0
-	dsb
 	bx		lr
 #endif
 

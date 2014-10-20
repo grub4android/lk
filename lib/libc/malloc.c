@@ -69,8 +69,8 @@ void free(void *ptr)
 	return heap_free(ptr);
 }
 
-void *realloc(void *ptr, size_t size)
+/*void *realloc(void *ptr, size_t size)
 {
 	return(heap_realloc(ptr, size));
-}
+}*/
 

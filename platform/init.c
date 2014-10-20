@@ -25,8 +25,11 @@
 #include <err.h>
 #include <debug.h>
 #include <platform.h>
+#include <assert.h>
+#if WITH_PLATFORM_MSM_SHARED
 #include <boot_stats.h>
 #include <platform/iomap.h>
+#endif
 
 /*
  * default implementations of these routines, if the platform code
@@ -63,6 +66,7 @@ __WEAK void platform_init(void)
 {
 }
 
+#if WITH_PLATFORM_MSM_SHARED
 __WEAK void display_init(void)
 {
 }
@@ -129,3 +133,4 @@ __WEAK uint32_t platform_get_boot_dev()
 {
         return 0;
 }
+#endif

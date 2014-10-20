@@ -62,3 +62,4 @@ unsigned long long atoull(const char *num);
 	static uint8_t var[ROUNDUP(size, CACHE_LINE)] __attribute__((aligned(CACHE_LINE)));
 
 #endif
+

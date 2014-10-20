@@ -67,7 +67,6 @@ void event_destroy(event_t *);
 status_t event_wait_timeout(event_t *, lk_time_t); /* wait on the event with a timeout */
 status_t event_signal(event_t *, bool reschedule);
 status_t event_unsignal(event_t *);
-#define event_initialized(e)	((e)->magic == EVENT_MAGIC)
 
 static inline bool event_initialized(event_t *e) {
 	return e->magic == EVENT_MAGIC;

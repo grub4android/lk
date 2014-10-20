@@ -26,14 +26,15 @@
 #define __PLATFORM_H
 
 #include <sys/types.h>
+#if WITH_PLATFORM_MSM_SHARED
 #include <dload_util.h>
+#endif
 
 #define PA(x) platform_get_virt_to_phys_mapping(x)
 #define VA(x) platform_get_phys_to_virt_mapping(x)
 
 lk_time_t current_time(void);
 lk_bigtime_t current_time_hires(void);
-
 
 /* super early platform initialization, before almost everything */
 void platform_early_init(void);
@@ -47,6 +48,7 @@ void platform_init_mmu_mappings(void);
 addr_t platform_get_virt_to_phys_mapping(addr_t virt_addr);
 addr_t platform_get_phys_to_virt_mapping(addr_t phys_addr);
 
+#if WITH_PLATFORM_MSM_SHARED
 void display_init(void);
 void display_shutdown(void);
 void display_image_on_screen(void);
@@ -58,4 +60,5 @@ void platform_uninit_timer(void);
 void reboot_device(unsigned);
 int set_download_mode(enum dload_mode mode);
 uint32_t platform_get_smem_base_addr();
+#endif
 #endif

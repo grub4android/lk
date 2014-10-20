@@ -79,6 +79,18 @@ void _panic(void *caller, const char *fmt, ...) __PRINTFLIKE(2, 3) __NO_RETURN;
 
 #define PANIC_UNIMPLEMENTED panic("%s unimplemented\n", __PRETTY_FUNCTION__)
 
+#if WITH_PLATFORM_MSM_SHARED
+void * __stack_chk_guard;
+
+/*
+* Initialize the stack protector canary value.
+*/
+#define __stack_chk_guard_setup() do { __stack_chk_guard = get_canary(); } while(0)
+
+void __attribute__ ((noreturn))
+	__stack_chk_fail (void);
+#endif
+
 /* spin the cpu for a period of (short) time */
 void spin(uint32_t usecs);
 

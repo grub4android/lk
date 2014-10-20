@@ -37,7 +37,9 @@
 #include <lib/heap.h>
 #include <kernel/thread.h>
 #include <lk/init.h>
+#if WITH_PLATFORM_MSM_SHARED
 #include <boot_stats.h>
+#endif
 
 extern void *__ctor_list;
 extern void *__ctor_end;
@@ -89,7 +91,9 @@ void lk_main(void)
 	target_early_init();
 
 	dprintf(INFO, "welcome to lk\n\n");
+#if WITH_PLATFORM_MSM_SHARED
 	bs_set_timestamp(BS_BL_START);
+#endif
 
 	// deal with any static constructors
 	dprintf(SPEW, "calling constructors\n");
@@ -100,7 +104,9 @@ void lk_main(void)
 	lk_init_level(LK_INIT_LEVEL_HEAP - 1);
 	heap_init();
 
+#if WITH_PLATFORM_MSM_SHARED
 	__stack_chk_guard_setup();
+#endif
 
 	// initialize the kernel
 	lk_init_level(LK_INIT_LEVEL_KERNEL - 1);
@@ -118,7 +124,7 @@ void lk_main(void)
 	// become the idle thread and enable interrupts to start the scheduler
 	thread_become_idle();
 #else
-        bootstrap_nandwrite();
+	bootstrap_nandwrite();
 #endif
 }
 
@@ -128,14 +134,6 @@ static int bootstrap2(void *arg)
 
 	lk_init_level(LK_INIT_LEVEL_ARCH - 1);
 	arch_init();
-
-	// XXX put this somewhere else
-#if WITH_LIB_BIO
-	bio_init();
-#endif
-#if WITH_LIB_FS
-	fs_init();
-#endif
 
 	// initialize the rest of the platform
 	dprintf(SPEW, "initializing platform\n");

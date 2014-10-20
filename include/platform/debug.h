@@ -27,7 +27,6 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <compiler.h>
-#include <scm.h>
 
 __BEGIN_CDECLS
 
