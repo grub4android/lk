@@ -25,12 +25,14 @@
 
 #include <stdbool.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 void uart_init(void);
 void uart_init_early(void);
 
 int uart_putc(int port, char c);
 int uart_getc(int port, bool wait);
+int uart_tstc(int port);
 void uart_flush_tx(int port);
 void uart_flush_rx(int port);
 void uart_init_port(int port, uint baud);

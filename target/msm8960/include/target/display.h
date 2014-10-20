@@ -29,13 +29,44 @@
 #ifndef _TARGET_MSM8960_DISPLAY_H
 #define _TARGET_MSM8960_DISPLAY_H
 
-#define MIPI_FB_ADDR  0x89000000
+/*---------------------------------------------------------------------------*/
+/* HEADER files                                                              */
+/*---------------------------------------------------------------------------*/
+#include <display_resource.h>
 
-/* Toshiba MDT61 Mipi Panel */
-/* Unique to this panel, display width is 800, image is 600 */
-#define TSH_MDT61_DISPLAY_WIDTH      800
-#define TSH_MDT61_MIPI_FB_WIDTH      (TSH_MDT61_DISPLAY_WIDTH - 200)
-#define TSH_MDT61_MIPI_FB_HEIGHT     1024
+/*---------------------------------------------------------------------------*/
+/* GPIO configuration                                                        */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* LDO configuration                                                         */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Target Physical configuration                                             */
+/*---------------------------------------------------------------------------*/
+
+static const uint32_t panel_strength_ctrl[] = {
+};
+
+static const char panel_bist_ctrl[] = {
+};
+
+static const uint32_t panel_regulator_settings[] = {
+};
+
+static const char panel_lane_config[] = {
+};
+
+static const uint32_t panel_physical_ctrl[] = {
+};
+
+/*---------------------------------------------------------------------------*/
+/* Other Configuration                                                       */
+/*---------------------------------------------------------------------------*/
+#define DISPLAY_CMDLINE_PREFIX " mdp.panel="
+
+#define MIPI_FB_ADDR  0x89000000
 
 #define MIPI_HSYNC_PULSE_WIDTH       8
 #define MIPI_HSYNC_BACK_PORCH_DCLK   16
@@ -44,9 +75,5 @@
 #define MIPI_VSYNC_PULSE_WIDTH       2
 #define MIPI_VSYNC_BACK_PORCH_LINES  2
 #define MIPI_VSYNC_FRONT_PORCH_LINES 7
-
-extern int mipi_dsi_phy_init(struct mipi_dsi_panel_config *);
-extern void mdp_setup_mdt61_video_dsi_config(void);
-extern void config_mdt61_dsi_video_mode(void);
 
 #endif

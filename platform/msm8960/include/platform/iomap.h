@@ -2,6 +2,7 @@
  * All rights reserved.
  *
  * Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,6 +41,8 @@
 
 #define MSM_SHARED_IMEM_BASE 0x2A03F000
 #define RESTART_REASON_ADDR  (MSM_SHARED_IMEM_BASE + 0x65C)
+#define DLOAD_MODE_ADDR             (MSM_SHARED_IMEM_BASE + 0x0)
+#define EMERGENCY_DLOAD_MODE_ADDR   (MSM_SHARED_IMEM_BASE + 0xFE0)
 
 #define MSM_SHARED_BASE     0x80000000
 
@@ -84,6 +87,11 @@
 #define GPIO_CONFIG_ADDR(x) (TLMM_BASE_ADDR + 0x1000 + (x)*0x10)
 #define GPIO_IN_OUT_ADDR(x) (TLMM_BASE_ADDR + 0x1004 + (x)*0x10)
 
+#define GSBI_BASE(id)         ((id) == 1 ? (0x12440000 + (((id)-1) << 20)) : \
+				((id) <= 7 ? (0x16000000 + (((id)-1) << 20)) : \
+                                           (0x1A000000 + (((id)-8) << 20))))
+#define QUP_BASE(id)          (id) == 1 ? (GSBI_BASE(id) + 0x20000) : (GSBI_BASE(id) + 0x80000)
+
 #define EBI2_CHIP_SELECT_CFG0   0x1A100000
 #define EBI2_XMEM_CS3_CFG1      0x1A110034
 
@@ -92,12 +100,20 @@
 
 #define MIPI_DSI_BASE                         (0x04700000)
 #define REG_DSI(off)                          (MIPI_DSI_BASE + (off))
+#define MIPI_DSI0_BASE              (MIPI_DSI_BASE)
+#define MIPI_DSI1_BASE              (MIPI_DSI_BASE)
+#define DSI0_PHY_BASE               MIPI_DSI_BASE
+#define DSI1_PHY_BASE               MIPI_DSI_BASE
+#define DSI0_PLL_BASE               MIPI_DSI_BASE
+#define DSI1_PLL_BASE               MIPI_DSI_BASE
 
 #define DSIPHY_REGULATOR_BASE                 (0x500)
 #define DSIPHY_TIMING_BASE                    (0x440)
 #define DSIPHY_CTRL_BASE                      (0x470)
 #define DSIPHY_PLL_BASE                       (0x200)
 #define DSIPHY_STRENGTH_BASE                  (0x480)
+
+#define INT_CTRL                    0x10C
 
 /* Range 0 - 4 */
 #define DSIPHY_REGULATOR_CTRL(x) REG_DSI(DSIPHY_REGULATOR_BASE + (x) * 4)

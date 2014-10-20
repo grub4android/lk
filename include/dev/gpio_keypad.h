@@ -35,6 +35,7 @@
 #define __DEV_GPIO_KEYPAD_H
 
 #include <sys/types.h>
+#include <stdbool.h>
 
 /* unset: drive active output low, set: drive active output high */
 #define GPIOKPF_ACTIVE_HIGH     (1U << 0)

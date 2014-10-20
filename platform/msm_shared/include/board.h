@@ -1,4 +1,5 @@
 /* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +33,10 @@
 
 #include <smem.h>
 
+#if DEVICE_TREE
+#include <dev_tree.h>
+#endif
+
 #define LINUX_MACHTYPE_UNKNOWN 0
 #define BOARD_SOC_VERSION2     0x20000
 #define MAX_PMIC_DEVICES       SMEM_MAX_PMIC_DEVICES
@@ -41,6 +46,38 @@ struct board_pmic_data {
 	uint32_t pmic_version;
 	uint32_t pmic_target;
 };
+
+/* 8960 */
+#define LINUX_MACHTYPE_8960_SIM     3230
+#define LINUX_MACHTYPE_8960_RUMI3   3231
+#define LINUX_MACHTYPE_8960_CDP     3396
+#define LINUX_MACHTYPE_8960_MTP     3397
+#define LINUX_MACHTYPE_8960_FLUID   3398
+#define LINUX_MACHTYPE_8960_APQ     3399
+#define LINUX_MACHTYPE_8960_LIQUID  3535
+#define LINUX_MACHTYPE_8960_MITWOA  4459
+
+/* 8627 */
+#define LINUX_MACHTYPE_8627_CDP     3861
+#define LINUX_MACHTYPE_8627_MTP     3862
+
+/* 8930 */
+#define LINUX_MACHTYPE_8930_CDP     3727
+#define LINUX_MACHTYPE_8930_MTP     3728
+#define LINUX_MACHTYPE_8930_FLUID   3729
+
+/* 8064 */
+#define LINUX_MACHTYPE_8064_SIM     3572
+#define LINUX_MACHTYPE_8064_RUMI3   3679
+#define LINUX_MACHTYPE_8064_CDP     3948
+#define LINUX_MACHTYPE_8064_MTP     3949
+#define LINUX_MACHTYPE_8064_LIQUID  3951
+#define LINUX_MACHTYPE_8064_MPQ_CDP 3993
+#define LINUX_MACHTYPE_8064_MPQ_HRD 3994
+#define LINUX_MACHTYPE_8064_MPQ_DTV 3995
+#define LINUX_MACHTYPE_8064_HRD     3994
+#define LINUX_MACHTYPE_8064_DTV     3995
+#define LINUX_MACHTYPE_8064_MITWO   4180
 
 struct board_data {
 	uint32_t platform;
@@ -81,6 +118,27 @@ uint32_t board_pmic_target(uint8_t num_ent);
 enum subtype_ddr {
        SUBTYPE_512MB = 1,
 };
+
+#if BOOT_2NDSTAGE
+struct original_atags_info {
+	char* cmdline;
+	uint32_t platform_id;
+	uint32_t variant_id;
+	uint32_t soc_rev;
+#if DEVICE_TREE
+	struct original_fdt_property* chosen_props;
+	uint32_t num_chosen_props;
+#endif
+};
+
+// parsed atag info
+struct original_atags_info* board_get_original_atags_info(void);
+int board_has_original_atags_info(void);
+void board_parse_original_atags(void);
+
+// original tags
+extern void* original_atags;
+#endif
 
 uint32_t board_foundry_id(void);
 #endif

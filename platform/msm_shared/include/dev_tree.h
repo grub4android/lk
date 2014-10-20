@@ -136,6 +136,16 @@ typedef struct dt_entry_node {
 	struct dt_entry * dt_entry_m;
 }dt_node;
 
+#if BOOT_2NDSTAGE
+struct original_fdt_property {
+	const char *name;
+	void *data;
+	int len;
+};
+
+int parse_original_devtree(void *fdt);
+#endif
+
 int dev_tree_validate(struct dt_table *table, unsigned int page_size, uint32_t *dt_hdr_size);
 int dev_tree_get_entry_info(struct dt_table *table, struct dt_entry *dt_entry_info);
 int update_device_tree(void *fdt, const char *, void *, unsigned);

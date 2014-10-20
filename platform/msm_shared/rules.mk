@@ -45,6 +45,33 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/boot_verifier.c
 endif
 
+ifeq ($(ENABLE_2NDSTAGE_BOOT),1)
+ifeq ($(DISPLAY_2NDSTAGE_WIDTH),)
+$(error DISPLAY: No width specified.)
+else
+DEFINES += DISPLAY_2NDSTAGE_WIDTH=$(DISPLAY_2NDSTAGE_WIDTH)
+endif
+
+ifeq ($(DISPLAY_2NDSTAGE_HEIGHT),)
+$(error DISPLAY: No height specified.)
+else
+DEFINES += DISPLAY_2NDSTAGE_HEIGHT=$(DISPLAY_2NDSTAGE_HEIGHT)
+endif
+
+ifeq ($(DISPLAY_2NDSTAGE_BPP),)
+$(error DISPLAY: No bpp specified.)
+else
+DEFINES += DISPLAY_2NDSTAGE_BPP=$(DISPLAY_2NDSTAGE_BPP)
+endif
+
+ifneq ($(DISPLAY_2NDSTAGE_FBADDR),)
+DEFINES += DISPLAY_2NDSTAGE_FBADDR=$(DISPLAY_2NDSTAGE_FBADDR)
+endif
+
+OBJS += \
+	$(LOCAL_DIR)/display_2ndstage.o
+endif
+
 ifeq ($(PLATFORM),msm8x60)
 	MODULE_SRCS += $(LOCAL_DIR)/mipi_dsi.c \
 			$(LOCAL_DIR)/i2c_qup.c \
@@ -58,21 +85,20 @@ ifeq ($(PLATFORM),msm8x60)
 			$(LOCAL_DIR)/mdp4.c \
 			$(LOCAL_DIR)/certificate.c \
 			$(LOCAL_DIR)/image_verify.c \
-			$(LOCAL_DIR)/hdmi.c \
 			$(LOCAL_DIR)/interrupts.c \
 			$(LOCAL_DIR)/timer.c \
 			$(LOCAL_DIR)/nand.c
 endif
 
 ifeq ($(PLATFORM),msm8960)
-	MODULE_SRCS += $(LOCAL_DIR)/hdmi.c \
-			$(LOCAL_DIR)/mipi_dsi.c \
+	MODULE_SRCS += $(LOCAL_DIR)/mipi_dsi.c \
 			$(LOCAL_DIR)/i2c_qup.c \
 			$(LOCAL_DIR)/uart_dm.c \
 			$(LOCAL_DIR)/qgic.c \
 			$(LOCAL_DIR)/mdp4.c \
 			$(LOCAL_DIR)/crypto4_eng.c \
 			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/dev_tree.c \
 			$(LOCAL_DIR)/certificate.c \
 			$(LOCAL_DIR)/image_verify.c \
 			$(LOCAL_DIR)/scm.c \
@@ -86,7 +112,8 @@ ifeq ($(PLATFORM),msm8960)
 			$(LOCAL_DIR)/mipi_dsi_phy.c \
 			$(LOCAL_DIR)/timer.c \
 			$(LOCAL_DIR)/mdp_lcdc.c \
-			$(LOCAL_DIR)/nand.c
+			$(LOCAL_DIR)/nand.c \
+			$(LOCAL_DIR)/dload_util.c
 endif
 
 ifeq ($(PLATFORM),msm8974)
@@ -277,7 +304,9 @@ ifeq ($(PLATFORM),msm7x27a)
 			$(LOCAL_DIR)/display.c \
 			$(LOCAL_DIR)/mipi_dsi_phy.c \
 			$(LOCAL_DIR)/mdp_lcdc.c \
-			$(LOCAL_DIR)/spi.c
+			$(LOCAL_DIR)/spi.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/board.c
 endif
 
 ifeq ($(PLATFORM),msm7k)

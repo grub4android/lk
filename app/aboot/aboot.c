@@ -3,6 +3,7 @@
  * All rights reserved.
  *
  * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -57,10 +58,17 @@
 #include <platform/iomap.h>
 #include <boot_device.h>
 #include <boot_verifier.h>
+#include <api_public.h>
+#include "uboot_api/api_private.h"
+#include "grub.h"
 
 #if DEVICE_TREE
 #include <libfdt.h>
 #include <dev_tree.h>
+#endif
+
+#if BOOT_2NDSTAGE
+#include "2ndstage_tools.h"
 #endif
 
 #include "image_verify.h"
@@ -98,8 +106,14 @@ static int aboot_save_boot_hash_mmc(uint32_t image_addr, uint32_t image_size);
 
 #define MAX_TAGS_SIZE   1024
 
+#define NORMAL_MODE     0x77665501
 #define RECOVERY_MODE   0x77665502
 #define FASTBOOT_MODE   0x77665500
+
+#if WITH_XIAOMI_DUALBOOT
+#define BOOT0_MODE      0x6f656d10
+#define BOOT1_MODE      0x6f656d11
+#endif
 
 /* make 4096 as default size to ensure EFS,EXT4's erasing */
 #define DEFAULT_ERASE_SIZE  4096
@@ -138,6 +152,23 @@ static const char *baseband_dsda2   = " androidboot.baseband=dsda2";
 static const char *baseband_sglte2  = " androidboot.baseband=sglte2";
 static const char *warmboot_cmdline = " qpnp-power-on.warm_boot=1";
 
+#if BOOT_2NDSTAGE
+static const char *sndstage_cmdline = " multiboot.2ndstage=1";
+#endif
+
+#if WITH_XIAOMI_DUALBOOT
+/* keep them same length */
+static const char *boot0_cmdline = " syspart=system ";
+static const char *boot1_cmdline = " syspart=system1";
+
+enum {
+	DUALBOOT_BOOT_NONE,
+	DUALBOOT_BOOT_FIRST,
+	DUALBOOT_BOOT_SECOND,
+};
+static unsigned dual_boot_sign = DUALBOOT_BOOT_NONE;
+#endif
+
 static unsigned page_size = 0;
 static unsigned page_mask = 0;
 static char ffbm_mode_string[FFBM_MODE_BUF_SIZE];
@@ -147,7 +178,7 @@ static char target_boot_params[64];
 /* Assuming unauthorized kernel image by default */
 static int auth_kernel_img = 0;
 
-static device_info device = {DEVICE_MAGIC, 0, 0, 0, 0, 0};
+static device_info device = {DEVICE_MAGIC, 0, 0, 0, 0, {0}, {0}, 0};
 
 struct atag_ptbl_entry
 {
@@ -185,6 +216,8 @@ char charger_screen_enabled[MAX_RSP_SIZE];
 char sn_buf[13];
 char display_panel_buf[MAX_PANEL_BUF_SIZE];
 char panel_display_mode[MAX_RSP_SIZE];
+char force_fastboot[MAX_RSP_SIZE];
+char use_splash_partition[MAX_RSP_SIZE];
 
 extern int emmc_recovery_init(void);
 
@@ -192,7 +225,7 @@ extern int emmc_recovery_init(void);
 extern int fastboot_trigger(void);
 #endif
 
-static void update_ker_tags_rdisk_addr(struct boot_img_hdr *hdr, bool is_arm64)
+void update_ker_tags_rdisk_addr(struct boot_img_hdr *hdr, bool is_arm64)
 {
 	/* overwrite the destination of specified for the project */
 #ifdef ABOOT_IGNORE_BOOT_HEADER_ADDRS
@@ -259,6 +292,21 @@ unsigned char *update_cmdline(const char * cmdline)
 		pause_at_bootup = 1;
 		cmdline_len += strlen(battchg_pause);
 	}
+
+#if WITH_XIAOMI_DUALBOOT
+	/* bootX_cmdline is a mandatory parameter
+	 * it should be there in any case
+	 */
+	int needs_xiaomi_syspart = 0;
+	if(!strstr(cmdline, "syspart=")) {
+		needs_xiaomi_syspart = 1;
+		cmdline_len += strlen(boot0_cmdline);
+	}
+#endif
+
+#if BOOT_2NDSTAGE
+	cmdline_len += strlen(sndstage_cmdline);
+#endif
 
 	if(target_use_signed_kernel() && auth_kernel_img) {
 		cmdline_len += strlen(auth_kernel);
@@ -391,6 +439,28 @@ unsigned char *update_cmdline(const char * cmdline)
 			while ((*dst++ = *src++));
 		}
 
+#if WITH_XIAOMI_DUALBOOT
+		if(needs_xiaomi_syspart) {
+			if (dual_boot_sign == DUALBOOT_BOOT_SECOND) {
+				src = boot1_cmdline;
+				if (have_cmdline) --dst;
+				while ((*dst++ = *src++));
+			} else {
+				if (dual_boot_sign == DUALBOOT_BOOT_NONE)
+					dprintf(CRITICAL, "ERROR: boot and system not chosen\n");
+				src = boot0_cmdline;
+				if (have_cmdline) --dst;
+				while ((*dst++ = *src++));
+			}
+		}
+#endif
+
+#if BOOT_2NDSTAGE
+		src = sndstage_cmdline;
+		if (have_cmdline) --dst;
+		while ((*dst++ = *src++));
+#endif
+
 		if(target_use_signed_kernel() && auth_kernel_img) {
 			src = auth_kernel;
 			if (have_cmdline) --dst;
@@ -478,6 +548,15 @@ unsigned char *update_cmdline(const char * cmdline)
 		free(boot_dev_buf);
 
 	dprintf(INFO, "cmdline: %s\n", cmdline_final ? cmdline_final : "");
+
+#if BOOT_2NDSTAGE
+	char *extended_cmdline = sndstage_extend_cmdline((char*)cmdline_final);
+	free(cmdline_final);
+	cmdline_final = (unsigned char*)extended_cmdline;
+
+	dprintf(INFO, "cmdline_extended: %s\n", cmdline_final);
+#endif
+
 	return cmdline_final;
 }
 
@@ -567,7 +646,7 @@ void generate_atags(unsigned *ptr, const char *cmdline,
 typedef void entry_func_ptr(unsigned, unsigned, unsigned*);
 void boot_linux(void *kernel, unsigned *tags,
 		const char *cmdline, unsigned machtype,
-		void *ramdisk, unsigned ramdisk_size)
+		void *ramdisk, unsigned ramdisk_size, int use_device_tree)
 {
 	unsigned char *final_cmdline;
 #if DEVICE_TREE
@@ -583,20 +662,26 @@ void boot_linux(void *kernel, unsigned *tags,
 	final_cmdline = update_cmdline((const char*)cmdline);
 
 #if DEVICE_TREE
-	dprintf(INFO, "Updating device tree: start\n");
+	if(use_device_tree) {
+		dprintf(INFO, "Updating device tree: start\n");
 
-	/* Update the Device Tree */
-	ret = update_device_tree((void *)tags, final_cmdline, ramdisk, ramdisk_size);
-	if(ret)
-	{
-		dprintf(CRITICAL, "ERROR: Updating Device Tree Failed \n");
-		ASSERT(0);
+		/* Update the Device Tree */
+		ret = update_device_tree((void *)tags, final_cmdline, ramdisk, ramdisk_size);
+		if(ret)
+		{
+			dprintf(CRITICAL, "ERROR: Updating Device Tree Failed \n");
+			ASSERT(0);
+		}
+		dprintf(INFO, "Updating device tree: done\n");
 	}
-	dprintf(INFO, "Updating device tree: done\n");
-#else
-	/* Generating the Atags */
-	generate_atags(tags, final_cmdline, ramdisk, ramdisk_size);
+	else
 #endif
+	{
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+		/* Generating the Atags */
+		generate_atags(tags, final_cmdline, ramdisk, ramdisk_size);
+#endif
+	}
 
 	free(final_cmdline);
 	/* Perform target specific cleanup */
@@ -656,6 +741,48 @@ int check_aboot_addr_range_overlap(uint32_t start, uint32_t size)
 BUF_DMA_ALIGN(buf, BOOT_IMG_MAX_PAGE_SIZE); //Equal to max-supported pagesize
 #if DEVICE_TREE
 BUF_DMA_ALIGN(dt_buf, BOOT_IMG_MAX_PAGE_SIZE);
+#endif
+
+#if WITH_XIAOMI_DUALBOOT
+#define DUALBOOT_OFFSET_SECTORS 8	/* 4 pages, for recovery_message */
+static void check_boot_image(void)
+{
+	int index = INVALID_PTN;
+	unsigned long long ptn = 0;
+	struct dual_boot_message *dualboot_msg;
+
+	if (dual_boot_sign != DUALBOOT_BOOT_NONE)
+		goto out;
+
+	dual_boot_sign = DUALBOOT_BOOT_FIRST;
+
+	index = partition_get_index("misc");
+	ptn = partition_get_offset(index);
+	if (ptn == 0) {
+		dprintf(CRITICAL, "ERROR: No misc found\n");
+		goto out;
+	}
+
+	ptn += DUALBOOT_OFFSET_SECTORS * MMC_BOOT_RD_BLOCK_LEN;
+	memset(buf, 0, sizeof(buf));
+	if (mmc_read(ptn, (unsigned int *)buf, MMC_BOOT_RD_BLOCK_LEN)) {
+		dprintf(CRITICAL, "ERROR: Cannot read misc\n");
+		goto out;
+	}
+
+	dualboot_msg = (struct dual_boot_message *)buf;
+
+	if (!strncmp(dualboot_msg->command, "boot-system", 11)) {
+		if (dualboot_msg->command[11] == '1')
+			dual_boot_sign = DUALBOOT_BOOT_SECOND;
+	} else
+		dprintf(CRITICAL, "WARNING: dual_boot_message not set\n");
+
+out:
+	/* either DUALBOOT_BOOT_FIRST or DUALBOOT_BOOT_SECOND at this point */
+	dprintf(INFO, "Dualboot choosing: %d of (1, 2) boot & system\n",
+		dual_boot_sign);
+}
 #endif
 
 static void verify_signed_bootimg(uint32_t bootimg_addr, uint32_t bootimg_size)
@@ -849,7 +976,16 @@ int boot_linux_from_mmc(void)
 		goto unified_boot;
 	}
 	if (!boot_into_recovery) {
-		index = partition_get_index("boot");
+#if WITH_XIAOMI_DUALBOOT
+		check_boot_image();
+
+		if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+			index = partition_get_index("boot1");
+		else
+#endif
+		{
+			index = partition_get_index("boot");
+		}
 		ptn = partition_get_offset(index);
 		if(ptn == 0) {
 			dprintf(CRITICAL, "ERROR: No boot partition found\n");
@@ -917,11 +1053,16 @@ int boot_linux_from_mmc(void)
 		return -1;
 	}
 
-#ifndef DEVICE_TREE
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size==0)
+#endif
 	{
-		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
-		return -1;
+		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+		{
+			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
+			return -1;
+		}
 	}
 #endif
 
@@ -942,17 +1083,27 @@ int boot_linux_from_mmc(void)
 		image_addr = (unsigned char *)target_get_scratch_address();
 
 #if DEVICE_TREE
-		dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
-
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
-		}
-#else
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+			dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
 
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
+		}
+#if DEVICE_TREE_FALLBACK
+		else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+		{
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+		}
 #endif
 
 		dprintf(INFO, "Loading boot image (%d): start\n", imagesize_actual);
@@ -1031,7 +1182,9 @@ int boot_linux_from_mmc(void)
 						(void *)hdr->tags_addr);
 			if (!dtb) {
 				dprintf(CRITICAL, "ERROR: Appended Device Tree Blob not found\n");
+#if !DEVICE_TREE_FALLBACK
 				return -1;
+#endif
 			}
 		}
 		#endif
@@ -1042,17 +1195,27 @@ int boot_linux_from_mmc(void)
 
 		image_addr = (unsigned char *)target_get_scratch_address();
 #if DEVICE_TREE
-		dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
-
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
-		}
-#else
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+			dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
 
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_actual))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
+		}
+#if DEVICE_TREE_FALLBACK
+		else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+		{
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+		}
 #endif
 		if (check_aboot_addr_range_overlap(image_addr, imagesize_actual))
 		{
@@ -1126,7 +1289,9 @@ int boot_linux_from_mmc(void)
 						(void *)hdr->tags_addr);
 			if (!dtb) {
 				dprintf(CRITICAL, "ERROR: Appended Device Tree Blob not found\n");
+#if !DEVICE_TREE_FALLBACK
 				return -1;
+#endif
 			}
 		}
 		#endif
@@ -1139,7 +1304,7 @@ unified_boot:
 
 	boot_linux((void *)hdr->kernel_addr, (void *)hdr->tags_addr,
 		   (const char *)hdr->cmdline, board_machtype(),
-		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size);
+		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size, hdr->dt_size>0);
 
 	return 0;
 }
@@ -1235,12 +1400,17 @@ int boot_linux_from_flash(void)
 		return -1;
 	}
 
-#ifndef DEVICE_TREE
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size==0)
+#endif
+	{
 		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
 		{
 			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
 			return -1;
 		}
+	}
 #endif
 
 	/* Authenticate Kernel */
@@ -1250,16 +1420,27 @@ int boot_linux_from_flash(void)
 		offset = 0;
 
 #if DEVICE_TREE
-		dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
-
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, hdr->dt_size))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
+			dt_actual = ROUND_TO_PAGE(hdr->dt_size, page_mask);
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual + dt_actual);
+
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, hdr->dt_size))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
 		}
-#else
-		imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+#if DEVICE_TREE_FALLBACK
+		else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+		{
+			imagesize_actual = (page_size + kernel_actual + ramdisk_actual);
+		}
 #endif
 
 		dprintf(INFO, "Loading boot image (%d): start\n", imagesize_actual);
@@ -1289,14 +1470,19 @@ int boot_linux_from_flash(void)
 		memmove((void*) hdr->kernel_addr, (char *)(image_addr + page_size), hdr->kernel_size);
 		memmove((void*) hdr->ramdisk_addr, (char *)(image_addr + page_size + kernel_actual), hdr->ramdisk_size);
 #if DEVICE_TREE
-		/* Validate and Read device device tree in the "tags_add */
-		if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_entry.size))
+#if DEVICE_TREE_FALLBACK
+		if(hdr->dt_size>0)
+#endif
 		{
-			dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
-			return -1;
-		}
+			/* Validate and Read device device tree in the "tags_add */
+			if (check_aboot_addr_range_overlap(hdr->tags_addr, dt_entry.size))
+			{
+				dprintf(CRITICAL, "Device tree addresses overlap with aboot addresses.\n");
+				return -1;
+			}
 
-		memmove((void*) hdr->tags_addr, (char *)(image_addr + page_size + kernel_actual + ramdisk_actual), hdr->dt_size);
+			memmove((void*) hdr->tags_addr, (char *)(image_addr + page_size + kernel_actual + ramdisk_actual), hdr->dt_size);
+		}
 #endif
 
 		/* Make sure everything from scratch address is read before next step!*/
@@ -1398,9 +1584,52 @@ continue_boot:
 
 	boot_linux((void *)hdr->kernel_addr, (void *)hdr->tags_addr,
 		   (const char *)hdr->cmdline, board_machtype(),
-		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size);
+		   (void *)hdr->ramdisk_addr, hdr->ramdisk_size, hdr->dt_size>0);
 
 	return 0;
+}
+
+#if BOOT_2NDSTAGE
+void fakeread_device_info(device_info *dev)
+{
+	memcpy(dev->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
+	dev->is_tampered = 0;
+	dev->is_unlocked = 0;
+	dev->charger_screen_enabled = 0;
+	strlcpy(dev->display_panel, "fakepanel",
+			sizeof(dev->display_panel));
+}
+#endif
+
+static int validate_device_info(struct device_info *info)
+{
+	if (memcmp(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE))
+	{
+		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
+		info->is_unlocked = 0;
+		info->is_tampered = 0;
+		info->charger_screen_enabled = 0;
+		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
+		info->force_fastboot = 0;
+		info->use_splash_partition = 0;
+
+		return 1;
+	}
+
+	if(info->is_unlocked !=0 && info->is_unlocked!=1)
+		info->is_unlocked = 0;
+	if(info->is_tampered !=0 && info->is_tampered!=1)
+		info->is_tampered = 0;
+	if(info->charger_screen_enabled !=0 && info->charger_screen_enabled!=1)
+		info->charger_screen_enabled = 0;
+	if(info->force_fastboot !=0 && info->force_fastboot!=1)
+		info->force_fastboot = 0;
+	if(info->use_splash_partition !=0 && info->use_splash_partition!=1)
+		info->use_splash_partition = 0;
+	if(!isprint(info->display_panel[0]) && !info->display_panel[0]=='\0')
+		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
+
+	return 1;
 }
 
 BUF_DMA_ALIGN(info_buf, BOOT_IMG_MAX_PAGE_SIZE);
@@ -1413,7 +1642,11 @@ void write_device_info_mmc(device_info *dev)
 	uint32_t blocksize;
 	uint8_t lun = 0;
 
+#if BOOT_2NDSTAGE
+	index = partition_get_index("boot");
+#else
 	index = partition_get_index("aboot");
+#endif
 	ptn = partition_get_offset(index);
 	if(ptn == 0)
 	{
@@ -1444,7 +1677,11 @@ void read_device_info_mmc(device_info *dev)
 	int index = INVALID_PTN;
 	uint32_t blocksize;
 
+#if BOOT_2NDSTAGE
+	index = partition_get_index("boot");
+#else
 	index = partition_get_index("aboot");
+#endif
 	ptn = partition_get_offset(index);
 	if(ptn == 0)
 	{
@@ -1461,13 +1698,8 @@ void read_device_info_mmc(device_info *dev)
 		return;
 	}
 
-	if (memcmp(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE))
+	if (validate_device_info(info))
 	{
-		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
-		info->is_unlocked = 0;
-		info->is_tampered = 0;
-		info->charger_screen_enabled = 0;
-
 		write_device_info_mmc(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
@@ -1475,6 +1707,7 @@ void read_device_info_mmc(device_info *dev)
 
 void write_device_info_flash(device_info *dev)
 {
+#if !BOOT_2NDSTAGE
 	struct device_info *info = (void *) info_buf;
 	struct ptentry *ptn;
 	struct ptable *ptable;
@@ -1500,10 +1733,14 @@ void write_device_info_flash(device_info *dev)
 		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
 			return;
 	}
+#endif
 }
 
 void read_device_info_flash(device_info *dev)
 {
+#if BOOT_2NDSTAGE
+	fakeread_device_info(dev);
+#else
 	struct device_info *info = (void*) info_buf;
 	struct ptentry *ptn;
 	struct ptable *ptable;
@@ -1528,14 +1765,12 @@ void read_device_info_flash(device_info *dev)
 			return;
 	}
 
-	if (memcmp(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE))
+	if (validate_device_info(info))
 	{
-		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
-		info->is_unlocked = 0;
-		info->is_tampered = 0;
 		write_device_info_flash(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
+#endif
 }
 
 void write_device_info(device_info *dev)
@@ -1664,6 +1899,12 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 
 	hdr = (struct boot_img_hdr *)data;
 
+	if(strcmp((const char*)hdr->name, "GRUB")==0) {
+		grub_load_from_sideload(data);
+		fastboot_okay("");
+		return;
+	}
+
 	/* ensure commandline is terminated */
 	hdr->cmdline[BOOT_ARGS_SIZE-1] = 0;
 
@@ -1722,15 +1963,26 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	}
 
 #if DEVICE_TREE
-	/* find correct dtb and copy it to right location */
-	ret = copy_dtb(data);
-
-	dtb_copied = !ret ? 1 : 0;
-#else
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size>0)
+#endif
 	{
-		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
-		return;
+		/* find correct dtb and copy it to right location */
+		ret = copy_dtb(data);
+
+		dtb_copied = !ret ? 1 : 0;
+	}
+#if DEVICE_TREE_FALLBACK
+	else
+#endif
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
+	{
+		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+		{
+			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
+			return;
+		}
 	}
 #endif
 
@@ -1739,28 +1991,37 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	memmove((void*) hdr->kernel_addr, ptr + page_size, hdr->kernel_size);
 
 #if DEVICE_TREE
-	/*
-	 * If dtb is not found look for appended DTB in the kernel.
-	 * If appended dev tree is found, update the atags with
-	 * memory address to the DTB appended location on RAM.
-	 * Else update with the atags address in the kernel header
-	 */
-	if (!dtb_copied) {
-		void *dtb;
-		dtb = dev_tree_appended((void *)hdr->kernel_addr, hdr->kernel_size,
-					(void *)hdr->tags_addr);
-		if (!dtb) {
-			fastboot_fail("dtb not found");
-			return;
+#if DEVICE_TREE_FALLBACK
+	if(hdr->dt_size>0)
+#endif
+	{
+		/*
+		 * If dtb is not found look for appended DTB in the kernel.
+		 * If appended dev tree is found, update the atags with
+		 * memory address to the DTB appended location on RAM.
+		 * Else update with the atags address in the kernel header
+		 */
+		if (!dtb_copied) {
+			void *dtb;
+			dtb = dev_tree_appended((void *)hdr->kernel_addr, hdr->kernel_size,
+						(void *)hdr->tags_addr);
+			if (!dtb) {
+				fastboot_fail("dtb not found");
+				return;
+			}
 		}
 	}
+#if DEVICE_TREE_FALLBACK
+	else
 #endif
-
-#ifndef DEVICE_TREE
-	if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+#endif
+#if !DEVICE_TREE || DEVICE_TREE_FALLBACK
 	{
-		dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
-		return;
+		if (check_aboot_addr_range_overlap(hdr->tags_addr, MAX_TAGS_SIZE))
+		{
+			dprintf(CRITICAL, "Tags addresses overlap with aboot addresses.\n");
+			return;
+		}
 	}
 #endif
 
@@ -1769,7 +2030,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 
 	boot_linux((void*) hdr->kernel_addr, (void*) hdr->tags_addr,
 		   (const char*) hdr->cmdline, board_machtype(),
-		   (void*) hdr->ramdisk_addr, hdr->ramdisk_size);
+		   (void*) hdr->ramdisk_addr, hdr->ramdisk_size, hdr->dt_size>0);
 }
 
 void cmd_erase(const char *arg, void *data, unsigned sz)
@@ -1903,7 +2164,11 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 				return;
 			}
 
-			if (!strcmp(pname, "boot") || !strcmp(pname, "recovery")) {
+			if (!strcmp(pname, "boot")
+#if WITH_XIAOMI_DUALBOOT
+				|| !strcmp(pname, "boot1")
+#endif
+				|| !strcmp(pname, "recovery")) {
 				if (memcmp((void *)data, BOOT_MAGIC, BOOT_MAGIC_SIZE)) {
 					fastboot_fail("image is not a boot image");
 					return;
@@ -2252,6 +2517,11 @@ void cmd_flash(const char *arg, void *data, unsigned sz)
 void cmd_continue(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
+
+	// try to boot GRUB
+	if(grub_boot())
+		return;
+
 	fastboot_stop();
 
 	if (target_is_emmc_boot())
@@ -2268,7 +2538,7 @@ void cmd_reboot(const char *arg, void *data, unsigned sz)
 {
 	dprintf(INFO, "rebooting the device\n");
 	fastboot_okay("");
-	reboot_device(0);
+	reboot_device(NORMAL_MODE);
 }
 
 void cmd_reboot_bootloader(const char *arg, void *data, unsigned sz)
@@ -2276,6 +2546,13 @@ void cmd_reboot_bootloader(const char *arg, void *data, unsigned sz)
 	dprintf(INFO, "rebooting the device\n");
 	fastboot_okay("");
 	reboot_device(FASTBOOT_MODE);
+}
+
+void cmd_reboot_recovery(const char *arg, void *data, unsigned sz)
+{
+	dprintf(INFO, "rebooting the device\n");
+	fastboot_okay("");
+	reboot_device(RECOVERY_MODE);
 }
 
 void cmd_oem_enable_charger_screen(const char *arg, void *data, unsigned size)
@@ -2290,6 +2567,38 @@ void cmd_oem_disable_charger_screen(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Disabling charger screen check\n");
 	device.charger_screen_enabled = 0;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
+void cmd_oem_enable_force_fastboot(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Enabling forcing fastboot\n");
+	device.force_fastboot = 1;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
+void cmd_oem_disable_force_fastboot(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Disabling cforcing fastboot\n");
+	device.force_fastboot = 0;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
+void cmd_oem_enable_use_splash_partition(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Enabling using splash partition\n");
+	device.use_splash_partition = 1;
+	write_device_info(&device);
+	fastboot_okay("");
+}
+
+void cmd_oem_disable_use_splash_partition(const char *arg, void *data, unsigned size)
+{
+	dprintf(INFO, "Disabling using splash partition\n");
+	device.use_splash_partition = 0;
 	write_device_info(&device);
 	fastboot_okay("");
 }
@@ -2351,6 +2660,47 @@ void cmd_oem_devinfo(const char *arg, void *data, unsigned sz)
 	fastboot_info(response);
 	snprintf(response, sizeof(response), "\tDisplay panel: %s", (device.display_panel));
 	fastboot_info(response);
+	snprintf(response, sizeof(response), "\tForcing fastboot: %s", (device.force_fastboot ? "true" : "false"));
+	fastboot_info(response);
+	snprintf(response, sizeof(response), "\tUsing splash partition: %s", (device.use_splash_partition ? "true" : "false"));
+	fastboot_info(response);
+	fastboot_okay("");
+}
+
+#if WITH_DEBUG_LOG_BUF
+void cmd_oem_lk_log(const char *arg, void *data, unsigned sz)
+{
+	unsigned i;
+	char* pch;
+	char* buf = strdup(lk_log_getbuf());
+	unsigned size = lk_log_getsize();
+
+	pch = strtok(buf, "\n\r");
+	while (pch != NULL) {
+		char* ptr = pch;
+		while(ptr!=NULL) {
+			fastboot_info(ptr);
+			if(strlen(ptr)>MAX_RSP_SIZE-5)
+				ptr+=MAX_RSP_SIZE-5;
+			else ptr=NULL;
+		}
+
+		pch = strtok(NULL, "\n\r");
+	}
+
+	free(buf);
+	fastboot_okay("");
+}
+#endif
+
+void cmd_oem_screenshot(const char *arg, void *unused, unsigned sz)
+{
+	struct fbcon_config* config = fbcon_display();
+	char *data = config->base;
+	unsigned size = config->width*config->height*config->bpp/8;
+
+	fastboot_send_data(data, size);
+
 	fastboot_okay("");
 }
 
@@ -2384,7 +2734,7 @@ struct fbimage* splash_screen_flash()
 	dprintf(CRITICAL, "ERROR: Partition table not found\n");
 	return NULL;
 	}
-	ptn = ptable_find(ptable, "splash");
+	ptn = ptable_find(ptable, SPLASH_PARTITION_NAME);
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: splash Partition not found\n");
 		return NULL;
@@ -2414,6 +2764,23 @@ struct fbimage* splash_screen_flash()
 			dprintf(CRITICAL, "ERROR: Cannot read splash image from partition\n");
 			return NULL;
 		}
+
+#if DISPLAY_USE_BGR
+		unsigned i;
+		for(i=0; i<(logo->header.width*fb_display->height); i++) {
+			int r,g,b;
+			char* color = (char*) base + i*3;
+
+			r = color[0];
+			g = color[1];
+			b = color[2];
+
+			color[0] = b;
+			color[1] = g;
+			color[2] = r;
+		}
+#endif
+
 		logo->image = base;
 	}
 
@@ -2427,7 +2794,7 @@ struct fbimage* splash_screen_mmc()
 	struct fbcon_config *fb_display = NULL;
 	struct fbimage *logo = &logo_header;
 
-	index = partition_get_index("splash");
+	index = partition_get_index(SPLASH_PARTITION_NAME);
 	if (index == 0) {
 		dprintf(CRITICAL, "ERROR: splash Partition table not found\n");
 		return NULL;
@@ -2464,6 +2831,22 @@ struct fbimage* splash_screen_mmc()
 			return NULL;
 		}
 
+#if DISPLAY_USE_BGR
+		unsigned i;
+		for(i=0; i<(logo->header.width*fb_display->height); i++) {
+			int r,g,b;
+			char* color = (char*) base + i*3;
+
+			r = color[0];
+			g = color[1];
+			b = color[2];
+
+			color[0] = b;
+			color[1] = g;
+			color[2] = r;
+		}
+#endif
+
 		logo->image = base;
 	}
 
@@ -2473,6 +2856,9 @@ struct fbimage* splash_screen_mmc()
 
 struct fbimage* fetch_image_from_partition()
 {
+	if (!device.use_splash_partition)
+		return NULL;
+
 	if (target_is_emmc_boot()) {
 		return splash_screen_mmc();
 	} else {
@@ -2557,10 +2943,15 @@ void aboot_fastboot_register_commands(void)
 	fastboot_register("continue",          cmd_continue);
 	fastboot_register("reboot",            cmd_reboot);
 	fastboot_register("reboot-bootloader", cmd_reboot_bootloader);
+	fastboot_register("reboot-recovery",   cmd_reboot_recovery);
 	fastboot_register("oem unlock",        cmd_oem_unlock);
 	fastboot_register("oem lock",          cmd_oem_lock);
 	fastboot_register("oem verified",      cmd_oem_verified);
 	fastboot_register("oem device-info",   cmd_oem_devinfo);
+#if WITH_DEBUG_LOG_BUF
+	fastboot_register("oem lk_log",        cmd_oem_lk_log);
+#endif
+	fastboot_register("oem screenshot",    cmd_oem_screenshot);
 	fastboot_register("preflash",          cmd_preflash);
 	fastboot_register("oem enable-charger-screen",
 			cmd_oem_enable_charger_screen);
@@ -2568,6 +2959,14 @@ void aboot_fastboot_register_commands(void)
 			cmd_oem_disable_charger_screen);
 	fastboot_register("oem select-display-panel",
 			cmd_oem_select_display_panel);
+	fastboot_register("oem enable-forcing-fastboot",
+			cmd_oem_enable_force_fastboot);
+	fastboot_register("oem disable-forcing-fastboot",
+			cmd_oem_disable_force_fastboot);
+	fastboot_register("oem enable-using-splash-partition",
+			cmd_oem_enable_use_splash_partition);
+	fastboot_register("oem disable-using-splash-partition",
+			cmd_oem_disable_use_splash_partition);
 	/* publish variables and their values */
 	fastboot_publish("product",  TARGET(BOARD));
 	fastboot_publish("kernel",   "lk");
@@ -2595,6 +2994,16 @@ void aboot_fastboot_register_commands(void)
 			device.display_panel);
 	fastboot_publish("display-panel",
 			(const char *) panel_display_mode);
+
+	snprintf(force_fastboot, MAX_RSP_SIZE, "%d",
+			device.force_fastboot);
+	fastboot_publish("forcing-fastboot",
+			(const char *) force_fastboot);
+
+	snprintf(use_splash_partition, MAX_RSP_SIZE, "%d",
+			device.use_splash_partition);
+	fastboot_publish("using-splash-partition",
+			(const char *) use_splash_partition);
 }
 
 void aboot_init(const struct app_descriptor *app)
@@ -2624,6 +3033,14 @@ void aboot_init(const struct app_descriptor *app)
 	target_display_init(device.display_panel);
 	dprintf(SPEW, "Display Init: Done\n");
 #endif
+
+#if BOOT_2NDSTAGE
+	dprintf(INFO, "Original ATAGS: %p\n", original_atags);
+	board_parse_original_atags();
+#endif
+
+	/* initialize uboot api */
+	api_init();
 
 
 	target_serialno((unsigned char *) sn_buf);
@@ -2672,10 +3089,25 @@ void aboot_init(const struct app_descriptor *app)
 	} else if(reboot_mode == FASTBOOT_MODE) {
 		boot_into_fastboot = true;
 	}
+#if WITH_XIAOMI_DUALBOOT
+	else if (reboot_mode == BOOT0_MODE) {
+		dual_boot_sign = DUALBOOT_BOOT_FIRST;
+	} else if (reboot_mode == BOOT1_MODE) {
+		dual_boot_sign = DUALBOOT_BOOT_SECOND;
+	}
+#endif
+
+	if (device.force_fastboot)
+		boot_into_fastboot = true;
 
 normal_boot:
 	if (!boot_into_fastboot)
 	{
+		// try to boot GRUB
+		if(!boot_into_recovery && grub_boot()) {
+			goto boot_error;
+		}
+
 		if (target_is_emmc_boot())
 		{
 			if(emmc_recovery_init())
@@ -2703,6 +3135,8 @@ normal_boot:
 	#endif
 			boot_linux_from_flash();
 		}
+
+boot_error:
 		dprintf(CRITICAL, "ERROR: Could not do normal boot. Reverting "
 			"to fastboot mode.\n");
 	}

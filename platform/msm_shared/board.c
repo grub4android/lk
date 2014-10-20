@@ -32,6 +32,12 @@
 #include <smem.h>
 #include <baseband.h>
 #include <assert.h>
+#include <arch/arm.h>
+
+#if DEVICE_TREE
+#include <dev_tree.h>
+#include <libfdt.h>
+#endif
 
 static struct board_data board = {UNKNOWN,
 	0,
@@ -270,3 +276,35 @@ uint32_t board_hlos_subtype(void)
 {
 	return board.platform_hlos_subtype;
 }
+
+#if BOOT_2NDSTAGE
+static struct original_atags_info original_atags_info = {0,0,0,0,0,0};
+static bool has_original_atags_info = 0;
+
+struct original_atags_info* board_get_original_atags_info(void) {
+	return &original_atags_info;
+}
+
+int board_has_original_atags_info(void) {
+	return has_original_atags_info;
+}
+
+void board_parse_original_atags(void)
+{
+	int err = 0;
+#if DEVICE_TREE
+	err = parse_original_devtree(original_atags);
+#else
+	dprintf(CRITICAL, "parsing atags isn't implemented!");
+	err = -1;
+#endif
+
+	if(!err) {
+		has_original_atags_info = 1;
+		dprintf(INFO, "socinfo: platform=%u variant=0x%x soc_rev=0x%x\n", 
+			original_atags_info.platform_id, original_atags_info.variant_id,
+			original_atags_info.soc_rev);
+	}
+	else dprintf(CRITICAL, "error parsing original atags info!");
+}
+#endif

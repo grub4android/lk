@@ -44,6 +44,9 @@ struct device_info
 	bool is_verified;
 	bool charger_screen_enabled;
 	char display_panel[MAX_PANEL_ID_LEN];
+	char caf_reserved[100];
+	bool force_fastboot;
+	bool use_splash_partition;
 };
 
 #endif

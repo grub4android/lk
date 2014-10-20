@@ -44,6 +44,7 @@
 #include <gsbi.h>
 #include <target.h>
 #include <platform.h>
+#include <dload_util.h>
 #include <baseband.h>
 #include <uart_dm.h>
 #include <crypto_hash.h>
@@ -195,6 +196,16 @@ static unsigned target_check_power_on_reason(void)
 	}
 	dprintf(INFO, "Power on reason %u\n", power_on_status);
 	return power_on_status;
+}
+
+int set_download_mode(enum dload_mode mode)
+{
+	mode = NORMAL_DLOAD;
+
+	dload_util_write_cookie(mode == NORMAL_DLOAD ?
+		DLOAD_MODE_ADDR : EMERGENCY_DLOAD_MODE_ADDR, mode);
+
+	return 0;
 }
 
 void reboot_device(unsigned reboot_reason)
@@ -471,21 +482,34 @@ void target_baseband_detect(struct board_data *board)
 	board->baseband = baseband;
 }
 
+static uint8_t splash_override;
+
 /* Returns 1 if target supports continuous splash screen. */
 int target_cont_splash_screen()
 {
-	switch(board_platform_id())
-	{
-	case MSM8960:
-	case MSM8960AB:
-	case APQ8060AB:
-	case MSM8260AB:
-	case MSM8660AB:
-		return 1;
-
-	default:
-		return 0;
+	uint8_t splash_screen = 0;
+	if(!splash_override) {
+		switch(board_platform_id())
+		{
+			case MSM8960:
+			case MSM8960AB:
+			case APQ8060AB:
+			case MSM8260AB:
+			case MSM8660AB:
+				dprintf(SPEW, "Target_cont_splash=1\n");
+				splash_screen = 1;
+				break;
+			default:
+				dprintf(SPEW, "Target_cont_splash=0\n");
+				splash_screen = 0;
+		}
 	}
+	return splash_screen;
+}
+
+void target_force_cont_splash_disable(uint8_t override)
+{
+	splash_override = override;
 }
 
 void apq8064_ext_3p3V_enable()
@@ -516,4 +540,28 @@ void target_mmc_caps(struct mmc_host *host)
 	host->caps.hs200_mode = 1;
 	host->caps.bus_width = MMC_BOOT_BUS_WIDTH_8_BIT;
 	host->caps.hs_clk_rate = MMC_CLK_96MHZ;
+}
+
+int target_volume_up()
+{
+	uint8_t key_status;
+	pm8921_gpio_get(0, &key_status);
+
+	return key_status;
+}
+
+uint32_t target_volume_down()
+{
+	uint8_t key_status;
+	pm8921_gpio_get(1, &key_status);
+
+	return key_status;
+}
+
+int target_power_key(void)
+{
+	uint8_t ret = 0;
+
+	pm8921_pwrkey_status(&ret);
+	return ret;
 }

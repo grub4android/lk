@@ -279,7 +279,7 @@ static void init_platform_data()
 
 static void mdss_edp_panel_init(struct msm_panel_info *pinfo)
 {
-	return target_edp_panel_init(pinfo);
+	target_edp_panel_init(pinfo);
 }
 
 static uint32_t mdss_edp_panel_clock(uint8_t enable,

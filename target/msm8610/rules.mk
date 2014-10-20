@@ -7,7 +7,7 @@ GLOBAL_INCLUDES += \
 
 PLATFORM := msm8610
 
-MEMBASE := 0x07A00000 # SDRAM
+MEMBASE ?= 0x07A00000 # SDRAM
 MEMSIZE := 0x00100000 # 1MB
 
 BASE_ADDR        := 0x00000
@@ -38,11 +38,14 @@ GLOBAL_DEFINES += \
 	RAMDISK_ADDR=$(RAMDISK_ADDR) \
 	SCRATCH_ADDR=$(SCRATCH_ADDR)
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+OBJS += \
+    $(LOCAL_DIR)/target_display.c
+endif
 
 MODULE_SRCS += \
     $(LOCAL_DIR)/init.c \
     $(LOCAL_DIR)/meminfo.c \
-    $(LOCAL_DIR)/target_display.c \
     $(LOCAL_DIR)/oem_panel.c
 
 include make/module.mk

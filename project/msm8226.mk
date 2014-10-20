@@ -36,6 +36,10 @@ DEFINES += ABOOT_FORCE_KERNEL64_ADDR=0x00080000
 #Disable thumb mode
 ENABLE_THUMB := false
 
+ifeq ($(EMMC_BOOT),1)
+DEFINES += _EMMC_BOOT=1
+endif
+
 ifeq ($(ENABLE_PON_VIB_SUPPORT),true)
 DEFINES += PON_VIB_SUPPORT=1
 endif

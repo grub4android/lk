@@ -43,6 +43,8 @@ void target_early_init(void);
 /* later init, after the kernel has come up */
 void target_init(void);
 
+void target_uninit(void);
+
 /* a target can optionally define a set of debug leds that can be used
  * in various locations in the system.
  */
@@ -87,4 +89,8 @@ bool target_is_cdp_qvga();
 uint32_t target_hw_interposer();
 uint32_t target_override_pll();
 uint32_t target_ddr_cfg_val();
+
+int target_volume_up();
+uint32_t target_volume_down();
+int target_power_key(void);
 #endif

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2011-2012, Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -113,6 +114,7 @@ typedef enum {
 #define LDO_8      (8  | LDO_P_MASK)
 #define LDO_11     (11 | LDO_P_MASK)
 #define LDO_23     (23 | LDO_P_MASK)
+#define LDO_29     (29 | LDO_P_MASK)
 
 enum
 {

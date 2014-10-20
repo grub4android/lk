@@ -43,6 +43,9 @@ platform_reset:
 
 .globl arm_reset
 arm_reset:
+#if BOOT_2NDSTAGE
+	str	r2, original_atags
+#endif
 
 #ifdef ENABLE_TRUSTZONE
 	/*Add reference to TZ symbol so linker includes it in final image */
@@ -128,6 +131,11 @@ arm_reset:
 .ltorg
 #if WITH_CPU_WARM_BOOT
 warm_boot_tag:
+	.word 0
+#endif
+#if BOOT_2NDSTAGE
+.global original_atags
+original_atags:
 	.word 0
 #endif
 

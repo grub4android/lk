@@ -439,6 +439,9 @@ int uart_putc(int port, char c)
 	return 0;
 }
 
+static int has_cbuf = 0;
+static int cbuf = 0;
+
 /* UART_DM uses four character word FIFO whereas uart_getc
  * is supposed to read only one character. So we need to
  * read a word and keep track of each character in the word.
@@ -453,6 +456,12 @@ int uart_getc(int port, bool wait)
 	if (!uart_init_flag)
 		return -1;
 
+	if(has_cbuf) {
+		byte = cbuf;
+		has_cbuf = 0;
+		goto finish;
+	}
+
 	if (!word) {
 		/* Read from FIFO only if it's a first read or all the four
 		 * characters out of a word have been read */
@@ -465,5 +474,19 @@ int uart_getc(int port, bool wait)
 	byte = (int)word & 0xff;
 	word = word >> 8;
 
+finish:
 	return byte;
+}
+
+int uart_tstc(int port) {
+	uint32_t base = port_lookup[port];
+
+	/* Don't do anything if UART is not initialized */
+	if (!uart_init_flag)
+		return -1;
+
+	cbuf = uart_getc(port, 0);
+	has_cbuf = (cbuf >= 0);
+
+	return has_cbuf;
 }

@@ -4,7 +4,7 @@ INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
 
 PLATFORM := msm7x27a
 
-MEMBASE := 0x00000000 # SMI
+MEMBASE ?= 0x00000000 # SMI
 MEMSIZE := 0x00100000 # 1MB
 
 BASE_ADDR        := 0x00200000
@@ -40,9 +40,12 @@ DEFINES += \
 	RAMDISK_ADDR=$(RAMDISK_ADDR) \
 	SCRATCH_ADDR=$(SCRATCH_ADDR)
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+OBJS += \
+    $(LOCAL_DIR)/target_display.o
+endif
 
 OBJS += \
 	$(LOCAL_DIR)/init.o \
 	$(LOCAL_DIR)/keypad.o \
-	$(LOCAL_DIR)/atags.o \
-	$(LOCAL_DIR)/target_display.o
+	$(LOCAL_DIR)/atags.o

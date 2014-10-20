@@ -1,4 +1,5 @@
 /* Copyright (c) 2010-2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -139,6 +140,7 @@ int dsi_cmd_dma_trigger_for_panel()
 	int status = 0;
 
 	writel(0x03030303, DSI_INT_CTRL);
+	dsb();
 	writel(0x1, DSI_CMD_MODE_DMA_SW_TRIGGER);
 	dsb();
 	ReadValue = readl(DSI_INT_CTRL) & 0x00000001;
@@ -154,6 +156,7 @@ int dsi_cmd_dma_trigger_for_panel()
 	}
 
 	writel((readl(DSI_INT_CTRL) | 0x01000001), DSI_INT_CTRL);
+	dsb();
 	dprintf(SPEW, "Panel CMD: command mode dma tested successfully\n");
 	return status;
 }
@@ -333,7 +336,7 @@ int mipi_dsi_cmds_rx(char **rp, int len)
 	return len;
 }
 
-static int mipi_dsi_cmd_bta_sw_trigger(void)
+int mipi_dsi_cmd_bta_sw_trigger(void)
 {
 	uint32_t data;
 	int cnt = 0;
@@ -503,6 +506,133 @@ int mipi_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo)
 	return status;
 }
 
+#if TARGET_MSM8960_ARIES
+void trigger_mdp_dsi(void)
+{
+	dsb();
+	mdp_start_dma();
+	mdelay(10);
+	dsb();
+	writel(0x1, DSI_CMD_MODE_MDP_SW_TRIGGER);
+}
+
+int
+config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
+		    unsigned short img_width, unsigned short img_height,
+		    unsigned short dst_format,
+		    unsigned short traffic_mode, unsigned short datalane_num, int rgb_swap)
+{
+	unsigned char DST_FORMAT;
+	unsigned char TRAFIC_MODE;
+	unsigned char DLNx_EN;
+	// video mode data ctrl
+	int status = 0;
+	unsigned char interleav = 0;
+	unsigned char ystride = 0x03;
+	// disable mdp first
+
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000000, DSI_CLK_CTRL);
+	writel(0x00000002, DSI_CLK_CTRL);
+	writel(0x00000006, DSI_CLK_CTRL);
+	writel(0x0000000e, DSI_CLK_CTRL);
+	writel(0x0000001e, DSI_CLK_CTRL);
+	writel(0x0000003e, DSI_CLK_CTRL);
+
+	writel(0x13ff3fe0, DSI_ERR_INT_MASK0);
+
+	// writel(0, DSI_CTRL);
+
+	// writel(0, DSI_ERR_INT_MASK0);
+
+	DST_FORMAT = 8;		// RGB888
+	dprintf(SPEW, "DSI_Cmd_Mode - Dst Format: RGB888\n");
+
+	switch (datalane_num) {
+	default:
+	case 1:
+		DLNx_EN = 1;
+		break;
+	case 2:
+		DLNx_EN = 3;
+		break;
+	case 3:
+		DLNx_EN = 7;
+		break;
+	case 4:
+		DLNx_EN = 0xF;
+		break;
+	}
+
+	TRAFIC_MODE = 0;	// non burst mode with sync pulses
+	dprintf(SPEW, "Traffic mode: non burst mode with sync pulses\n");
+
+	writel(0x02020202, DSI_INT_CTRL);
+
+	int data = 0x00100000;
+	data |= ((rgb_swap & 0x07) << 16);
+	writel(data | DST_FORMAT, DSI_COMMAND_MODE_MDP_CTRL);
+
+	writel((img_width * ystride + 1) << 16 | 0x0039,
+	       DSI_COMMAND_MODE_MDP_STREAM0_CTRL);
+	writel((img_width * ystride + 1) << 16 | 0x0039,
+	       DSI_COMMAND_MODE_MDP_STREAM1_CTRL);
+	writel(img_height << 16 | img_width,
+	       DSI_COMMAND_MODE_MDP_STREAM0_TOTAL);
+	writel(img_height << 16 | img_width,
+	       DSI_COMMAND_MODE_MDP_STREAM1_TOTAL);
+	writel(0xEE, DSI_CAL_STRENGTH_CTRL);
+	writel(0x80000000, DSI_CAL_CTRL);
+	writel(0x40, DSI_TRIG_CTRL);
+	writel(0x13c2c, DSI_COMMAND_MODE_MDP_DCS_CMD_CTRL);
+	writel(interleav << 30 | 0 << 24 | 0 << 20 | DLNx_EN << 4 | 0x105,
+	       DSI_CTRL);
+	mdelay(10);
+	writel(0x14000000, DSI_COMMAND_MODE_DMA_CTRL);
+	writel(0x10000000, DSI_MISR_CMD_CTRL);
+	writel(0x13ff3fe0, DSI_ERR_INT_MASK0);
+	writel(0x1, DSI_EOT_PACKET_CTRL);
+	// writel(0x0, MDP_OVERLAYPROC0_START);
+
+	trigger_mdp_dsi();
+
+	status = 1;
+	return status;
+}
+
+void mipi_dsi_cmd_trigger(struct msm_fb_panel_data *pdata)
+{
+	struct msm_panel_info *pinfo = NULL;
+	struct fbcon_config mipi_fb_cfg;
+
+	if (pdata)
+		pinfo = &(pdata->panel_info);
+	else
+		return;
+
+	unsigned short display_wd = pinfo->xres;
+	unsigned short display_ht = pinfo->yres;
+	unsigned short image_wd = pinfo->xres;
+	unsigned short image_ht = pinfo->yres;
+	unsigned short dst_format = 0;
+	unsigned short traffic_mode = 0;
+	unsigned short num_of_lanes = pinfo->mipi.num_of_lanes;
+
+	mipi_fb_cfg.width = display_wd;
+	mipi_fb_cfg.height = display_ht;
+
+	mipi_dsi_cmd_config(mipi_fb_cfg, num_of_lanes);
+	mdelay(50);
+	config_dsi_cmd_mode(display_wd, display_ht, image_wd, image_ht,
+			dst_format, traffic_mode,
+			num_of_lanes, /* num_of_lanes */
+			pinfo->mipi.rgb_swap);
+
+}
+#endif
+
 void mipi_dsi_shutdown(void)
 {
 	if(!target_cont_splash_screen())
@@ -555,6 +685,11 @@ int mipi_config(struct msm_fb_panel_data *panel)
 
 	if (pinfo->rotate && panel->rotate)
 		pinfo->rotate();
+
+#if TARGET_MSM8960_ARIES
+	mipi_dsi_cmd_trigger(panel);
+	mdelay(34);
+#endif
 
 	return ret;
 }

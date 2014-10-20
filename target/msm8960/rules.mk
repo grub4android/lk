@@ -1,10 +1,11 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
 INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
+INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/include
 
 PLATFORM := msm8960
 
-MEMBASE := 0x88F00000 # SDRAM
+MEMBASE ?= 0x88F00000 # SDRAM
 MEMSIZE := 0x00100000 # 1MB
 
 BASE_ADDR        := 0x80200000
@@ -18,14 +19,15 @@ KEYS_USE_GPIO_KEYPAD := 1
 
 DEFINES += DISPLAY_SPLASH_SCREEN=1
 DEFINES += DISPLAY_TYPE_MIPI=1
-DEFINES += DISPLAY_TYPE_HDMI=1
+DEFINES += DISPLAY_TYPE_HDMI=0
 
 MODULES += \
 	dev/keys \
 	dev/pmic/pm8921 \
 	dev/ssbi \
 	lib/ptable \
-	dev/panel/msm \
+	dev/gcdb/display \
+	lib/libfdt
 
 DEFINES += \
 	MEMSIZE=$(MEMSIZE) \
@@ -40,8 +42,14 @@ ifeq ($(LINUX_MACHTYPE_RUMI3), 1)
 DEFINES += LINUX_MACHTYPE_RUMI3
 endif
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+OBJS += \
+    $(LOCAL_DIR)/target_display.o
+endif
+
 OBJS += \
 	$(LOCAL_DIR)/init.o \
 	$(LOCAL_DIR)/atags.o \
+	$(LOCAL_DIR)/meminfo.o \
 	$(LOCAL_DIR)/keypad.o \
-	$(LOCAL_DIR)/target_display.o
+	$(LOCAL_DIR)/oem_panel.o

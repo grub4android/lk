@@ -74,6 +74,12 @@ static inline void hexdump8(const void *ptr, size_t len) { }
 /* systemwide halts */
 void halt(void) __NO_RETURN;
 
+#if WITH_DEBUG_LOG_BUF
+/* lk_log */
+char* lk_log_getbuf(void);
+unsigned lk_log_getsize(void);
+#endif
+
 void _panic(void *caller, const char *fmt, ...) __PRINTFLIKE(2, 3) __NO_RETURN;
 #define panic(x...) _panic(__GET_CALLER(), x)
 

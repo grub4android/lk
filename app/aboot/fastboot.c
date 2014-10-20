@@ -380,6 +380,21 @@ void fastboot_ack(const char *code, const char *reason)
 
 }
 
+void fastboot_code(const char *code, const char *reason)
+{
+	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (reason == 0)
+		reason = "";
+
+	snprintf(response, MAX_RSP_SIZE, "%s%s", code, reason);
+
+	usb_if.usb_write(response, strlen(response));
+}
+
 void fastboot_info(const char *reason)
 {
 	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
@@ -395,6 +410,43 @@ void fastboot_info(const char *reason)
 	usb_if.usb_write(response, strlen(response));
 }
 
+void fastboot_write(void *data, unsigned len)
+{
+	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (!data)
+		return;
+
+	snprintf(response, MAX_RSP_SIZE, "PRNT");
+	memcpy(response+4, data, len);
+
+	usb_if.usb_write(response, len+4);
+}
+
+void fastboot_send_data(void *data, unsigned len)
+{
+	STACKBUF_DMA_ALIGN(response, MAX_RSP_SIZE);
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (!data)
+		return;
+
+	// exit command mode
+	fastboot_code("OKAY", "");
+
+	// send header
+	snprintf(response, MAX_RSP_SIZE, "DATA%016x", len);
+	usb_if.usb_write(response, 20);
+
+	// send data
+	usb_if.usb_write(data, len);
+}
+
 void fastboot_fail(const char *reason)
 {
 	fastboot_ack("FAIL", reason);
@@ -408,13 +460,43 @@ void fastboot_okay(const char *info)
 static void cmd_getvar(const char *arg, void *data, unsigned sz)
 {
 	struct fastboot_var *var;
+	bool all = false;
+	char response[128];
+
+	all = !strcmp("all", arg);
 
 	for (var = varlist; var; var = var->next) {
-		if (!strcmp(var->name, arg)) {
+		if (all) {
+			snprintf(response, sizeof(response), "\t%s: [%s]", var->name, var->value);
+			fastboot_info(response);
+		}
+		else if (!strcmp(var->name, arg)) {
 			fastboot_okay(var->value);
 			return;
 		}
 	}
+	fastboot_okay("");
+}
+
+static void cmd_help(const char *arg, void *data, unsigned sz)
+{
+	struct fastboot_cmd *cmd;
+	char response[128];
+
+	// print commands
+	fastboot_info("commands:");
+	for (cmd = cmdlist; cmd; cmd = cmd->next) {
+		char buf[cmd->prefix_len+1];
+
+		if (!memcpy(buf, cmd->prefix, cmd->prefix_len))
+				continue;
+
+		buf[cmd->prefix_len] = '\0';
+
+		snprintf(response, sizeof(response), "\t%s", buf);
+		fastboot_info(response);
+	}
+
 	fastboot_okay("");
 }
 
@@ -482,7 +564,9 @@ again:
 			goto again;
 		}
 
-		fastboot_fail("unknown command");
+		fastboot_info("unknown command");
+		fastboot_info("See 'fastboot oem help'");
+		fastboot_fail("");
 
 	}
 	fastboot_state = STATE_OFFLINE;
@@ -585,6 +669,7 @@ int fastboot_init(void *base, unsigned size)
 	if (usb_if.udc_register_gadget(&fastboot_gadget))
 		goto fail_udc_register;
 
+	fastboot_register("oem help", cmd_help);
 	fastboot_register("getvar:", cmd_getvar);
 	fastboot_register("download:", cmd_download);
 	fastboot_publish("version", "0.5");

@@ -42,6 +42,8 @@ void platform_early_init(void);
 /* later init, after the kernel has come up */
 void platform_init(void);
 
+void platform_uninit(void);
+
 /* called by the arch init code to get the platform to set up any mmu mappings it may need */
 int platform_use_identity_mmu_mappings(void);
 void platform_init_mmu_mappings(void);

@@ -5,7 +5,7 @@ INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/in
 
 PLATFORM := msm8974
 
-MEMBASE := 0x0F900000 # SDRAM
+MEMBASE ?= 0x0F900000 # SDRAM
 MEMSIZE := 0x00100000 # 1MB
 
 BASE_ADDR        := 0x00000
@@ -35,9 +35,12 @@ DEFINES += \
 	RAMDISK_ADDR=$(RAMDISK_ADDR) \
 	SCRATCH_ADDR=$(SCRATCH_ADDR)
 
+ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
+OBJS += \
+    $(LOCAL_DIR)/target_display.o
+endif
 
 OBJS += \
     $(LOCAL_DIR)/init.o \
     $(LOCAL_DIR)/meminfo.o \
-    $(LOCAL_DIR)/target_display.o \
     $(LOCAL_DIR)/oem_panel.o

@@ -1,5 +1,6 @@
 /* Copyright (c) 2010-2014, The Linux Foundation. All rights reserved.
-
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -53,6 +54,22 @@ struct recovery_message {
 	char recovery[1024];
 };
 
+#if WITH_XIAOMI_DUALBOOT
+/* Dualboot message
+ * The new misc partition map is below
+ * |--------------------|
+ * | bootloader_message | 8 sectors, 4KB
+ * |--------------------|
+ * | dual_boot_message  |
+ * |--------------------|
+ * The command field should be boot-system1, when we want to
+ * boot the second system. On any other value, LK will boot
+ * into the first system.
+ */
+struct dual_boot_message {
+	char command[32];
+};
+#endif
 
 struct update_header {
 	unsigned char MAGIC[UPDATE_MAGIC_SIZE];

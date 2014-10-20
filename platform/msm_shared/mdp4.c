@@ -1,4 +1,5 @@
 /* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, Xiaomi Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -242,8 +243,6 @@ int mdp_dma_off(void)
 {
 	int ret = 0;
 
-	writel(0x00000000, MDP_DMA_P_START);
-
 	return ret;
 }
 
@@ -388,14 +387,17 @@ int mdp_dsi_video_off()
 
 int mdp_dsi_cmd_off()
 {
-	mdp_dma_off();
-	/*
-	 * Allow sometime for the DMA channel to
-	 * stop the data transfer
-	 */
-	mdelay(10);
-	writel(0x00000000, MDP_INTR_ENABLE);
-	writel(0x00000003, MDP_OVERLAYPROC0_CFG);
+	if(!target_cont_splash_screen())
+	{
+		mdp_dma_off();
+		/*
+		 * Allow sometime for the DMA channel to
+		 * stop the data transfer
+		 */
+		mdelay(10);
+		writel(0x00000000, MDP_INTR_ENABLE);
+		writel(0x00000003, MDP_OVERLAYPROC0_CFG);
+	}
 	return NO_ERROR;
 }
 
