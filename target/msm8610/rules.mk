@@ -39,7 +39,7 @@ GLOBAL_DEFINES += \
 	SCRATCH_ADDR=$(SCRATCH_ADDR)
 
 ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
-OBJS += \
+MODULE_SRCS += \
     $(LOCAL_DIR)/target_display.c
 endif
 

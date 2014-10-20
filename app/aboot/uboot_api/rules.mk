@@ -1,12 +1,14 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_DIR)/include
+MODULE := $(LOCAL_DIR)
 
-OBJS += \
-	$(LOCAL_DIR)/api.o \
-	$(LOCAL_DIR)/api_storage.o \
-	$(LOCAL_DIR)/api_display.o \
-	$(LOCAL_DIR)/uboot_part.o
+GLOBAL_INCLUDES += $(LOCAL_DIR)/include
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/api.c \
+	$(LOCAL_DIR)/api_storage.c \
+	$(LOCAL_DIR)/api_display.c \
+	$(LOCAL_DIR)/uboot_part.c
 
 
-
+include make/module.mk

@@ -1,4 +1,6 @@
-EXT4_LOCAL_PATH := $(GET_LOCAL_DIR)
+LOCAL_DIR := $(GET_LOCAL_DIR)
+
+MODULE := $(LOCAL_DIR)
 
 EXT4_SRCS = \
 	ext4_fs.c \
@@ -18,14 +20,10 @@ EXT4_SRCS = \
 	ext4_inode.c \
 	blockdev/ext4_mmcdev.c
 
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR) \
+	$(LOCAL_DIR)/blockdev
 
-EXT4_OBJS = $(EXT4_SRCS:%.c=%.o)
+MODULE_SRCS += $(addprefix $(LOCAL_DIR)/, $(EXT4_SRCS))
 
-INCLUDES += \
-	-I. \
-	-I$(EXT4_LOCAL_PATH) \
-	-I$(EXT4_LOCAL_PATH)/blockdev
-
-OBJS += $(addprefix $(EXT4_LOCAL_PATH)/, $(EXT4_OBJS))
-
-
+include make/module.mk

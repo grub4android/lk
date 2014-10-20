@@ -1,4 +1,8 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-OBJS += \
-	$(LOCAL_DIR)/tar.o
+MODULE := $(LOCAL_DIR)
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/tar.c
+
+include make/module.mk
