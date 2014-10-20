@@ -85,11 +85,14 @@ void arm_mmu_init(void)
 	/* set some mmu specific control bits */
 	arm_write_sctlr(arm_read_sctlr() & ~((1<<29)|(1<<28)|(1<<0))); // access flag disabled, TEX remap disabled, mmu disabled
 
-	/* set up an identity-mapped translation table with
-	 * strongly ordered memory type and read/write access.
-	 */
-	for (addr_t i=0; i < 4096; i++) {
-		arm_mmu_map_section(i * MB, i * MB, MMU_INIT_MAP_FLAGS);
+	if (platform_use_identity_mmu_mappings())
+	{
+		/* set up an identity-mapped translation table with
+		 * strongly ordered memory type and read/write access.
+		 */
+		for (addr_t i=0; i < 4096; i++) {
+			arm_mmu_map_section(i * MB, i * MB, MMU_INIT_MAP_FLAGS);
+		}
 	}
 
 	platform_init_mmu_mappings();
@@ -107,7 +110,12 @@ void arm_mmu_init(void)
 
 void arch_disable_mmu(void)
 {
+	/* Ensure all memory access are complete
+	 * before disabling MMU
+	 */
+	dsb();
 	arm_write_sctlr(arm_read_sctlr() & ~(1<<0)); // access flag disabled, TEX remap disabled, mmu disabled
+	arm_invalidate_tlb();
 }
 
 #endif // ARM_WITH_MMU

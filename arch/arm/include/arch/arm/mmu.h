@@ -134,6 +134,22 @@
 	 MMU_MEMORY_L1_AP_P_RW_U_NA)
 #endif
 
+/* C, B and TEX[2:0] encodings without TEX remap */
+                                                       /* TEX      |    CB    */
+#define MMU_MEMORY_TYPE_STRONGLY_ORDERED              ((0x0 << 12) | (0x0 << 2))
+#define MMU_MEMORY_TYPE_DEVICE_SHARED                 ((0x0 << 12) | (0x1 << 2))
+#define MMU_MEMORY_TYPE_DEVICE_NON_SHARED             ((0x2 << 12) | (0x0 << 2))
+#define MMU_MEMORY_TYPE_NORMAL                        ((0x1 << 12) | (0x0 << 2))
+#define MMU_MEMORY_TYPE_NORMAL_WRITE_THROUGH          ((0x0 << 12) | (0x2 << 2))
+#define MMU_MEMORY_TYPE_NORMAL_WRITE_BACK_NO_ALLOCATE ((0x0 << 12) | (0x3 << 2))
+#define MMU_MEMORY_TYPE_NORMAL_WRITE_BACK_ALLOCATE    ((0x1 << 12) | (0x3 << 2))
+
+#define MMU_MEMORY_AP_NO_ACCESS     (0x0 << 10)
+#define MMU_MEMORY_AP_READ_ONLY     (0x7 << 10)
+#define MMU_MEMORY_AP_READ_WRITE    (0x3 << 10)
+
+#define MMU_MEMORY_XN               (0x1 << 4)
+
 #else
 
 #define MMU_FLAG_CACHED			0x1
