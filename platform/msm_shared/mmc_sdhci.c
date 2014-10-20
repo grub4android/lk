@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <debug.h>
+#include <assert.h>
 #include <reg.h>
 #include <mmc_sdhci.h>
 #include <sdhci.h>

@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "mmc.h"
 #include "partition_parser.h"
 

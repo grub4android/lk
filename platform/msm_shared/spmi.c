@@ -27,6 +27,7 @@
  */
 
 #include <debug.h>
+#include <assert.h>
 #include <reg.h>
 #include <spmi.h>
 #include <bits.h>

@@ -33,6 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <debug.h>
+#include <assert.h>
 #include <platform.h>
 #include <platform/iomap.h>
 #include <platform/irqs.h>

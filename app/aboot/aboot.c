@@ -32,6 +32,8 @@
 
 #include <app.h>
 #include <debug.h>
+#include <assert.h>
+#include <printf.h>
 #include <arch/arm.h>
 #include <string.h>
 #include <stdlib.h>

@@ -211,13 +211,13 @@ int ASN1_GENERALIZEDTIME_set_string(ASN1_GENERALIZEDTIME *s, const char *str)
 	}
 
 ASN1_GENERALIZEDTIME *ASN1_GENERALIZEDTIME_set(ASN1_GENERALIZEDTIME *s,
-	     time_t t)
+	     lk_time_t t)
 	{
 		return ASN1_GENERALIZEDTIME_adj(s, t, 0, 0);
 	}
 
 ASN1_GENERALIZEDTIME *ASN1_GENERALIZEDTIME_adj(ASN1_GENERALIZEDTIME *s,
-	     time_t t, int offset_day, long offset_sec)
+	     lk_time_t t, int offset_day, long offset_sec)
 	{
 	char *p;
 	struct tm *ts;

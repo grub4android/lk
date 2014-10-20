@@ -27,6 +27,8 @@
  */
 
 #include <debug.h>
+#include <printf.h>
+#include <assert.h>
 #include <platform/iomap.h>
 #include <platform/irqs.h>
 #include <reg.h>

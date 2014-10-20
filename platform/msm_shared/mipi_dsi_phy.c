@@ -28,6 +28,7 @@
  */
 #include <debug.h>
 #include <reg.h>
+#include <arch/defines.h>
 #include <mipi_dsi.h>
 #include <platform/iomap.h>
 

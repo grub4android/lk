@@ -1,11 +1,12 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LK_TOP_DIR)/platform/msm_shared/include
+MODULE := $(LOCAL_DIR)
 
-DEFINES += ASSERT_ON_TAMPER=1
+GLOBAL_DEFINES += ASSERT_ON_TAMPER=1
 
-OBJS += \
-	$(LOCAL_DIR)/aboot.o \
-	$(LOCAL_DIR)/fastboot.o \
-	$(LOCAL_DIR)/recovery.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/aboot.c \
+	$(LOCAL_DIR)/fastboot.c \
+	$(LOCAL_DIR)/recovery.c
 
+include make/module.mk

@@ -26,6 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <mmc_wrapper.h>

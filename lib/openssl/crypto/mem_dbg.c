@@ -179,7 +179,7 @@ typedef struct mem_st
 	int line;
 	CRYPTO_THREADID threadid;
 	unsigned long order;
-	time_t time;
+	lk_time_t time;
 	APP_INFO *app_info;
 	} MEM;
 

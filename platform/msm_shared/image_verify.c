@@ -24,6 +24,7 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#include <debug.h>
 #include <x509.h>
 #include <certificate.h>
 #include <crypto_hash.h>

@@ -1,9 +1,16 @@
-LOCAL_PATH := $(GET_LOCAL_DIR)
+LOCAL_DIR := $(GET_LOCAL_DIR)
 
-LIBFDT_INCLUDES = fdt.h libfdt.h
-LIBFDT_SRCS = fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
-LIBFDT_OBJS = $(LIBFDT_SRCS:%.c=%.o)
+MODULE := $(LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_PATH)
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR)
 
-OBJS += $(addprefix $(LOCAL_PATH)/, $(LIBFDT_OBJS))
+MODULE_SRCS += \
+	$(LOCAL_DIR)/fdt.c \
+	$(LOCAL_DIR)/fdt_ro.c \
+	$(LOCAL_DIR)/fdt_wip.c \
+	$(LOCAL_DIR)/fdt_sw.c \
+	$(LOCAL_DIR)/fdt_rw.c \
+	$(LOCAL_DIR)/fdt_strerror.c
+
+include make/module.mk

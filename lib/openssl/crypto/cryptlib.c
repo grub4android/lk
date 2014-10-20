@@ -478,7 +478,7 @@ void (*CRYPTO_THREADID_get_callback(void))(CRYPTO_THREADID *)
 
 void CRYPTO_THREADID_current(CRYPTO_THREADID *id)
 	{
-	  unsigned char errno;
+	  unsigned char rc;
 	if (threadid_callback)
 		{
 		threadid_callback(id);
@@ -500,8 +500,8 @@ void CRYPTO_THREADID_current(CRYPTO_THREADID *id)
 #elif defined(OPENSSL_SYS_BEOS)
 	CRYPTO_THREADID_set_numeric(id, (unsigned long)find_thread(NULL));
 #else
-	/* For everything else, default to using the address of 'errno' */
-	CRYPTO_THREADID_set_pointer(id, &errno);
+	/* For everything else, default to using the address of 'rc' */
+	CRYPTO_THREADID_set_pointer(id, &rc);
 #endif
 	}
 

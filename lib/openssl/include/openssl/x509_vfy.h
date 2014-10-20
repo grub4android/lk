@@ -166,7 +166,7 @@ typedef struct x509_lookup_method_st
 typedef struct X509_VERIFY_PARAM_st
 	{
 	char *name;
-	time_t check_time;	/* Time to use */
+	lk_time_t check_time;	/* Time to use */
 	unsigned long inh_flags; /* Inheritance flags */
 	unsigned long flags;	/* Various verify flags */
 	int purpose;		/* purpose to check untrusted certificates */
@@ -494,7 +494,7 @@ int X509_STORE_CTX_purpose_inherit(X509_STORE_CTX *ctx, int def_purpose,
 				int purpose, int trust);
 void X509_STORE_CTX_set_flags(X509_STORE_CTX *ctx, unsigned long flags);
 void X509_STORE_CTX_set_time(X509_STORE_CTX *ctx, unsigned long flags,
-								time_t t);
+								lk_time_t t);
 void X509_STORE_CTX_set_verify_cb(X509_STORE_CTX *ctx,
 				  int (*verify_cb)(int, X509_STORE_CTX *));
   
@@ -521,7 +521,7 @@ unsigned long X509_VERIFY_PARAM_get_flags(X509_VERIFY_PARAM *param);
 int X509_VERIFY_PARAM_set_purpose(X509_VERIFY_PARAM *param, int purpose);
 int X509_VERIFY_PARAM_set_trust(X509_VERIFY_PARAM *param, int trust);
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *param, int depth);
-void X509_VERIFY_PARAM_set_time(X509_VERIFY_PARAM *param, time_t t);
+void X509_VERIFY_PARAM_set_time(X509_VERIFY_PARAM *param, lk_time_t t);
 int X509_VERIFY_PARAM_add0_policy(X509_VERIFY_PARAM *param,
 						ASN1_OBJECT *policy);
 int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *param, 

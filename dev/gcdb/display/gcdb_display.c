@@ -358,7 +358,7 @@ int gcdb_display_init(const char *panel_name, uint32_t rev, void *base)
 		init_platform_data();
 		if (dsi_panel_init(&(panel.panel_info), &panelstruct)) {
 			dprintf(CRITICAL, "DSI panel init failed!\n");
-			ret = ERROR;
+			ret = ERR_GENERIC;
 			goto error_gcdb_display_init;
 		}
 

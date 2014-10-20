@@ -742,7 +742,7 @@ int mdss_dsi_cmd_mode_config(uint16_t disp_width,
 		break;
 	default:
 		dprintf(CRITICAL, "unsupported dst format\n");
-		return ERROR;
+		return ERR_NOT_SUPPORTED;
 	}
 
 #if (DISPLAY_TYPE_MDSS == 1)
@@ -796,7 +796,7 @@ int mipi_dsi_on()
 		count++;
 		if (count > 0xffff) {
 			dprintf(CRITICAL, "Video lane test failed\n");
-			return ERROR;
+			return ERR_IO;
 		}
 	}
 

@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <bits.h>
 #include <debug.h>
+#include <assert.h>
 #include <mmc.h>
 #include <sdhci.h>
 #include <sdhci_msm.h>

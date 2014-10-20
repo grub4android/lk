@@ -28,6 +28,7 @@
 
 #include <boot_stats.h>
 #include <debug.h>
+#include <assert.h>
 #include <reg.h>
 #include <platform/iomap.h>
 

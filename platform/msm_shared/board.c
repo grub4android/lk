@@ -31,6 +31,7 @@
 #include <board.h>
 #include <smem.h>
 #include <baseband.h>
+#include <assert.h>
 
 static struct board_data board = {UNKNOWN,
 	0,

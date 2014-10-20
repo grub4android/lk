@@ -26,6 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <assert.h>
 #include <libfdt.h>
 #include <dev_tree.h>
 #include <lib/ptable.h>

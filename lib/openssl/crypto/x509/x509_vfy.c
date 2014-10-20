@@ -767,7 +767,7 @@ static int check_cert(X509_STORE_CTX *ctx)
 
 static int check_crl_time(X509_STORE_CTX *ctx, X509_CRL *crl, int notify)
 	{
-	time_t *ptime;
+	lk_time_t *ptime;
 	int i;
 	if (notify)
 		ctx->current_crl = crl;
@@ -1536,7 +1536,7 @@ static int check_policy(X509_STORE_CTX *ctx)
 
 static int check_cert_time(X509_STORE_CTX *ctx, X509 *x)
 	{
-	time_t *ptime;
+	lk_time_t *ptime;
 	int i;
 
 	if (ctx->param->flags & X509_V_FLAG_USE_CHECK_TIME)
@@ -1678,7 +1678,7 @@ int X509_cmp_current_time(const ASN1_TIME *ctm)
 	return X509_cmp_time(ctm, NULL);
 }
 
-int X509_cmp_time(const ASN1_TIME *ctm, time_t *cmp_time)
+int X509_cmp_time(const ASN1_TIME *ctm, lk_time_t *cmp_time)
 	{
 	char *str;
 	ASN1_TIME atm;
@@ -1762,15 +1762,15 @@ ASN1_TIME *X509_gmtime_adj(ASN1_TIME *s, long adj)
 	return X509_time_adj(s, adj, NULL);
 }
 
-ASN1_TIME *X509_time_adj(ASN1_TIME *s, long offset_sec, time_t *in_tm)
+ASN1_TIME *X509_time_adj(ASN1_TIME *s, long offset_sec, lk_time_t *in_tm)
 	{
 	return X509_time_adj_ex(s, 0, offset_sec, in_tm);
 	}
 
 ASN1_TIME *X509_time_adj_ex(ASN1_TIME *s,
-				int offset_day, long offset_sec, time_t *in_tm)
+				int offset_day, long offset_sec, lk_time_t *in_tm)
 	{
-	time_t t;
+	lk_time_t t;
 
 	if (in_tm) t = *in_tm;
 	else time(&t);
@@ -2171,7 +2171,7 @@ void X509_STORE_CTX_set_flags(X509_STORE_CTX *ctx, unsigned long flags)
 	X509_VERIFY_PARAM_set_flags(ctx->param, flags);
 	}
 
-void X509_STORE_CTX_set_time(X509_STORE_CTX *ctx, unsigned long flags, time_t t)
+void X509_STORE_CTX_set_time(X509_STORE_CTX *ctx, unsigned long flags, lk_time_t t)
 	{
 	X509_VERIFY_PARAM_set_time(ctx->param, t);
 	}

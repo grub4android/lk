@@ -1,7 +1,9 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
-INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/include
+MODULE := $(LOCAL_DIR)
+
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR)/include
 
 PLATFORM := msm8610
 
@@ -15,11 +17,11 @@ KERNEL_ADDR      := BASE_ADDR+0x00008000
 RAMDISK_ADDR     := BASE_ADDR+0x01000000
 SCRATCH_ADDR     := 0x0E000000
 
-DEFINES += DISPLAY_TYPE_8610=1
-DEFINES += DISPLAY_SPLASH_SCREEN=1
-DEFINES += DISPLAY_TYPE_MIPI=1
+GLOBAL_DEFINES += DISPLAY_TYPE_8610=1
+GLOBAL_DEFINES += DISPLAY_SPLASH_SCREEN=1
+GLOBAL_DEFINES += DISPLAY_TYPE_MIPI=1
 
-MODULES += \
+MODULE_DEPS += \
 	dev/keys \
 	lib/ptable \
 	dev/pmic/pm8x41 \
@@ -27,7 +29,7 @@ MODULES += \
 	dev/vib \
 	lib/libfdt
 
-DEFINES += \
+GLOBAL_DEFINES += \
 	MEMSIZE=$(MEMSIZE) \
 	MEMBASE=$(MEMBASE) \
 	BASE_ADDR=$(BASE_ADDR) \
@@ -37,8 +39,10 @@ DEFINES += \
 	SCRATCH_ADDR=$(SCRATCH_ADDR)
 
 
-OBJS += \
-    $(LOCAL_DIR)/init.o \
-    $(LOCAL_DIR)/meminfo.o \
-    $(LOCAL_DIR)/target_display.o \
-    $(LOCAL_DIR)/oem_panel.o
+MODULE_SRCS += \
+    $(LOCAL_DIR)/init.c \
+    $(LOCAL_DIR)/meminfo.c \
+    $(LOCAL_DIR)/target_display.c \
+    $(LOCAL_DIR)/oem_panel.c
+
+include make/module.mk

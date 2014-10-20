@@ -1,6 +1,11 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_DIR)/include
+MODULE := $(LOCAL_DIR)
 
-OBJS += \
-	$(LOCAL_DIR)/vibrator.o
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR)/include
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/vibrator.c
+
+include make/module.mk

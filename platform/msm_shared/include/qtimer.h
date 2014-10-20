@@ -35,7 +35,7 @@
 
 #define QTMR_PHY_CNT_MAX_VALUE          0xFFFFFFFFFFFFFF
 
-void qtimer_set_physical_timer(time_t msecs_interval,
+void qtimer_set_physical_timer(lk_time_t msecs_interval,
 	platform_timer_callback tmr_callback, void *tmr_arg);
 void qtimer_disable();
 uint64_t qtimer_get_phy_timer_cnt();

@@ -40,7 +40,7 @@ extern int lvds_on(struct msm_fb_panel_data *pdata);
 static int msm_fb_alloc(struct fbcon_config *fb)
 {
 	if (fb == NULL)
-		return ERROR;
+		return ERR_INVALID_ARGS;
 
 	if (fb->base == NULL)
 		fb->base = memalign(4096, fb->width
@@ -48,7 +48,7 @@ static int msm_fb_alloc(struct fbcon_config *fb)
 							* (fb->bpp / 8));
 
 	if (fb->base == NULL)
-		return ERROR;
+		return ERR_INVALID_ARGS;
 
 	return NO_ERROR;
 }

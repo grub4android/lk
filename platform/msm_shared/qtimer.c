@@ -35,7 +35,7 @@
 static uint32_t ticks_per_sec;
 
 status_t platform_set_periodic_timer(platform_timer_callback callback,
-	void *arg, time_t interval)
+	void *arg, lk_time_t interval)
 {
 
 	enter_critical_section();
@@ -46,7 +46,7 @@ status_t platform_set_periodic_timer(platform_timer_callback callback,
 	return 0;
 }
 
-time_t current_time(void)
+lk_time_t current_time(void)
 {
 	return qtimer_current_time();
 }
@@ -108,7 +108,7 @@ void udelay(unsigned usecs)
 }
 
 /* Return current time in micro seconds */
-bigtime_t current_time_hires(void)
+lk_bigtime_t current_time_hires(void)
 {
 	return qtimer_current_time() * 1000000ULL;
 }

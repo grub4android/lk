@@ -1,18 +1,22 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_DIR)/include
+MODULE := $(LOCAL_DIR)
 
-OBJS += \
-	$(LOCAL_DIR)/pm8x41.o \
-	$(LOCAL_DIR)/pm8x41_adc.o \
-	$(LOCAL_DIR)/pm8x41_wled.o
+GLOBAL_INCLUDES += $(LOCAL_DIR)/include
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/pm8x41.c \
+	$(LOCAL_DIR)/pm8x41_adc.c \
+	$(LOCAL_DIR)/pm8x41_wled.c
 
 ifeq ($(ENABLE_PON_VIB_SUPPORT),true)
-OBJS += \
-	$(LOCAL_DIR)/pm8x41_vib.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/pm8x41_vib.c
 endif
 
 ifeq ($(ENABLE_PWM_SUPPORT),true)
-OBJS += \
-	$(LOCAL_DIR)/pm_pwm.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/pm_pwm.c
 endif
+
+include make/module.mk

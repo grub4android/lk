@@ -26,9 +26,11 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <debug.h>
 #include <stdlib.h>
 #include <string.h>
 #include <err.h>
+#include <assert.h>
 #include <asm.h>
 #include <bits.h>
 #include <arch/ops.h>

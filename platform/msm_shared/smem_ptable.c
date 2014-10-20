@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #include <platform/iomap.h>
 #include <lib/ptable.h>
-
+#include <assert.h>
 #include "smem.h"
 
 

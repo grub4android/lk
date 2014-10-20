@@ -29,6 +29,7 @@
 #include <bam.h>
 #include <reg.h>
 #include <debug.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <arch/ops.h>
 #include <platform.h>

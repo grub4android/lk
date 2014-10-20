@@ -35,6 +35,7 @@
 #include <splash.h>
 #include <platform.h>
 #include <string.h>
+#include <assert.h>
 
 #include "font5x12.h"
 

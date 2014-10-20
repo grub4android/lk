@@ -33,6 +33,7 @@
 
 #include <reg.h>
 #include <debug.h>
+#include <assert.h>
 #include <arch/arm.h>
 #include <kernel/thread.h>
 #include <platform/irqs.h>

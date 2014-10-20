@@ -1,493 +1,501 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += \
-			-I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/dev/panel/msm
+MODULE := $(LOCAL_DIR)
 
-DEFINES += $(TARGET_XRES)
-DEFINES += $(TARGET_YRES)
+MODULE_DEPS += \
+	lib/openssl
 
-OBJS += \
-	$(LOCAL_DIR)/debug.o \
-	$(LOCAL_DIR)/smem.o \
-	$(LOCAL_DIR)/smem_ptable.o \
-	$(LOCAL_DIR)/jtag_hook.o \
-	$(LOCAL_DIR)/jtag.o \
-	$(LOCAL_DIR)/partition_parser.o \
-	$(LOCAL_DIR)/hsusb.o \
-	$(LOCAL_DIR)/boot_stats.o
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR) \
+	$(LOCAL_DIR)/include
+
+GLOBAL_DEFINES += $(TARGET_XRES)
+GLOBAL_DEFINES += $(TARGET_YRES)
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/debug.c \
+	$(LOCAL_DIR)/smem.c \
+	$(LOCAL_DIR)/smem_ptable.c \
+	$(LOCAL_DIR)/jtag_hook.S \
+	$(LOCAL_DIR)/jtag.c \
+	$(LOCAL_DIR)/partition_parser.c \
+	$(LOCAL_DIR)/hsusb.c \
+	$(LOCAL_DIR)/boot_stats.c
 
 ifeq ($(ENABLE_SMD_SUPPORT),1)
-OBJS += \
-	$(LOCAL_DIR)/rpm-smd.o \
-	$(LOCAL_DIR)/smd.o \
-	$(LOCAL_DIR)/regulator.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/rpm-smd.c \
+	$(LOCAL_DIR)/smd.c \
+	$(LOCAL_DIR)/regulator.c
 endif
 
 ifeq ($(ENABLE_SDHCI_SUPPORT),1)
-OBJS += \
-	$(LOCAL_DIR)/sdhci.o \
-	$(LOCAL_DIR)/sdhci_msm.o \
-	$(LOCAL_DIR)/mmc_sdhci.o \
-	$(LOCAL_DIR)/mmc_wrapper.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/sdhci.c \
+	$(LOCAL_DIR)/sdhci_msm.c \
+	$(LOCAL_DIR)/mmc_sdhci.c \
+	$(LOCAL_DIR)/mmc_wrapper.c
 else
-OBJS += \
-	$(LOCAL_DIR)/mmc.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/mmc.c
 endif
 
 ifeq ($(ENABLE_VERIFIED_BOOT),1)
-OBJS += \
-	$(LOCAL_DIR)/boot_verifier.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/boot_verifier.c
 endif
 
 ifeq ($(PLATFORM),msm8x60)
-	OBJS += $(LOCAL_DIR)/mipi_dsi.o \
-			$(LOCAL_DIR)/i2c_qup.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/crypto_eng.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/lcdc.o \
-			$(LOCAL_DIR)/mddi.o \
-			$(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/mdp4.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/hdmi.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/timer.o \
-			$(LOCAL_DIR)/nand.o
+	MODULE_SRCS += $(LOCAL_DIR)/mipi_dsi.c \
+			$(LOCAL_DIR)/i2c_qup.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/crypto_eng.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/lcdc.c \
+			$(LOCAL_DIR)/mddi.c \
+			$(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/mdp4.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/hdmi.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/timer.c \
+			$(LOCAL_DIR)/nand.c
 endif
 
 ifeq ($(PLATFORM),msm8960)
-	OBJS += $(LOCAL_DIR)/hdmi.o \
-			$(LOCAL_DIR)/mipi_dsi.o \
-			$(LOCAL_DIR)/i2c_qup.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/mdp4.o \
-			$(LOCAL_DIR)/crypto4_eng.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/clock-local.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/display.o \
-			$(LOCAL_DIR)/lvds.o \
-			$(LOCAL_DIR)/mipi_dsi_phy.o \
-			$(LOCAL_DIR)/timer.o \
-			$(LOCAL_DIR)/mdp_lcdc.o \
-			$(LOCAL_DIR)/nand.o
+	MODULE_SRCS += $(LOCAL_DIR)/hdmi.c \
+			$(LOCAL_DIR)/mipi_dsi.c \
+			$(LOCAL_DIR)/i2c_qup.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/mdp4.c \
+			$(LOCAL_DIR)/crypto4_eng.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/clock-local.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/lvds.c \
+			$(LOCAL_DIR)/mipi_dsi_phy.c \
+			$(LOCAL_DIR)/timer.c \
+			$(LOCAL_DIR)/mdp_lcdc.c \
+			$(LOCAL_DIR)/nand.c
 endif
 
 ifeq ($(PLATFORM),msm8974)
-DEFINES += DISPLAY_TYPE_MDSS=1
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/mdp5.o \
-			$(LOCAL_DIR)/display.o \
-			$(LOCAL_DIR)/mipi_dsi.o \
-			$(LOCAL_DIR)/mipi_dsi_phy.o \
-			$(LOCAL_DIR)/mipi_dsi_autopll.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/crypto5_eng.o \
-			$(LOCAL_DIR)/crypto5_wrapper.o \
-			$(LOCAL_DIR)/i2c_qup.o \
-			$(LOCAL_DIR)/gpio.o \
-			$(LOCAL_DIR)/dload_util.o \
-			$(LOCAL_DIR)/edp.o \
-			$(LOCAL_DIR)/edp_util.o \
-			$(LOCAL_DIR)/edp_aux.o \
-			$(LOCAL_DIR)/edp_phy.o
+GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/mdp5.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/mipi_dsi.c \
+			$(LOCAL_DIR)/mipi_dsi_phy.c \
+			$(LOCAL_DIR)/mipi_dsi_autopll.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/crypto5_eng.c \
+			$(LOCAL_DIR)/crypto5_wrapper.c \
+			$(LOCAL_DIR)/i2c_qup.c \
+			$(LOCAL_DIR)/gpio.c \
+			$(LOCAL_DIR)/dload_util.c \
+			$(LOCAL_DIR)/edp.c \
+			$(LOCAL_DIR)/edp_util.c \
+			$(LOCAL_DIR)/edp_aux.c \
+			$(LOCAL_DIR)/edp_phy.c
 endif
 
 ifeq ($(PLATFORM),msm8226)
-DEFINES += DISPLAY_TYPE_MDSS=1
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/mdp5.o \
-			$(LOCAL_DIR)/display.o \
-			$(LOCAL_DIR)/mipi_dsi.o \
-			$(LOCAL_DIR)/mipi_dsi_phy.o \
-			$(LOCAL_DIR)/mipi_dsi_autopll.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-            $(LOCAL_DIR)/certificate.o \
-            $(LOCAL_DIR)/image_verify.o \
-            $(LOCAL_DIR)/crypto_hash.o \
-            $(LOCAL_DIR)/crypto5_eng.o \
-            $(LOCAL_DIR)/crypto5_wrapper.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/gpio.o \
-			$(LOCAL_DIR)/dload_util.o \
-			$(LOCAL_DIR)/shutdown_detect.o
+GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/mdp5.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/mipi_dsi.c \
+			$(LOCAL_DIR)/mipi_dsi_phy.c \
+			$(LOCAL_DIR)/mipi_dsi_autopll.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+            $(LOCAL_DIR)/certificate.c \
+            $(LOCAL_DIR)/image_verify.c \
+            $(LOCAL_DIR)/crypto_hash.c \
+            $(LOCAL_DIR)/crypto5_eng.c \
+            $(LOCAL_DIR)/crypto5_wrapper.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/gpio.c \
+			$(LOCAL_DIR)/dload_util.c \
+			$(LOCAL_DIR)/shutdown_detect.c
 endif
 
 ifeq ($(PLATFORM),msm8916)
-DEFINES += DISPLAY_TYPE_MDSS=1
-	OBJS += $(LOCAL_DIR)/qgic.o \
-		$(LOCAL_DIR)/qtimer.o \
-		$(LOCAL_DIR)/qtimer_mmap.o \
-		$(LOCAL_DIR)/interrupts.o \
-		$(LOCAL_DIR)/clock.o \
-		$(LOCAL_DIR)/clock_pll.o \
-		$(LOCAL_DIR)/clock_lib2.o \
-		$(LOCAL_DIR)/uart_dm.o \
-		$(LOCAL_DIR)/board.o \
-		$(LOCAL_DIR)/spmi.o \
-		$(LOCAL_DIR)/bam.o \
-		$(LOCAL_DIR)/scm.o \
-		$(LOCAL_DIR)/qpic_nand.o \
-		$(LOCAL_DIR)/dload_util.o \
-		$(LOCAL_DIR)/gpio.o \
-		$(LOCAL_DIR)/dev_tree.o \
-		$(LOCAL_DIR)/mdp5.o \
-		$(LOCAL_DIR)/display.o \
-		$(LOCAL_DIR)/mipi_dsi.o \
-		$(LOCAL_DIR)/mipi_dsi_phy.o \
-		$(LOCAL_DIR)/mipi_dsi_autopll.o \
-		$(LOCAL_DIR)/shutdown_detect.o \
-		$(LOCAL_DIR)/certificate.o \
-		$(LOCAL_DIR)/image_verify.o \
-		$(LOCAL_DIR)/crypto_hash.o \
-		$(LOCAL_DIR)/crypto5_eng.o \
-		$(LOCAL_DIR)/crypto5_wrapper.o \
-		$(LOCAL_DIR)/i2c_qup.o
+GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+		$(LOCAL_DIR)/qtimer.c \
+		$(LOCAL_DIR)/qtimer_mmap.c \
+		$(LOCAL_DIR)/interrupts.c \
+		$(LOCAL_DIR)/clock.c \
+		$(LOCAL_DIR)/clock_pll.c \
+		$(LOCAL_DIR)/clock_lib2.c \
+		$(LOCAL_DIR)/uart_dm.c \
+		$(LOCAL_DIR)/board.c \
+		$(LOCAL_DIR)/spmi.c \
+		$(LOCAL_DIR)/bam.c \
+		$(LOCAL_DIR)/scm.c \
+		$(LOCAL_DIR)/qpic_nand.c \
+		$(LOCAL_DIR)/dload_util.c \
+		$(LOCAL_DIR)/gpio.c \
+		$(LOCAL_DIR)/dev_tree.c \
+		$(LOCAL_DIR)/mdp5.c \
+		$(LOCAL_DIR)/display.c \
+		$(LOCAL_DIR)/mipi_dsi.c \
+		$(LOCAL_DIR)/mipi_dsi_phy.c \
+		$(LOCAL_DIR)/mipi_dsi_autopll.c \
+		$(LOCAL_DIR)/shutdown_detect.c \
+		$(LOCAL_DIR)/certificate.c \
+		$(LOCAL_DIR)/image_verify.c \
+		$(LOCAL_DIR)/crypto_hash.c \
+		$(LOCAL_DIR)/crypto5_eng.c \
+		$(LOCAL_DIR)/crypto5_wrapper.c \
+		$(LOCAL_DIR)/i2c_qup.c
 
 endif
 
 
 ifeq ($(PLATFORM),msm8610)
-DEFINES += DISPLAY_TYPE_MDSS=1
-    OBJS += $(LOCAL_DIR)/qgic.o \
-            $(LOCAL_DIR)/qtimer.o \
-            $(LOCAL_DIR)/qtimer_mmap.o \
-            $(LOCAL_DIR)/interrupts.o \
-            $(LOCAL_DIR)/clock.o \
-            $(LOCAL_DIR)/clock_pll.o \
-            $(LOCAL_DIR)/clock_lib2.o \
-            $(LOCAL_DIR)/uart_dm.o \
-            $(LOCAL_DIR)/board.o \
-            $(LOCAL_DIR)/display.o \
-            $(LOCAL_DIR)/mipi_dsi.o \
-            $(LOCAL_DIR)/mipi_dsi_phy.o \
-            $(LOCAL_DIR)/mdp3.o \
-            $(LOCAL_DIR)/spmi.o \
-            $(LOCAL_DIR)/bam.o \
-            $(LOCAL_DIR)/qpic_nand.o \
-            $(LOCAL_DIR)/dev_tree.o \
-            $(LOCAL_DIR)/scm.o \
-            $(LOCAL_DIR)/gpio.o \
-            $(LOCAL_DIR)/certificate.o \
-            $(LOCAL_DIR)/image_verify.o \
-            $(LOCAL_DIR)/crypto_hash.o \
-            $(LOCAL_DIR)/crypto5_eng.o \
-            $(LOCAL_DIR)/crypto5_wrapper.o \
-            $(LOCAL_DIR)/dload_util.o \
-            $(LOCAL_DIR)/shutdown_detect.o
+GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
+    MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+            $(LOCAL_DIR)/qtimer.c \
+            $(LOCAL_DIR)/qtimer_mmap.c \
+            $(LOCAL_DIR)/interrupts.c \
+            $(LOCAL_DIR)/clock.c \
+            $(LOCAL_DIR)/clock_pll.c \
+            $(LOCAL_DIR)/clock_lib2.c \
+            $(LOCAL_DIR)/uart_dm.c \
+            $(LOCAL_DIR)/board.c \
+            $(LOCAL_DIR)/display.c \
+            $(LOCAL_DIR)/mipi_dsi.c \
+            $(LOCAL_DIR)/mipi_dsi_phy.c \
+            $(LOCAL_DIR)/mdp3.c \
+            $(LOCAL_DIR)/spmi.c \
+            $(LOCAL_DIR)/bam.c \
+            $(LOCAL_DIR)/qpic_nand.c \
+            $(LOCAL_DIR)/dev_tree.c \
+            $(LOCAL_DIR)/scm.c \
+            $(LOCAL_DIR)/gpio.c \
+            $(LOCAL_DIR)/certificate.c \
+            $(LOCAL_DIR)/image_verify.c \
+            $(LOCAL_DIR)/crypto_hash.c \
+            $(LOCAL_DIR)/crypto5_eng.c \
+            $(LOCAL_DIR)/crypto5_wrapper.c \
+            $(LOCAL_DIR)/dload_util.c \
+            $(LOCAL_DIR)/shutdown_detect.c
 endif
 
 ifeq ($(PLATFORM),apq8084)
-DEFINES += DISPLAY_TYPE_MDSS=1
-    OBJS += $(LOCAL_DIR)/qgic.o \
-            $(LOCAL_DIR)/qtimer.o \
-            $(LOCAL_DIR)/qtimer_mmap.o \
-            $(LOCAL_DIR)/interrupts.o \
-            $(LOCAL_DIR)/clock.o \
-            $(LOCAL_DIR)/clock_pll.o \
-            $(LOCAL_DIR)/clock_lib2.o \
-            $(LOCAL_DIR)/uart_dm.o \
-            $(LOCAL_DIR)/board.o \
-            $(LOCAL_DIR)/mdp5.o \
-            $(LOCAL_DIR)/display.o \
-            $(LOCAL_DIR)/mipi_dsi.o \
-            $(LOCAL_DIR)/mipi_dsi_phy.o \
-            $(LOCAL_DIR)/mipi_dsi_autopll.o \
-            $(LOCAL_DIR)/mdss_hdmi.o \
-            $(LOCAL_DIR)/hdmi_pll_28nm.o \
-            $(LOCAL_DIR)/spmi.o \
-            $(LOCAL_DIR)/bam.o \
-            $(LOCAL_DIR)/qpic_nand.o \
-            $(LOCAL_DIR)/dev_tree.o \
-            $(LOCAL_DIR)/gpio.o \
-            $(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/ufs.o \
-			$(LOCAL_DIR)/utp.o \
-			$(LOCAL_DIR)/uic.o \
-			$(LOCAL_DIR)/ucs.o \
-			$(LOCAL_DIR)/ufs_hci.o \
-			$(LOCAL_DIR)/dme.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/crypto5_eng.o \
-			$(LOCAL_DIR)/crypto5_wrapper.o \
-			$(LOCAL_DIR)/edp.o \
-			$(LOCAL_DIR)/edp_util.o \
-			$(LOCAL_DIR)/edp_aux.o \
-			$(LOCAL_DIR)/edp_phy.o
+GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
+    MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+            $(LOCAL_DIR)/qtimer.c \
+            $(LOCAL_DIR)/qtimer_mmap.c \
+            $(LOCAL_DIR)/interrupts.c \
+            $(LOCAL_DIR)/clock.c \
+            $(LOCAL_DIR)/clock_pll.c \
+            $(LOCAL_DIR)/clock_lib2.c \
+            $(LOCAL_DIR)/uart_dm.c \
+            $(LOCAL_DIR)/board.c \
+            $(LOCAL_DIR)/mdp5.c \
+            $(LOCAL_DIR)/display.c \
+            $(LOCAL_DIR)/mipi_dsi.c \
+            $(LOCAL_DIR)/mipi_dsi_phy.c \
+            $(LOCAL_DIR)/mipi_dsi_autopll.c \
+            $(LOCAL_DIR)/mdss_hdmi.c \
+            $(LOCAL_DIR)/hdmi_pll_28nm.c \
+            $(LOCAL_DIR)/spmi.c \
+            $(LOCAL_DIR)/bam.c \
+            $(LOCAL_DIR)/qpic_nand.c \
+            $(LOCAL_DIR)/dev_tree.c \
+            $(LOCAL_DIR)/gpio.c \
+            $(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/ufs.c \
+			$(LOCAL_DIR)/utp.c \
+			$(LOCAL_DIR)/uic.c \
+			$(LOCAL_DIR)/ucs.c \
+			$(LOCAL_DIR)/ufs_hci.c \
+			$(LOCAL_DIR)/dme.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/crypto5_eng.c \
+			$(LOCAL_DIR)/crypto5_wrapper.c \
+			$(LOCAL_DIR)/edp.c \
+			$(LOCAL_DIR)/edp_util.c \
+			$(LOCAL_DIR)/edp_aux.c \
+			$(LOCAL_DIR)/edp_phy.c
 
 endif
 
 ifeq ($(PLATFORM),msm7x27a)
-	OBJS += $(LOCAL_DIR)/uart.o \
-			$(LOCAL_DIR)/nand.o \
-			$(LOCAL_DIR)/proc_comm.o \
-			$(LOCAL_DIR)/mdp3.o \
-			$(LOCAL_DIR)/mipi_dsi.o \
-			$(LOCAL_DIR)/crypto_eng.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/timer.o \
-			$(LOCAL_DIR)/display.o \
-			$(LOCAL_DIR)/mipi_dsi_phy.o \
-			$(LOCAL_DIR)/mdp_lcdc.o \
-			$(LOCAL_DIR)/spi.o
+	MODULE_SRCS += $(LOCAL_DIR)/uart.c \
+			$(LOCAL_DIR)/nand.c \
+			$(LOCAL_DIR)/proc_comm.c \
+			$(LOCAL_DIR)/mdp3.c \
+			$(LOCAL_DIR)/mipi_dsi.c \
+			$(LOCAL_DIR)/crypto_eng.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/timer.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/mipi_dsi_phy.c \
+			$(LOCAL_DIR)/mdp_lcdc.c \
+			$(LOCAL_DIR)/spi.c
 endif
 
 ifeq ($(PLATFORM),msm7k)
-	OBJS += $(LOCAL_DIR)/uart.o \
-			$(LOCAL_DIR)/nand.o \
-			$(LOCAL_DIR)/proc_comm.o \
-			$(LOCAL_DIR)/lcdc.o \
-			$(LOCAL_DIR)/mddi.o \
-			$(LOCAL_DIR)/timer.o
+	MODULE_SRCS += $(LOCAL_DIR)/uart.c \
+			$(LOCAL_DIR)/nand.c \
+			$(LOCAL_DIR)/proc_comm.c \
+			$(LOCAL_DIR)/lcdc.c \
+			$(LOCAL_DIR)/mddi.c \
+			$(LOCAL_DIR)/timer.c
 endif
 
 ifeq ($(PLATFORM),msm7x30)
-	OBJS += $(LOCAL_DIR)/crypto_eng.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/uart.o \
-			$(LOCAL_DIR)/nand.o \
-			$(LOCAL_DIR)/proc_comm.o \
-			$(LOCAL_DIR)/lcdc.o \
-			$(LOCAL_DIR)/mddi.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/timer.o
+	MODULE_SRCS += $(LOCAL_DIR)/crypto_eng.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/uart.c \
+			$(LOCAL_DIR)/nand.c \
+			$(LOCAL_DIR)/proc_comm.c \
+			$(LOCAL_DIR)/lcdc.c \
+			$(LOCAL_DIR)/mddi.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/timer.c
 endif
 
 ifeq ($(PLATFORM),mdm9x15)
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/nand.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/timer.o
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/nand.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/timer.c
 endif
 
 ifeq ($(PLATFORM),mdm9x25)
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c
 endif
 
 ifeq ($(PLATFORM),mdm9x35)
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/qmp_usb30_phy.o
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/qmp_usb30_phy.c
 endif
 
 ifeq ($(PLATFORM),msmzirc)
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/gpio.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/qmp_usb30_phy.o \
-			$(LOCAL_DIR)/qusb2_phy.o
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/gpio.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/qmp_usb30_phy.c \
+			$(LOCAL_DIR)/qusb2_phy.c
 endif
 
 ifeq ($(PLATFORM),fsm9900)
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/crypto5_eng.o \
-			$(LOCAL_DIR)/crypto5_wrapper.o \
-			$(LOCAL_DIR)/i2c_qup.o \
-			$(LOCAL_DIR)/gpio.o \
-			$(LOCAL_DIR)/dload_util.o
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/crypto5_eng.c \
+			$(LOCAL_DIR)/crypto5_wrapper.c \
+			$(LOCAL_DIR)/i2c_qup.c \
+			$(LOCAL_DIR)/gpio.c \
+			$(LOCAL_DIR)/dload_util.c
 endif
 
 ifeq ($(PLATFORM),fsm9010)
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/crypto5_eng.o \
-			$(LOCAL_DIR)/crypto5_wrapper.o \
-			$(LOCAL_DIR)/i2c_qup.o \
-			$(LOCAL_DIR)/gpio.o \
-			$(LOCAL_DIR)/dload_util.o
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/crypto5_eng.c \
+			$(LOCAL_DIR)/crypto5_wrapper.c \
+			$(LOCAL_DIR)/i2c_qup.c \
+			$(LOCAL_DIR)/gpio.c \
+			$(LOCAL_DIR)/dload_util.c
 endif
 
 ifeq ($(PLATFORM),msm8994)
-DEFINES += DISPLAY_TYPE_MDSS=1
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/gpio.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/ufs.o \
-			$(LOCAL_DIR)/utp.o \
-			$(LOCAL_DIR)/uic.o \
-			$(LOCAL_DIR)/ucs.o \
-			$(LOCAL_DIR)/ufs_hci.o \
-			$(LOCAL_DIR)/dme.o \
-			$(LOCAL_DIR)/qmp_usb30_phy.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/crypto5_eng.o \
-			$(LOCAL_DIR)/crypto5_wrapper.o \
-			$(LOCAL_DIR)/qusb2_phy.o \
-			$(LOCAL_DIR)/mdp5.o \
-			$(LOCAL_DIR)/display.o \
-			$(LOCAL_DIR)/mipi_dsi.o \
-			$(LOCAL_DIR)/mipi_dsi_phy.o \
-			$(LOCAL_DIR)/mipi_dsi_autopll.o \
-			$(LOCAL_DIR)/mipi_dsi_autopll_20nm.o
+GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/gpio.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/ufs.c \
+			$(LOCAL_DIR)/utp.c \
+			$(LOCAL_DIR)/uic.c \
+			$(LOCAL_DIR)/ucs.c \
+			$(LOCAL_DIR)/ufs_hci.c \
+			$(LOCAL_DIR)/dme.c \
+			$(LOCAL_DIR)/qmp_usb30_phy.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/crypto5_eng.c \
+			$(LOCAL_DIR)/crypto5_wrapper.c \
+			$(LOCAL_DIR)/qusb2_phy.c \
+			$(LOCAL_DIR)/mdp5.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/mipi_dsi.c \
+			$(LOCAL_DIR)/mipi_dsi_phy.c \
+			$(LOCAL_DIR)/mipi_dsi_autopll.c \
+			$(LOCAL_DIR)/mipi_dsi_autopll_20nm.c
 endif
 
 ifeq ($(PLATFORM),msm8909)
-	OBJS += $(LOCAL_DIR)/qgic.o \
-			$(LOCAL_DIR)/qtimer.o \
-			$(LOCAL_DIR)/qtimer_mmap.o \
-			$(LOCAL_DIR)/interrupts.o \
-			$(LOCAL_DIR)/clock.o \
-			$(LOCAL_DIR)/clock_pll.o \
-			$(LOCAL_DIR)/clock_lib2.o \
-			$(LOCAL_DIR)/uart_dm.o \
-			$(LOCAL_DIR)/board.o \
-			$(LOCAL_DIR)/spmi.o \
-			$(LOCAL_DIR)/bam.o \
-			$(LOCAL_DIR)/qpic_nand.o \
-			$(LOCAL_DIR)/scm.o \
-			$(LOCAL_DIR)/dev_tree.o \
-			$(LOCAL_DIR)/gpio.o \
-			$(LOCAL_DIR)/crypto_hash.o \
-			$(LOCAL_DIR)/crypto5_eng.o \
-			$(LOCAL_DIR)/crypto5_wrapper.o \
-			$(LOCAL_DIR)/dload_util.o \
-			$(LOCAL_DIR)/shutdown_detect.o \
-			$(LOCAL_DIR)/certificate.o \
-			$(LOCAL_DIR)/image_verify.o \
-			$(LOCAL_DIR)/i2c_qup.o \
-			$(LOCAL_DIR)/mdp3.o \
-			$(LOCAL_DIR)/display.o \
-			$(LOCAL_DIR)/mipi_dsi.o \
-			$(LOCAL_DIR)/mipi_dsi_phy.o \
-			$(LOCAL_DIR)/mipi_dsi_autopll.o
+	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
+			$(LOCAL_DIR)/qtimer.c \
+			$(LOCAL_DIR)/qtimer_mmap.c \
+			$(LOCAL_DIR)/interrupts.c \
+			$(LOCAL_DIR)/clock.c \
+			$(LOCAL_DIR)/clock_pll.c \
+			$(LOCAL_DIR)/clock_lib2.c \
+			$(LOCAL_DIR)/uart_dm.c \
+			$(LOCAL_DIR)/board.c \
+			$(LOCAL_DIR)/spmi.c \
+			$(LOCAL_DIR)/bam.c \
+			$(LOCAL_DIR)/qpic_nand.c \
+			$(LOCAL_DIR)/scm.c \
+			$(LOCAL_DIR)/dev_tree.c \
+			$(LOCAL_DIR)/gpio.c \
+			$(LOCAL_DIR)/crypto_hash.c \
+			$(LOCAL_DIR)/crypto5_eng.c \
+			$(LOCAL_DIR)/crypto5_wrapper.c \
+			$(LOCAL_DIR)/dload_util.c \
+			$(LOCAL_DIR)/shutdown_detect.c \
+			$(LOCAL_DIR)/certificate.c \
+			$(LOCAL_DIR)/image_verify.c \
+			$(LOCAL_DIR)/i2c_qup.c \
+			$(LOCAL_DIR)/mdp3.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/mipi_dsi.c \
+			$(LOCAL_DIR)/mipi_dsi_phy.c \
+			$(LOCAL_DIR)/mipi_dsi_autopll.c
 endif
 
 ifeq ($(ENABLE_BOOT_CONFIG_SUPPORT), 1)
-	OBJS += \
-		$(LOCAL_DIR)/boot_device.o
+	MODULE_SRCS += \
+		$(LOCAL_DIR)/boot_device.c
 endif
 
 ifeq ($(ENABLE_USB30_SUPPORT),1)
-	OBJS += \
-		$(LOCAL_DIR)/usb30_dwc.o \
-		$(LOCAL_DIR)/usb30_dwc_hw.o \
-		$(LOCAL_DIR)/usb30_udc.o \
-		$(LOCAL_DIR)/usb30_wrapper.o
+	MODULE_SRCS += \
+		$(LOCAL_DIR)/usb30_dwc.c \
+		$(LOCAL_DIR)/usb30_dwc_hw.c \
+		$(LOCAL_DIR)/usb30_udc.c \
+		$(LOCAL_DIR)/usb30_wrapper.c
 endif
+
+include make/module.mk
