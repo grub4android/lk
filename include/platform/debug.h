@@ -27,10 +27,11 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <compiler.h>
+#include <scm.h>
 
 __BEGIN_CDECLS
 
-void platform_halt(void) __NO_RETURN;
+void platform_halt(void);
 
 void platform_dputc(char c);
 int platform_dgetc(char *c, bool wait);

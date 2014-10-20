@@ -172,4 +172,27 @@
 #define BDEV_CMD_ERR_GENERAL (1 << BDEV_CMD_ERRSHIFT)
 #define BDEV_CMD_ERR_BAD_OFFSET (2 << BDEV_CMD_ERRSHIFT)
 
+/* block device interface */
+#define BDEV_REGS_BASE (NET_REGS_BASE + NET_REGS_SIZE)
+#define BDEV_REGS_SIZE MEMBANK_SIZE
+
+#define BDEV_CMD	(BDEV_REGS_BASE + 0)	/* command */
+#define BDEV_CMD_ADDR	(BDEV_REGS_BASE + 4)	/* address of next transfer, 32bit */
+#define BDEV_CMD_OFF	(BDEV_REGS_BASE + 8)	/* offset of next transfer, 64bit */
+#define BDEV_CMD_LEN	(BDEV_REGS_BASE + 16)	/* length of next transfer, 32bit */
+
+#define BDEV_LEN	(BDEV_REGS_BASE + 20)	/* length of block device, 64bit */
+
+/* BDEV_CMD bits */
+#define BDEV_CMD_MASK	(0x3)
+#define BDEV_CMD_NOP	(0)
+#define BDEV_CMD_READ	(1)
+#define BDEV_CMD_WRITE	(2)
+#define BDEV_CMD_ERASE	(3)
+#define BDEV_CMD_ERRSHIFT	16
+#define BDEV_CMD_ERRMASK	(0xffff << BDEV_CMD_ERRSHIFT)
+#define BDEV_CMD_ERR_NONE (0 << BDEV_CMD_ERRSHIFT)
+#define BDEV_CMD_ERR_GENERAL (1 << BDEV_CMD_ERRSHIFT)
+#define BDEV_CMD_ERR_BAD_OFFSET (2 << BDEV_CMD_ERRSHIFT)
+
 #endif

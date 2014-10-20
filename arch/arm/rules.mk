@@ -156,7 +156,6 @@ MODULE_ARM_OVERRIDE_SRCS := \
 
 GLOBAL_DEFINES += \
 	ARCH_DEFAULT_STACK_SIZE=4096
-
 ARCH_OPTFLAGS := -O2
 endif
 ifeq ($(SUBARCH),arm-m)
@@ -238,6 +237,18 @@ GENERATED += \
 	$(BUILDDIR)/system-twosegment.ld
 
 # rules for generating the linker scripts
+
+
+
+$(BUILDDIR)/trustzone-test-system-onesegment.ld: $(LOCAL_DIR)/trustzone-test-system-onesegment.ld
+	@echo generating $@
+	@$(MKDIR)
+	$(NOECHO)sed "s/%MEMBASE%/$(MEMBASE)/;s/%MEMSIZE%/$(MEMSIZE)/;s/%ROMLITE_PREFLASHED_DATA%/$(ROMLITE_PREFLASHED_DATA)/" < $< > $@
+
+$(BUILDDIR)/trustzone-system-onesegment.ld: $(LOCAL_DIR)/trustzone-system-onesegment.ld
+	@echo generating $@
+	@$(MKDIR)
+	$(NOECHO)sed "s/%MEMBASE%/$(MEMBASE)/;s/%MEMSIZE%/$(MEMSIZE)/" < $< > $@
 
 $(BUILDDIR)/system-onesegment.ld: $(LOCAL_DIR)/system-onesegment.ld $(wildcard arch/*.ld)
 	@echo generating $@

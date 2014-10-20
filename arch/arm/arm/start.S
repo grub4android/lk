@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2008-2013 Travis Geiselbrecht
  *
+ * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -41,25 +43,57 @@ platform_reset:
 
 .globl arm_reset
 arm_reset:
+
+#ifdef ENABLE_TRUSTZONE
+	/*Add reference to TZ symbol so linker includes it in final image */
+	ldr r7, =_binary_tzbsp_tzbsp_bin_start
+#endif
 	/* do some cpu setup */
 #if ARM_WITH_CP15
+        /* Read SCTLR */
 	mrc		p15, 0, r0, c1, c0, 0
 		/* XXX this is currently for arm926, revist with armv6 cores */
 		/* new thumb behavior, low exception vectors, i/d cache disable, mmu disabled */
 	bic		r0, r0, #(1<<15| 1<<13 | 1<<12)
 	bic		r0, r0, #(1<<2 | 1<<1 | 1<<0)
-#if ARM_ARCH_LEVEL < 6
-		/* enable alignment faults on pre-ARMv6 hardware. On v6+,
-		 * GCC is free to generate unaligned accesses.
-		 */
-	orr		r0, r0, #(1<<1)
+		/* disable alignment faults */
+	bic		r0, r0, #(1<<1)
+	/* Enable CP15 barriers by default */
+#ifdef ARM_CORE_V8
+	orr		r0, r0, #(1<<5)
 #endif
+        /* Write SCTLR */
 	mcr		p15, 0, r0, c1, c0, 0
+#ifdef ENABLE_TRUSTZONE
+  /*nkazi: not needed ? Setting VBAR to location of new vector table : 0x80000      */
+ ldr             r0, =0x00080000
+ mcr             p15, 0, r0, c12, c0, 0
+#endif
 #endif
 
 #if WITH_CPU_EARLY_INIT
 	/* call platform/arch/etc specific init code */
+#ifndef ENABLE_TRUSTZONE
+	/* Not needed when TrustZone is the first bootloader that runs.*/
 	bl __cpu_early_init
+#endif
+	/* declare return address as global to avoid using stack */
+.globl _cpu_early_init_complete
+	_cpu_early_init_complete:
+
+#endif
+
+#if (!ENABLE_NANDWRITE)
+#if WITH_CPU_WARM_BOOT
+	ldr 	r0, warm_boot_tag
+	cmp 	r0, #1
+
+	/* if set, warm boot */
+	ldreq 	pc, =BASE_ADDR
+
+	mov 	r0, #1
+	str	r0, warm_boot_tag
+#endif
 #endif
 
 	/* see if we need to relocate */
@@ -84,6 +118,10 @@ arm_reset:
 	bx		r0
 
 .ltorg
+#if WITH_CPU_WARM_BOOT
+warm_boot_tag:
+	.word 0
+#endif
 
 .Lstack_setup:
 	/* set up the stack for irq, fiq, abort, undefined, system/user, and lastly supervisor mode */
@@ -132,6 +170,11 @@ arm_reset:
 	cmp		r0, r1
 	strlt	r2, [r0], #4
 	blt		.L__bss_loop
+
+#ifdef ARM_CPU_CORTEX_A8
+	DSB
+	ISB
+#endif
 
 	bl		lk_main
 	b		.

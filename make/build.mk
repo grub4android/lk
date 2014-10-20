@@ -13,10 +13,18 @@ $(OUTELF).hex: $(OUTELF)
 	@echo generating hex file: $@
 	$(NOECHO)$(OBJCOPY) -O ihex $< $@
 
+ifeq ($(ENABLE_TRUSTZONE), 1)
+$(OUTELF): $(ALLMODULE_OBJS) $(EXTRA_OBJS) $(LINKER_SCRIPT) $(OUTPUT_TZ_BIN)
+	@echo linking $@
+	$(NOECHO)$(SIZE) -t --common $(sort $(ALLMODULE_OBJS))
+	$(NOECHO)$(LD) $(GLOBAL_LDFLAGS) -T $(LINKER_SCRIPT) $(OUTPUT_TZ_BIN) $(ALLMODULE_OBJS) $(EXTRA_OBJS) $(LIBGCC) -o $@
+else
 $(OUTELF): $(ALLMODULE_OBJS) $(EXTRA_OBJS) $(LINKER_SCRIPT)
 	@echo linking $@
 	$(NOECHO)$(SIZE) -t --common $(sort $(ALLMODULE_OBJS))
 	$(NOECHO)$(LD) $(GLOBAL_LDFLAGS) -T $(LINKER_SCRIPT) $(ALLMODULE_OBJS) $(EXTRA_OBJS) $(LIBGCC) -o $@
+endif
+
 
 $(OUTELF).sym: $(OUTELF)
 	@echo generating symbols: $@
@@ -37,6 +45,16 @@ $(OUTELF).debug.lst: $(OUTELF)
 $(OUTELF).size: $(OUTELF)
 	@echo generating size map: $@
 	$(NOECHO)$(NM) -S --size-sort $< > $@
+
+ifeq ($(ENABLE_TRUSTZONE), 1)
+$(OUTPUT_TZ_BIN): $(INPUT_TZ_BIN)
+	@echo generating TZ output from TZ input
+	$(NOECHO)$(OBJCOPY) -I binary -B arm -O elf32-littlearm $(INPUT_TZ_BIN) $(OUTPUT_TZ_BIN)
+endif
+
+$(OUTELF_STRIP): $(OUTELF)
+	@echo generating stripped elf: $@
+	$(NOECHO)$(STRIP) -S $< -o $@
 
 #include arch/$(ARCH)/compile.mk
 

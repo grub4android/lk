@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2008-2012 Travis Geiselbrecht
  *
+ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -25,6 +27,16 @@
 
 #include <stdbool.h>
 
+
+/* Target helper functions exposed to USB driver */
+typedef struct {
+	void (*mux_config) ();
+	void (*phy_reset) ();
+	void (*phy_init) ();
+	void (*clock_init) ();
+	uint8_t vbus_override;
+} target_usb_iface_t;
+
 /* super early platform initialization, before almost everything */
 void target_early_init(void);
 
@@ -40,4 +52,39 @@ void target_set_debug_led(unsigned int led, bool on);
 #define target_set_debug_led(led, on) ((void)(0))
 #endif
 
+/* get memory address for fastboot image loading */
+void *target_get_scratch_address(void);
+
+/* get the max allowed flash size */
+unsigned target_get_max_flash_size(void);
+
+/* if target is using eMMC bootup */
+int target_is_emmc_boot(void);
+
+unsigned* target_atag_mem(unsigned* ptr);
+void target_battery_charging_enable(unsigned enable, unsigned disconnect);
+unsigned target_pause_for_battery_charge(void);
+unsigned target_baseband(void);
+void target_serialno(unsigned char *buf);
+void target_fastboot_init(void);
+void target_load_ssd_keystore(void);
+bool target_is_ssd_enabled(void);
+void *target_mmc_device();
+uint32_t is_user_force_reset(void);
+
+bool target_display_panel_node(char *panel_name, char *pbuf,
+	uint16_t buf_size);
+void target_display_init(const char *panel_name);
+void target_display_shutdown(void);
+
+uint32_t target_get_boot_device();
+
+const char * target_usb_controller();
+void target_usb_phy_reset(void);
+void target_usb_phy_mux_configure(void);
+target_usb_iface_t * target_usb30_init();
+bool target_is_cdp_qvga();
+uint32_t target_hw_interposer();
+uint32_t target_override_pll();
+uint32_t target_ddr_cfg_val();
 #endif

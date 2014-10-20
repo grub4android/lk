@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008-2012 Travis Geiselbrecht
+ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -116,33 +117,26 @@ FUNCTION(arch_disable_cache)
 	beq		.Ldcache_already_disabled
 
 	bic		r0, #(1<<2)
+	// make sure all data operations are completed
+	dsb
 	mcr		p15, 0, r0, c1, c0, 0		// disable dcache
+	// make sure previous instruction finishes before we clean and flush
+	isb
 
 	// flush and invalidate the dcache
 	// NOTE: trashes a bunch of registers, can't be spilling stuff to the stack
 	bl		flush_invalidate_cache_v7
-
-	b		.Ldcache_disable_L2
 
 .Ldcache_already_disabled:
 	// make sure all of the caches are invalidated
 	// NOTE: trashes a bunch of registers, can't be spilling stuff to the stack
 	bl		invalidate_cache_v7
 
-.Ldcache_disable_L2:
-
-#if ARM_WITH_L2
-	// disable the L2, if present
-	mrc     p15, 0, r0, c1, c0, 1		// aux cr1
-	bic		r0, #(1<<1)
-	mcr		p15, 0, r0, c1, c0, 1		// disable L2 dcache
-#endif
 #if WITH_DEV_CACHE_PL310
     bl      pl310_flush_invalidate
     mov     r0, #0
     bl      pl310_set_enable
 #endif
-
 .Licache_disable:
 	tst		r7, #ICACHE
 	beq		.Ldone_disable
@@ -150,11 +144,15 @@ FUNCTION(arch_disable_cache)
 	mrc     p15, 0, r0, c1, c0, 0		// cr1
 	bic		r0, #(1<<12)
 	mcr		p15, 0, r0, c1, c0, 0		// disable icache
+	// make sure previous instruction finishes
+	isb
 
 .Ldone_disable:
 	// make sure the icache is always invalidated
 	mov		r0, #0
 	mcr		p15, 0, r0, c7, c5, 0		// invalidate icache to PoU
+	// make sure that data is in sync
+	dsb
 
 	msr		cpsr, r12
 	ldmfd	sp!, {r4-r11, pc}
@@ -179,18 +177,11 @@ FUNCTION(arch_enable_cache)
 	// NOTE: trashes a bunch of registers, can't be spilling stuff to the stack
 	bl		invalidate_cache_v7
 
-#if ARM_WITH_L2
-	// enable the L2, if present
-	mrc     p15, 0, r0, c1, c0, 1		// aux cr1
-	orr		r0, #(1<<1)
-	mcr		p15, 0, r0, c1, c0, 1		// enable L2 dcache
-#endif
 #if WITH_DEV_CACHE_PL310
     bl      pl310_invalidate
     mov     r0, #1
     bl      pl310_set_enable
 #endif
-
 	mrc     p15, 0, r0, c1, c0, 0		// cr1
 	orr		r0, #(1<<2)
 	mcr		p15, 0, r0, c1, c0, 0		// enable dcache
@@ -210,8 +201,9 @@ FUNCTION(arch_enable_cache)
 	msr		cpsr, r12
 	ldmfd	sp!, {r4-r11, pc}
 
-// flush & invalidate cache routine, trashes r0-r6, r9-r11
+// flush & invalidate cache routine
 flush_invalidate_cache_v7:
+	DMB
 	/* from ARMv7 manual, B2-17 */
 	dmb
 	MRC 	p15, 1, R0, c0, c0, 1 		// Read CLIDR 
@@ -232,18 +224,18 @@ flush_invalidate_cache_v7:
 	ADD 	R2, R2, #4 					// add 4 for the line length offset (log2 16 bytes) 
 	LDR 	R4, =0x3FF 
 	ANDS 	R4, R4, R1, LSR #3 			// R4 is the max number on the way size (right aligned) 
-	CLZ 	R5, R4 						// R5 is the bit position of the way size increment 
-	LDR 	R6, =0x00007FFF 
-	ANDS 	R6, R6, R1, LSR #13 		// R6 is the max number of the index size (right aligned) 
+	CLZ 	R5, R4 						// R5 is the bit position of the way size increment
+	MOV		R9, R4						// R9 working copy of max way size (right aligned)
 .Loop2:
-	MOV 	R9, R4 						// R9 working copy of the max way size (right aligned) 
+	LDR 	R7, =0x00007FFF
+	ANDS 	R7, R7, R1, LSR #13 		// R7 is the max number of the index size (right aligned)
 .Loop3:
 	ORR 	R11, R10, R9, LSL R5 		// factor in the way number and cache number into R11 
-	ORR 	R11, R11, R6, LSL R2 		// factor in the index number 
-	MCR 	p15, 0, R11, c7, c14, 2 	// clean & invalidate by set/way 
-	SUBS 	R9, R9, #1 					// decrement the way number 
+	ORR 	R11, R11, R7, LSL R2 		// factor in the index number
+	MCR 	p15, 0, R11, c7, c10, 2 	// clean & invalidate by set/way
+	SUBS 	R7, R7, #1 					// decrement the index
 	BGE 	.Loop3 
-	SUBS 	R6, R6, #1 					// decrement the index 
+	SUBS 	R9, R9, #1 					// decrement the index
 	BGE 	.Loop2 
 .Lskip:
  	ADD 	R10, R10, #2 					// increment the cache number 
@@ -258,7 +250,7 @@ flush_invalidate_cache_v7:
 
 	bx		lr
 
-// invalidate cache routine, trashes r0-r6, r9-r11
+// invalidate cache routine
 invalidate_cache_v7:
 	/* from ARMv7 manual, B2-17 */
 	dmb
@@ -281,17 +273,17 @@ invalidate_cache_v7:
 	LDR 	R4, =0x3FF 
 	ANDS 	R4, R4, R1, LSR #3 			// R4 is the max number on the way size (right aligned) 
 	CLZ 	R5, R4 						// R5 is the bit position of the way size increment 
-	LDR 	R6, =0x00007FFF 
-	ANDS 	R6, R6, R1, LSR #13 		// R6 is the max number of the index size (right aligned) 
+	MOV		R9, R4						//R9 working copy of the max way size (right aligned)
 .Loop2_invalidate:
-	MOV 	R9, R4 						// R9 working copy of the max way size (right aligned) 
+	LDR 	R7, =0x00007FFF
+	ANDS 	R7, R7, R1, LSR #13 		// R7 is the max number of the index size (right aligned)
 .Loop3_invalidate:
 	ORR 	R11, R10, R9, LSL R5 		// factor in the way number and cache number into R11 
-	ORR 	R11, R11, R6, LSL R2 		// factor in the index number 
+	ORR 	R11, R11, R7, LSL R2 		// factor in the index number
 	MCR 	p15, 0, R11, c7, c6, 2 		// invalidate by set/way 
-	SUBS 	R9, R9, #1 					// decrement the way number 
+	SUBS 	R7, R7, #1 					// decrement the way number
 	BGE 	.Loop3_invalidate 
-	SUBS 	R6, R6, #1 					// decrement the index 
+	SUBS 	R9, R9, #1 					// decrement the index
 	BGE 	.Loop2_invalidate 
 .Lskip_invalidate:
  	ADD 	R10, R10, #2 				// increment the cache number 
@@ -302,6 +294,7 @@ invalidate_cache_v7:
 	dsb
 	mov		r10, #0
 	mcr		p15, 2, r10, c0, c0, 0		// select cache level 0
+	dsb
 	isb
 
 	bx		lr
@@ -351,6 +344,15 @@ FUNCTION(arch_clean_invalidate_cache_range)
 #if WITH_DEV_CACHE_PL310
     b       pl310_clean_invalidate_range
 #else
+FUNCTION(arch_invalidate_cache_range)
+0:
+	/* invalidate cache line */
+	mcr		p15, 0, r0, c7, c6, 1
+	add		r0, r0, #CACHE_LINE
+	subs	r1, r1, #CACHE_LINE
+	bhs		0b
+	mov		r0, #0
+	dsb
 	bx		lr
 #endif
 

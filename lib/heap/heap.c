@@ -287,6 +287,11 @@ void *heap_alloc(size_t size, unsigned int alignment)
 	if (alignment & (alignment - 1))
 		return NULL;
 
+	if(size > (size + sizeof(struct alloc_struct_begin)))
+	{
+		dprintf(CRITICAL, "invalid input size\n");
+		return NULL;
+	}
 	// we always put a size field + base pointer + magic in front of the allocation
 	size += sizeof(struct alloc_struct_begin);
 #if DEBUG_HEAP
@@ -308,6 +313,11 @@ void *heap_alloc(size_t size, unsigned int alignment)
 			alignment = 16;
 
 		// add alignment for worst case fit
+		if(size > (size + alignment))
+		{
+			dprintf(CRITICAL, "invalid input alignment\n");
+			return NULL;
+		}
 		size += alignment;
 	}
 
@@ -386,6 +396,28 @@ void *heap_alloc(size_t size, unsigned int alignment)
 
 	return ptr;
 }
+
+void *heap_realloc(void *ptr, size_t size)
+{
+	void * tmp_ptr = NULL;
+	size_t min_size;
+	struct alloc_struct_begin *as = (struct alloc_struct_begin *)ptr;
+	as--;
+
+	if (size != 0){
+		tmp_ptr = heap_alloc(size, 0);
+		if (ptr != NULL && tmp_ptr != NULL){
+			min_size = (size < as->size) ? size : as->size;
+			memcpy(tmp_ptr, ptr, min_size);
+			heap_free(ptr);
+		}
+	} else {
+		if (ptr != NULL)
+			heap_free(ptr);
+	}
+	return(tmp_ptr);
+}
+
 
 void heap_free(void *ptr)
 {

@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2008 Travis Geiselbrecht
  *
+ * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -24,9 +26,14 @@
 #define __PLATFORM_H
 
 #include <sys/types.h>
+#include <dload_util.h>
+
+#define PA(x) platform_get_virt_to_phys_mapping(x)
+#define VA(x) platform_get_phys_to_virt_mapping(x)
 
 lk_time_t current_time(void);
 lk_bigtime_t current_time_hires(void);
+
 
 /* super early platform initialization, before almost everything */
 void platform_early_init(void);
@@ -35,6 +42,20 @@ void platform_early_init(void);
 void platform_init(void);
 
 /* called by the arch init code to get the platform to set up any mmu mappings it may need */
+int platform_use_identity_mmu_mappings(void);
 void platform_init_mmu_mappings(void);
+addr_t platform_get_virt_to_phys_mapping(addr_t virt_addr);
+addr_t platform_get_phys_to_virt_mapping(addr_t phys_addr);
 
+void display_init(void);
+void display_shutdown(void);
+void display_image_on_screen(void);
+
+unsigned board_machtype(void);
+unsigned board_platform_id(void);
+unsigned check_reboot_mode(void);
+void platform_uninit_timer(void);
+void reboot_device(unsigned);
+int set_download_mode(enum dload_mode mode);
+uint32_t platform_get_smem_base_addr();
 #endif

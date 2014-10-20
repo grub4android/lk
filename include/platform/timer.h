@@ -34,5 +34,11 @@ status_t platform_set_oneshot_timer (platform_timer_callback callback, void *arg
 void     platform_stop_timer(void);
 #endif
 
+void mdelay(unsigned msecs);
+void udelay(unsigned usecs);
+
+uint32_t platform_tick_rate(void);
+
+
 #endif
 

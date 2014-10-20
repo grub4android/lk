@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2008-2014 Travis Geiselbrecht
  *
+ * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -32,6 +34,14 @@
 #include <platform.h>
 #include <platform/debug.h>
 #include <kernel/thread.h>
+#include <kernel/timer.h>
+#include <rand.h>
+
+void __attribute__ ((noreturn))
+__stack_chk_fail (void)
+{
+	panic("stack smashing detected.");
+}
 
 void spin(uint32_t usecs)
 {
@@ -127,7 +137,11 @@ static int _dprintf_output_func(const char *str, size_t len, void *state)
 
 int _dprintf(const char *fmt, ...)
 {
+	char ts_buf[13];
 	int err;
+
+	snprintf(ts_buf, sizeof(ts_buf), "[%u] ", current_time());
+	dputs(ALWAYS, ts_buf);
 
 	va_list ap;
 	va_start(ap, fmt);

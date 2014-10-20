@@ -209,6 +209,8 @@ static enum handler_return timer_tick(void *arg, lk_time_t now)
 
 	LTRACEF("now %lu, sp %p\n", now, __GET_FRAME());
 
+//	TRACEF("now %d\n", now);
+
 	for (;;) {
 		/* see if there's an event to process */
 		timer = list_peek_head_type(&timer_queue, timer_t, node);
@@ -224,6 +226,7 @@ static enum handler_return timer_tick(void *arg, lk_time_t now)
 		list_delete(&timer->node);
 
 		LTRACEF("dequeued timer %p, scheduled %lu periodic %lu\n", timer, timer->scheduled_time, timer->periodic_time);
+
 
 		THREAD_STATS_INC(timers);
 

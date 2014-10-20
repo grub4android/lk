@@ -2,6 +2,8 @@
  * Copyright (c) 2008, Google Inc.
  * All rights reserved.
  *
+ * Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -29,7 +31,29 @@
 #ifndef __DEV_FBCON_H
 #define __DEV_FBCON_H
 
+#include <stdint.h>
+#define LOGO_IMG_OFFSET (12*1024*1024)
+#define LOGO_IMG_MAGIC "SPLASH!!"
+#define LOGO_IMG_MAGIC_SIZE sizeof(LOGO_IMG_MAGIC) - 1
+
+
+struct logo_img_header {
+    unsigned char magic[LOGO_IMG_MAGIC_SIZE]; // "SPLASH!!"
+    uint32_t width; // logo's width, little endian
+    uint32_t height; // logo's height, little endian
+    uint32_t offset;
+    unsigned char reserved[512-20];
+};
+
+struct fbimage {
+	struct logo_img_header  header;
+	void *image;
+};
+
 #define FB_FORMAT_RGB565 0
+#define FB_FORMAT_RGB666 1
+#define FB_FORMAT_RGB666_LOOSE 2
+#define FB_FORMAT_RGB888 3
 
 struct fbcon_config {
 	void        *base;
@@ -45,5 +69,7 @@ struct fbcon_config {
 
 void fbcon_setup(struct fbcon_config *cfg);
 void fbcon_putc(char c);
+void fbcon_clear(void);
+struct fbcon_config* fbcon_display(void);
 
 #endif /* __DEV_FBCON_H */

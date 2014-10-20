@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2013 Travis Geiselbrecht
  *
+ * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -35,6 +37,7 @@
 #include <lib/heap.h>
 #include <kernel/thread.h>
 #include <lk/init.h>
+#include <boot_stats.h>
 
 extern void *__ctor_list;
 extern void *__ctor_end;
@@ -44,6 +47,10 @@ extern int _end;
 static int bootstrap2(void *arg);
 
 extern void kernel_init(void);
+
+#if (ENABLE_NANDWRITE)
+void bootstrap_nandwrite(void);
+#endif
 
 static void call_constructors(void)
 {
@@ -82,6 +89,7 @@ void lk_main(void)
 	target_early_init();
 
 	dprintf(INFO, "welcome to lk\n\n");
+	bs_set_timestamp(BS_BL_START);
 
 	// deal with any static constructors
 	dprintf(SPEW, "calling constructors\n");
@@ -92,12 +100,15 @@ void lk_main(void)
 	lk_init_level(LK_INIT_LEVEL_HEAP - 1);
 	heap_init();
 
+	__stack_chk_guard_setup();
+
 	// initialize the kernel
 	lk_init_level(LK_INIT_LEVEL_KERNEL - 1);
 	kernel_init();
 
 	lk_init_level(LK_INIT_LEVEL_THREADING - 1);
 
+#if (!ENABLE_NANDWRITE)
 	// create a thread to complete system initialization
 	dprintf(SPEW, "creating bootstrap completion thread\n");
 	thread_t *t = thread_create("bootstrap2", &bootstrap2, NULL, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE);
@@ -106,6 +117,9 @@ void lk_main(void)
 
 	// become the idle thread and enable interrupts to start the scheduler
 	thread_become_idle();
+#else
+        bootstrap_nandwrite();
+#endif
 }
 
 static int bootstrap2(void *arg)
@@ -114,6 +128,14 @@ static int bootstrap2(void *arg)
 
 	lk_init_level(LK_INIT_LEVEL_ARCH - 1);
 	arch_init();
+
+	// XXX put this somewhere else
+#if WITH_LIB_BIO
+	bio_init();
+#endif
+#if WITH_LIB_FS
+	fs_init();
+#endif
 
 	// initialize the rest of the platform
 	dprintf(SPEW, "initializing platform\n");
@@ -134,3 +156,24 @@ static int bootstrap2(void *arg)
 	return 0;
 }
 
+#if (ENABLE_NANDWRITE)
+void bootstrap_nandwrite(void)
+{
+	dprintf(SPEW, "top of bootstrap2()\n");
+
+	arch_init();
+
+	// initialize the rest of the platform
+	dprintf(SPEW, "initializing platform\n");
+	platform_init();
+
+	// initialize the target
+	dprintf(SPEW, "initializing target\n");
+	target_init();
+
+	dprintf(SPEW, "calling nandwrite_init()\n");
+	nandwrite_init();
+
+	return 0;
+}
+#endif

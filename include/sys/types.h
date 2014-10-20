@@ -50,6 +50,13 @@ typedef unsigned long lk_time_t;
 typedef unsigned long long lk_bigtime_t;
 #define INFINITE_TIME ULONG_MAX
 
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+
+#define TIME_GTE(a, b) ((long)((a) - (b)) >= 0)
+#define TIME_LTE(a, b) ((long)((a) - (b)) <= 0)
+#define TIME_GT(a, b) ((long)((a) - (b)) > 0)
+#define TIME_LT(a, b) ((long)((a) - (b)) < 0)
+
 #define TIME_GTE(a, b) ((long)((a) - (b)) >= 0)
 #define TIME_LTE(a, b) ((long)((a) - (b)) <= 0)
 #define TIME_GT(a, b) ((long)((a) - (b)) > 0)

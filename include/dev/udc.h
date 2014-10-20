@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2009, Google Inc.
  * All rights reserved.
+ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,11 +30,13 @@
 #ifndef __DEV_UDC_H
 #define __DEV_UDC_H
 
+#include <target.h>
+
 /* USB Device Controller Transfer Request */
 struct udc_request {
 	void *buf;
 	unsigned length;
-	void (*complete)(struct udc_request *req, unsigned actual, int status);
+	void (*complete)();
 	void *context;
 };
 
@@ -76,6 +79,7 @@ struct udc_device {
 	const char *manufacturer;
 	const char *product;
 	const char *serialno;
+	target_usb_iface_t *t_usb_if;
 };
 
 int udc_init(struct udc_device *devinfo);
@@ -112,6 +116,16 @@ int udc_stop(void);
 #define INTERFACE_WRITE      0x01
 #define ENDPOINT_READ        0x82
 #define ENDPOINT_WRITE       0x02
+
+#define TEST_SE0_NAK		 0x0300
+#define TEST_PACKET          0x0400
+#define PORTSC_PTC           (0xF << 16)
+#define PORTSC_PTC_SE0_NAK	 (0x03 << 16)
+#define PORTSC_PTC_TST_PKT   (0x4 << 16)
+
+#define USB_EP_NUM_MASK      0x0f
+#define USB_EP_DIR_MASK      0x80
+#define USB_EP_DIR_IN        0x80
 
 struct setup_packet {
 	unsigned char type;

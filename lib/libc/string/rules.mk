@@ -25,6 +25,7 @@ C_STRING_OPS := \
 	strnlen \
 	strpbrk \
 	strrchr \
+	strrev \
 	strspn \
 	strstr \
 	strtok \
@@ -39,4 +40,3 @@ include $(LOCAL_DIR)/arch/$(ARCH)/rules.mk
 
 MODULE_SRCS += \
 	$(addprefix $(LIBC_STRING_C_DIR)/,$(addsuffix .c,$(C_STRING_OPS)))
-
