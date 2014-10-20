@@ -26,6 +26,7 @@
 #include <arch.h>
 #include <arch/arm.h>
 #include <arch/arm/mmu.h>
+#include <platform.h>
 
 #if ARM_WITH_MMU
 
@@ -90,6 +91,8 @@ void arm_mmu_init(void)
 	for (addr_t i=0; i < 4096; i++) {
 		arm_mmu_map_section(i * MB, i * MB, MMU_INIT_MAP_FLAGS);
 	}
+
+	platform_init_mmu_mappings();
 
 	/* set up the translation table base */
 	arm_write_ttbr0((uint32_t)tt);
