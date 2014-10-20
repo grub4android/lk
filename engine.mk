@@ -46,7 +46,7 @@ CONFIGHEADER := $(BUILDDIR)/config.h
 GLOBAL_INCLUDES := $(BUILDDIR) $(LKROOT)/include $(addsuffix /include,$(LKINC))
 GLOBAL_OPTFLAGS ?= $(ARCH_OPTFLAGS)
 GLOBAL_COMPILEFLAGS := -g -fno-builtin -finline -W -Wall -Wno-multichar -Wno-unused-parameter -Wno-unused-function -include $(CONFIGHEADER)
-GLOBAL_CFLAGS := --std=gnu99 -Werror-implicit-function-declaration -Wstrict-prototypes
+GLOBAL_CFLAGS := --std=gnu99 -Wstrict-prototypes
 #GLOBAL_CFLAGS += -Werror
 GLOBAL_CPPFLAGS := -fno-exceptions -fno-rtti -fno-threadsafe-statics
 #GLOBAL_CPPFLAGS += -Weffc++
@@ -54,6 +54,9 @@ GLOBAL_ASMFLAGS := -DASSEMBLY
 GLOBAL_LDFLAGS :=
 
 GLOBAL_LDFLAGS += -L $(LKROOT)
+
+GLOBAL_CFLAGS += -ffunction-sections -fdata-sections
+GLOBAL_LDFLAGS += -gc-sections
 
 # top level rule
 all:: $(OUTBIN) $(OUTELF).lst $(OUTELF).debug.lst $(OUTELF).sym $(OUTELF).sym.sorted $(OUTELF).size $(OUTELF).hex
