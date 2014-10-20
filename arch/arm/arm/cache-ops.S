@@ -137,6 +137,7 @@ FUNCTION(arch_disable_cache)
     mov     r0, #0
     bl      pl310_set_enable
 #endif
+
 .Licache_disable:
 	tst		r7, #ICACHE
 	beq		.Ldone_disable
@@ -182,6 +183,7 @@ FUNCTION(arch_enable_cache)
     mov     r0, #1
     bl      pl310_set_enable
 #endif
+
 	mrc     p15, 0, r0, c1, c0, 0		// cr1
 	orr		r0, #(1<<2)
 	mcr		p15, 0, r0, c1, c0, 0		// enable dcache
@@ -203,7 +205,6 @@ FUNCTION(arch_enable_cache)
 
 // flush & invalidate cache routine
 flush_invalidate_cache_v7:
-	DMB
 	/* from ARMv7 manual, B2-17 */
 	dmb
 	MRC 	p15, 1, R0, c0, c0, 1 		// Read CLIDR 

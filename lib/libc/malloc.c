@@ -48,6 +48,7 @@ void *calloc(size_t count, size_t size)
 	return ptr;
 }
 
+#if WITH_PLATFORM_MSM_SHARED
 void *realloc(void *ptr, size_t size)
 {
 	if (!ptr)
@@ -63,14 +64,15 @@ void *realloc(void *ptr, size_t size)
 
 	return p;
 }
+#else
+void *realloc(void *ptr, size_t size)
+{
+	return(heap_realloc(ptr, size));
+}
+#endif
 
 void free(void *ptr)
 {
 	return heap_free(ptr);
 }
-
-/*void *realloc(void *ptr, size_t size)
-{
-	return(heap_realloc(ptr, size));
-}*/
 

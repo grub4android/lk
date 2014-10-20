@@ -50,24 +50,32 @@ arm_reset:
 #endif
 	/* do some cpu setup */
 #if ARM_WITH_CP15
-        /* Read SCTLR */
 	mrc		p15, 0, r0, c1, c0, 0
 		/* XXX this is currently for arm926, revist with armv6 cores */
 		/* new thumb behavior, low exception vectors, i/d cache disable, mmu disabled */
 	bic		r0, r0, #(1<<15| 1<<13 | 1<<12)
 	bic		r0, r0, #(1<<2 | 1<<1 | 1<<0)
-		/* disable alignment faults */
+#if ARM_ARCH_LEVEL < 6
+		/* enable alignment faults on pre-ARMv6 hardware. On v6+,
+		 * GCC is free to generate unaligned accesses.
+		 */
+	orr		r0, r0, #(1<<1)
+#else
+	/* disable alignment faults */
 	bic		r0, r0, #(1<<1)
-	/* Enable CP15 barriers by default */
+#endif
+		
 #ifdef ARM_CORE_V8
+	/* Enable CP15 barriers by default */
 	orr		r0, r0, #(1<<5)
 #endif
-        /* Write SCTLR */
+
 	mcr		p15, 0, r0, c1, c0, 0
+
 #ifdef ENABLE_TRUSTZONE
-  /*nkazi: not needed ? Setting VBAR to location of new vector table : 0x80000      */
- ldr             r0, =0x00080000
- mcr             p15, 0, r0, c12, c0, 0
+	/* nkazi: not needed ? Setting VBAR to location of new vector table : 0x80000 */
+	ldr             r0, =0x00080000
+	mcr             p15, 0, r0, c12, c0, 0
 #endif
 #endif
 
@@ -172,8 +180,8 @@ warm_boot_tag:
 	blt		.L__bss_loop
 
 #ifdef ARM_CPU_CORTEX_A8
-	DSB
-	ISB
+	dsb
+	isb
 #endif
 
 	bl		lk_main
