@@ -32,6 +32,7 @@
 #include <err.h>
 #include <limits.h>
 #include <bits.h>
+#include <assert.h>
 #include <clock.h>
 #include <clock-local.h>
 #include <platform/timer.h>

@@ -39,8 +39,7 @@
 #include <platform/clock.h>
 #include <platform/timer.h>
 #include <sys/types.h>
-
-extern void dmb(void);
+#include <arch/defines.h>
 
 static int xo_clk_enable(struct clk *clk)
 {

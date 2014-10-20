@@ -50,7 +50,7 @@
 
 static platform_timer_callback timer_callback;
 static void *timer_arg;
-static time_t timer_interval;
+static lk_time_t timer_interval;
 
 static volatile uint32_t ticks;
 
@@ -62,7 +62,7 @@ static enum handler_return timer_irq(void *arg)
 
 status_t
 platform_set_periodic_timer(platform_timer_callback callback,
-			    void *arg, time_t interval)
+			    void *arg, lk_time_t interval)
 {
 	uint32_t tick_count = interval * platform_tick_rate() / 1000;
 
@@ -83,7 +83,7 @@ platform_set_periodic_timer(platform_timer_callback callback,
 	return 0;
 }
 
-time_t current_time(void)
+lk_time_t current_time(void)
 {
 	return ticks;
 }
@@ -132,7 +132,7 @@ void udelay(unsigned usecs)
 }
 
 /* Return current time in micro seconds */
-bigtime_t current_time_hires(void)
+lk_bigtime_t current_time_hires(void)
 {
 	return ticks * 1000ULL;
 }

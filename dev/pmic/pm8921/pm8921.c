@@ -484,12 +484,12 @@ int pm8921_low_voltage_switch_enable(uint8_t lvs_id)
 
 	if (lvs_id < lvs_start || lvs_id > lvs_end) {
 		dprintf(CRITICAL, "Requested unsupported LVS.\n");
-		return ERROR;
+		return ERR_NOT_SUPPORTED;
 	}
 
 	if (lvs_id == lvs_2) {
 		dprintf(CRITICAL, "No support for LVS2 yet!\n");
-		return ERROR;
+		return ERR_NOT_SUPPORTED;
 	}
 
 	/* Read LVS_TEST Reg first*/
@@ -522,7 +522,7 @@ int pm8921_mpp_set_digital_output(uint8_t mpp_id)
 
 	if (mpp_id < mpp_start || mpp_id > mpp_end) {
 		dprintf(CRITICAL, "Requested unsupported MPP.\n");
-		return ERROR;
+		return ERR_NOT_SUPPORTED;
 	}
 
 	val = 0;

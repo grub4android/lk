@@ -49,8 +49,8 @@ struct gpio_keypad_info {
 	int ninputs;
 	int noutputs;
 	/* time to wait before reading inputs after driving each output */
-	time_t settle_time;
-	time_t poll_time;
+	lk_time_t settle_time;
+	lk_time_t poll_time;
 	unsigned flags;
 };
 
@@ -148,8 +148,8 @@ struct qwerty_keypad_info {
 	gpio_get_func  key_gpio_get;
 
 	/* time to wait before reading inputs after driving each output */
-	time_t         settle_time;
-	time_t         poll_time;
+	lk_time_t         settle_time;
+	lk_time_t         poll_time;
 	unsigned       flags;
 };
 

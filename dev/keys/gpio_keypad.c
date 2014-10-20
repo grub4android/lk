@@ -103,7 +103,7 @@ static void check_output(struct gpio_kp *kp, int out, int polarity)
 }
 
 static enum handler_return
-gpio_keypad_timer_func(struct timer *timer, time_t now, void *arg)
+gpio_keypad_timer_func(struct timer *timer, lk_time_t now, void *arg)
 {
 	struct gpio_kp *kp = keypad;
 	struct gpio_keypad_info *kpinfo = kp->keypad_info;
@@ -312,7 +312,7 @@ static void ssbi_gpio_init(unsigned int mach_id)
 }
 
 static enum handler_return
-scan_qwerty_keypad(struct timer *timer, time_t now, void *arg)
+scan_qwerty_keypad(struct timer *timer, lk_time_t now, void *arg)
 {
     unsigned int rows = (qwerty_keypad->keypad_info)->rows;
     unsigned int columns = (qwerty_keypad->keypad_info)->columns;
@@ -359,7 +359,7 @@ scan_qwerty_keypad(struct timer *timer, time_t now, void *arg)
 }
 
 static enum handler_return
-scan_qt_keypad(struct timer *timer, time_t now, void *arg)
+scan_qt_keypad(struct timer *timer, lk_time_t now, void *arg)
 {
     unsigned int gpio;
     unsigned int last_state=0;
@@ -436,7 +436,7 @@ void ssbi_keypad_init(struct qwerty_keypad_info  *qwerty_kp)
 }
 
 static enum handler_return
-scan_qwerty_gpio_keypad(struct timer *timer, time_t now, void *arg)
+scan_qwerty_gpio_keypad(struct timer *timer, lk_time_t now, void *arg)
 {
 	int i=0;
 	int num =0;

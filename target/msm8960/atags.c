@@ -28,6 +28,7 @@
 
 #include <reg.h>
 #include <debug.h>
+#include <assert.h>
 #include <smem.h>
 #include <stdint.h>
 #include "board.h"

@@ -30,6 +30,7 @@
 
 #include <reg.h>
 #include <debug.h>
+#include <assert.h>
 #include <malloc.h>
 #include <smem.h>
 #include <stdint.h>

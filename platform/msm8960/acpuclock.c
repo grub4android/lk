@@ -28,6 +28,7 @@
 
 #include <debug.h>
 #include <reg.h>
+#include <assert.h>
 #include <platform/iomap.h>
 #include <platform/clock.h>
 #include <uart_dm.h>

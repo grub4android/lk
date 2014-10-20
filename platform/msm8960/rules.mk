@@ -1,28 +1,32 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
+MODULE := $(LOCAL_DIR)
+
 ARCH    := arm
 ARM_CPU := cortex-a8
 CPU     := generic
 
-DEFINES += ARM_CPU_CORE_KRAIT
+GLOBAL_DEFINES += ARM_CPU_CORE_KRAIT
 
 MMC_SLOT         := 1
 
-DEFINES += WITH_CPU_EARLY_INIT=0 WITH_CPU_WARM_BOOT=0 \
+GLOBAL_DEFINES += WITH_CPU_EARLY_INIT=0 WITH_CPU_WARM_BOOT=0 \
 	   MMC_SLOT=$(MMC_SLOT) MDP4=1 SSD_ENABLE
 
-INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared/include
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR)/include
 
 DEVS += fbcon
-MODULES += dev/fbcon
+MODULE_DEPS += \
+	dev/fbcon \
+	platform/msm_shared
 
-OBJS += \
-	$(LOCAL_DIR)/platform.o \
-	$(LOCAL_DIR)/acpuclock.o \
-	$(LOCAL_DIR)/gpio.o \
-	$(LOCAL_DIR)/clock.o
+MODULE_SRCS += \
+	$(LOCAL_DIR)/platform.c \
+	$(LOCAL_DIR)/acpuclock.c \
+	$(LOCAL_DIR)/gpio.c \
+	$(LOCAL_DIR)/clock.c
 
 LINKER_SCRIPT += $(BUILDDIR)/system-onesegment.ld
 
-include platform/msm_shared/rules.mk
-
+include make/module.mk

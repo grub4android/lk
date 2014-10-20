@@ -1,6 +1,10 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_DIR)/include
+MODULE := $(LOCAL_DIR)
 
-OBJS += \
-	$(LOCAL_DIR)/ssbi.o
+GLOBAL_INCLUDES += $(LOCAL_DIR)/include
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/ssbi.c
+
+include make/module.mk

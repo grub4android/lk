@@ -29,6 +29,7 @@
 
 #include <debug.h>
 #include <reg.h>
+#include <assert.h>
 #include <platform/iomap.h>
 #include <platform/gpio.h>
 #include <gsbi.h>

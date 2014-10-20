@@ -51,8 +51,9 @@
 #include <crypto_hash.h>
 #include <board.h>
 #include <target/board.h>
+#include <assert.h>
+#include <arch/defines.h>
 
-extern void dmb(void);
 extern void msm8960_keypad_init(void);
 extern void msm8930_keypad_init(void);
 extern void panel_backlight_on_mitwo(unsigned int on);
