@@ -514,13 +514,18 @@ int mipi_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo)
 }
 
 #if TARGET_MSM8960_ARIES
+static int aries_display_initialized = 0;
 void trigger_mdp_dsi(void)
 {
+	if(!aries_display_initialized)
+		return;
+
 	dsb();
 	mdp_start_dma();
 	mdelay(10);
 	dsb();
 	writel(0x1, DSI_CMD_MODE_MDP_SW_TRIGGER);
+	mdelay(10);
 }
 
 int
@@ -601,6 +606,7 @@ config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 	writel(0x1, DSI_EOT_PACKET_CTRL);
 	// writel(0x0, MDP_OVERLAYPROC0_START);
 
+	aries_display_initialized = 1;
 	trigger_mdp_dsi();
 
 	status = 1;
