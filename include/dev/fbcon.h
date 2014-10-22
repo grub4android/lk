@@ -70,6 +70,7 @@ struct fbcon_config {
 void fbcon_setup(struct fbcon_config *cfg);
 void fbcon_putc(char c);
 void fbcon_clear(void);
+void fbcon_flush(void);
 struct fbcon_config* fbcon_display(void);
 
 #endif /* __DEV_FBCON_H */
