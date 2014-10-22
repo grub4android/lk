@@ -32,6 +32,13 @@
 #include <dev/fbcon.h>
 #include <mipi_dsi.h>
 #include <target/display.h>
+#include <string.h>
+
+static void* real_fb = NULL;
+void sync_sw_buffer(void) {
+	struct fbcon_config *config = fbcon_display();
+	memcpy(real_fb, config->base, (config->width*config->height*config->bpp/8));
+}
 
 void target_display_init(const char *panel_name)
 {
@@ -44,7 +51,7 @@ void target_display_init(const char *panel_name)
 	struct fbcon_config *config = NULL;
 	config = (struct fbcon_config*)malloc(sizeof(struct fbcon_config));
 
-	config->base = (void*)fb_addr;
+	real_fb = (void*)fb_addr;
 	config->width = DISPLAY_2NDSTAGE_WIDTH;
 	config->height = DISPLAY_2NDSTAGE_HEIGHT;
 	config->stride = config->width;
@@ -52,11 +59,14 @@ void target_display_init(const char *panel_name)
 	config->format = DSI_VIDEO_DST_FORMAT_RGB888;
 	config->update_start = NULL;
 	config->update_done = NULL;
+	config->base = calloc(config->width*config->height*config->bpp/8, 1);
+
+#if TARGET_MSM8960_ARIES
+	config->update_start = trigger_mdp_dsi;
+#else
+	config->update_start = sync_sw_buffer;
+#endif
 
 	fbcon_setup(config);
 	display_image_on_screen();
-
-#if TARGET_MSM8960_ARIES
-	trigger_mdp_dsi();
-#endif
 }

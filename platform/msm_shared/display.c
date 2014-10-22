@@ -269,6 +269,10 @@ int msm_display_init(struct msm_fb_panel_data *pdata)
 	if (ret)
 		goto msm_display_init_out;
 
+#if TARGET_MSM8960_ARIES
+	panel->fb.update_start = trigger_mdp_dsi;
+#endif
+
 	fbcon_setup(&(panel->fb));
 	display_image_on_screen();
 	ret = msm_display_config();
