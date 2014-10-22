@@ -148,6 +148,7 @@ struct ept_queue_head *epts = 0;
 
 static int usb_online = 0;
 static int usb_highspeed = 0;
+static int usb_suspend = 1;
 
 static struct udc_device *the_device;
 static struct udc_gadget *the_gadget;
@@ -770,6 +771,7 @@ enum handler_return udc_interrupt(void *arg)
 	}
 	if (n & STS_SLI) {
 		DBG("-- suspend --\n");
+		usb_suspend = 1;
 	}
 	if (n & STS_PCI) {
 		dprintf(INFO, "-- portchange --\n");
@@ -779,6 +781,7 @@ enum handler_return udc_interrupt(void *arg)
 		} else {
 			usb_highspeed = 0;
 		}
+		usb_suspend = 0;
 	}
 	if (n & STS_UEI) {
 		DBG("STS_UEI\n");
@@ -946,4 +949,8 @@ int udc_stop(void)
 	while(readl(USB_USBCMD) & USBCMD_RESET);
 
 	return 0;
+}
+
+int usb_is_connected(void) {
+	return usb_online && !usb_suspend;
 }
