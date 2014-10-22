@@ -59,11 +59,15 @@ void target_display_init(const char *panel_name)
 	config->format = DSI_VIDEO_DST_FORMAT_RGB888;
 	config->update_start = NULL;
 	config->update_done = NULL;
-	config->base = calloc(config->width*config->height*config->bpp/8, 1);
 
 #if TARGET_MSM8960_ARIES
+	config->base = real_fb;
 	config->update_start = trigger_mdp_dsi;
 #else
+	uint8_t* fb = real_fb;
+	int fb_size = (config->width*config->height*config->bpp/8);
+	config->base = fb + fb_size;
+	memset(config->base, 0, fb_size);
 	config->update_start = sync_sw_buffer;
 #endif
 
