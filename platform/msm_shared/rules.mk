@@ -528,3 +528,6 @@ ifeq ($(ENABLE_USB30_SUPPORT),1)
 endif
 
 include make/module.mk
+
+include target/$(TARGET)/tools/makefile
+EXTRA_BUILDDEPS += APPSBOOTHEADER
