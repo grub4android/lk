@@ -9,9 +9,14 @@
 #include <platform.h>
 
 #include "menu_private.h"
+#include "../aboot/grub.h"
 
 static void menu_exec_normal(void) {
 	boot_linux_from_storage(BOOTMODE_NORMAL);
+}
+
+static void menu_exec_grub(void) {
+	grub_boot();
 }
 
 static void menu_exec_recovery(void) {
@@ -42,6 +47,7 @@ static void menu_reboot(void) {
 struct menu_entry entries_main[] = {
 	{"    Normal Powerup", &menu_exec_normal, NULL},
 	{"    Recovery", &menu_exec_recovery, NULL},
+	{"    GRUB", &menu_exec_grub, NULL},
 	{"    Download Mode", &menu_dload_mode, NULL},
 	{"    Settings", &menu_settings, NULL},
 	{"    Reboot", &menu_reboot, NULL},
