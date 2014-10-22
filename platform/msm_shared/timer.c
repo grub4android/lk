@@ -105,6 +105,7 @@ void platform_uninit_timer(void)
 
 void mdelay(unsigned msecs)
 {
+	enter_critical_section();
 	msecs *= 33;
 
 	writel(0, GPT_CLEAR);
@@ -116,10 +117,12 @@ void mdelay(unsigned msecs)
 
 	writel(0, GPT_ENABLE);
 	writel(0, GPT_CLEAR);
+	exit_critical_section();
 }
 
 void udelay(unsigned usecs)
 {
+	enter_critical_section();
 	usecs = (usecs * 33 + 1000 - 33) / 1000;
 
 	writel(0, GPT_CLEAR);
@@ -131,6 +134,7 @@ void udelay(unsigned usecs)
 
 	writel(0, GPT_ENABLE);
 	writel(0, GPT_CLEAR);
+	exit_critical_section();
 }
 
 /* Return current time in micro seconds */
