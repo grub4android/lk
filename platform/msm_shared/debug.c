@@ -47,6 +47,10 @@
 #include <vibrator.h>
 #endif
 
+#if WITH_APP_MENU
+#include <app/menu.h>
+#endif
+
 static void write_dcc(char c)
 {
 	uint32_t timeout = 10;
@@ -125,6 +129,9 @@ void platform_dputc(char c)
 #endif
 #if WITH_DEBUG_JTAG
 	jtag_dputc(c);
+#endif
+#if WITH_APP_MENU
+	menu_putc(c);
 #endif
 }
 

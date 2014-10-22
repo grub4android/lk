@@ -7,6 +7,7 @@ MODULE_DEPS += \
 	lib/tar \
 	app/aboot/uboot_api
 
+GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
 GLOBAL_DEFINES += ASSERT_ON_TAMPER=1
 

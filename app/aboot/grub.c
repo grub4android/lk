@@ -12,6 +12,10 @@
 #include <ext4_mmcdev.h>
 #include <kernel/thread.h>
 
+#if WITH_APP_DISPLAY_SERVER
+#include <app/display_server.h>
+#endif
+
 #include "grub.h"
 #include "stat.h"
 #include "uboot_api/uboot_part.h"
@@ -257,6 +261,11 @@ static int grub_sideload_handler(void *data)
 	// BOOT !
 	void (*entry)(unsigned, unsigned, unsigned*) = (void*)hdr->kernel_addr;
 	dprintf(INFO, "booting GRUB from sideload @ %p ramdisk @ %p\n", entry, (void*)hdr->ramdisk_addr);
+
+#if WITH_APP_DISPLAY_SERVER
+	display_server_stop();
+#endif
+
 	entry(0, board_machtype(), NULL);
 
 	return 0;
@@ -299,6 +308,11 @@ int grub_boot(void)
 boot:
 	// BOOT !
 	dprintf(INFO, "booting GRUB @ %p\n", entry);
+
+#if WITH_APP_DISPLAY_SERVER
+	display_server_stop();
+#endif
+
 	entry(0, board_machtype(), NULL);
 	
 	return 0;

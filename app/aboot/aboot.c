@@ -60,6 +60,10 @@
 #include <platform/msm_shared.h>
 #include <boot_device.h>
 #include <boot_verifier.h>
+#if WITH_APP_DISPLAY_SERVER
+#include <app/display_server.h>
+#endif
+#include <app/aboot.h>
 #include <api_public.h>
 #include "uboot_api/api_private.h"
 #include "grub.h"
@@ -693,6 +697,10 @@ void boot_linux(void *kernel, unsigned *tags,
 	dprintf(INFO, "booting linux @ %p, ramdisk @ %p (%d), tags/device tree @ %p\n",
 		entry, ramdisk, ramdisk_size, (void*)tags_phys);
 
+#if WITH_APP_DISPLAY_SERVER
+	display_server_stop();
+#endif
+
 	enter_critical_section();
 
 	/* do any platform specific cleanup before kernel entry */
@@ -927,7 +935,7 @@ void boot_verifier_init(void)
 	}
 }
 
-int boot_linux_from_mmc(void)
+int boot_linux_from_mmc(enum bootmode bootmode)
 {
 	struct boot_img_hdr *hdr = (void*) buf;
 	struct boot_img_hdr *uhdr;
@@ -972,30 +980,57 @@ int boot_linux_from_mmc(void)
 		hdr = uhdr;
 		goto unified_boot;
 	}
-	if (!boot_into_recovery) {
-#if WITH_XIAOMI_DUALBOOT
-		check_boot_image();
 
-		if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
-			index = partition_get_index("boot1");
-		else
+	const char* partname = NULL;
+	if(bootmode==BOOTMODE_AUTO) {
+		if(!boot_into_recovery) {
+#if WITH_XIAOMI_DUALBOOT
+			check_boot_image();
+
+			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+				partname = "boot1";
+			else
 #endif
-		{
-			index = partition_get_index("boot");
+			{
+				partname = "boot";
+			}
+			boot_into_recovery = 0;
 		}
-		ptn = partition_get_offset(index);
-		if(ptn == 0) {
-			dprintf(CRITICAL, "ERROR: No boot partition found\n");
-                    return -1;
+		else {
+			partname = "recovery";
+			boot_into_recovery = 1;
 		}
 	}
+
+	else if(bootmode==BOOTMODE_NORMAL) {
+#if WITH_XIAOMI_DUALBOOT
+			check_boot_image();
+
+			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+				partname = "boot1";
+			else
+#endif
+			{
+				partname = "boot";
+			}
+			boot_into_recovery = 0;
+	}
+
+	else if(bootmode==BOOTMODE_RECOVERY) {
+		partname = "recovery";
+		boot_into_recovery = 1;
+	}
+
 	else {
-		index = partition_get_index("recovery");
-		ptn = partition_get_offset(index);
-		if(ptn == 0) {
-			dprintf(CRITICAL, "ERROR: No recovery partition found\n");
-                    return -1;
-		}
+		dprintf(CRITICAL, "ERROR: Invalid bootmode %d\n", bootmode);
+                return -1;
+	}
+
+	index = partition_get_index(partname);
+	ptn = partition_get_offset(index);
+	if(ptn == 0) {
+		dprintf(CRITICAL, "ERROR: partition '%s' not found\n", partname);
+                return -1;
 	}
 
 	if (mmc_read(ptn + offset, (unsigned int *) buf, page_size)) {
@@ -1306,7 +1341,7 @@ unified_boot:
 	return 0;
 }
 
-int boot_linux_from_flash(void)
+int boot_linux_from_flash(enum bootmode bootmode)
 {
 	struct boot_img_hdr *hdr = (void*) buf;
 	struct ptentry *ptn;
@@ -1341,23 +1376,56 @@ int boot_linux_from_flash(void)
 		return -1;
 	}
 
-	if(!boot_into_recovery)
-	{
-	        ptn = ptable_find(ptable, "boot");
+	const char* partname = NULL;
+	if(bootmode==BOOTMODE_AUTO) {
+		if(!boot_into_recovery) {
+#if WITH_XIAOMI_DUALBOOT
+			check_boot_image();
 
-	        if (ptn == NULL) {
-		        dprintf(CRITICAL, "ERROR: No boot partition found\n");
-		        return -1;
-	        }
+			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+				partname = "boot1";
+			else
+#endif
+			{
+				partname = "boot";
+			}
+			boot_into_recovery = 0;
+		}
+		else {
+			partname = "recovery";
+			boot_into_recovery = 1;
+		}
 	}
-	else
-	{
-	        ptn = ptable_find(ptable, "recovery");
-	        if (ptn == NULL) {
-		        dprintf(CRITICAL, "ERROR: No recovery partition found\n");
-		        return -1;
-	        }
+
+	else if(bootmode==BOOTMODE_NORMAL) {
+#if WITH_XIAOMI_DUALBOOT
+			check_boot_image();
+
+			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+				partname = "boot1";
+			else
+#endif
+			{
+				partname = "boot";
+			}
+			boot_into_recovery = 0;
 	}
+
+	else if(bootmode==BOOTMODE_RECOVERY) {
+		partname = "recovery";
+		boot_into_recovery = 1;
+	}
+
+	else {
+		dprintf(CRITICAL, "ERROR: Invalid bootmode %d\n", bootmode);
+                return -1;
+	}
+
+    ptn = ptable_find(ptable, partname);
+    if (ptn == NULL) {
+        dprintf(CRITICAL, "ERROR: partition '%s' not found\n", partname);
+        return -1;
+    }
 
 	if (flash_read(ptn, offset, buf, page_size)) {
 		dprintf(CRITICAL, "ERROR: Cannot read boot image header\n");
@@ -2513,6 +2581,19 @@ void cmd_flash(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
+int boot_linux_from_storage(enum bootmode bootmode) {
+	fastboot_stop();
+
+	if (target_is_emmc_boot())
+	{
+		return boot_linux_from_mmc(bootmode);
+	}
+	else
+	{
+		return boot_linux_from_flash(bootmode);
+	}
+}
+
 void cmd_continue(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
@@ -2521,16 +2602,7 @@ void cmd_continue(const char *arg, void *data, unsigned sz)
 	if(grub_boot())
 		return;
 
-	fastboot_stop();
-
-	if (target_is_emmc_boot())
-	{
-		boot_linux_from_mmc();
-	}
-	else
-	{
-		boot_linux_from_flash();
-	}
+	boot_linux_from_storage(BOOTMODE_AUTO);
 }
 
 void cmd_reboot(const char *arg, void *data, unsigned sz)
@@ -3121,7 +3193,7 @@ normal_boot:
 				#endif
 				}
 			}
-			boot_linux_from_mmc();
+			boot_linux_from_mmc(BOOTMODE_AUTO);
 		}
 		else
 		{
@@ -3130,7 +3202,7 @@ normal_boot:
 		if((device.is_unlocked) || (device.is_tampered))
 			set_tamper_flag(device.is_tampered);
 	#endif
-			boot_linux_from_flash();
+			boot_linux_from_flash(BOOTMODE_AUTO);
 		}
 
 boot_error:
@@ -3148,6 +3220,10 @@ boot_error:
 
 	/* initialize and start fastboot */
 	fastboot_init(target_get_scratch_address(), target_get_max_flash_size());
+
+#if WITH_APP_DISPLAY_SERVER
+	display_server_start();
+#endif
 }
 
 uint32_t get_page_size(void)

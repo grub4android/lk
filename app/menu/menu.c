@@ -1,0 +1,268 @@
+#include <app.h>
+#include <debug.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <kernel/event.h>
+#include <kernel/thread.h>
+#include <arch/ops.h>
+#include <dev/udc.h>
+#include <dev/fbcon.h>
+#include <dev/keys.h>
+#include <lib/pf2font.h>
+#include <app/aboot.h>
+#include <platform.h>
+#include <kernel/mutex.h>
+#include <app/display_server.h>
+
+#include LKFONT_HEADER
+
+#define MENU_TEXT_COLOR 0, 115, 255
+#define NORMAL_TEXT_COLOR 255, 255, 255
+#define DIVIDER_COLOR 6,140,158
+#define LOG_COLOR 255,255,0
+
+static int block_user = 0;
+static unsigned selection = 0;
+
+static uint8_t color_r = 0xff;
+static uint8_t color_g = 0xff;
+static uint8_t color_b = 0xff;
+
+struct menu_entry {
+	const char* name;
+	void (*execute)(void);
+};
+
+static void menu_exec_normal(void) {
+	boot_linux_from_storage(BOOTMODE_NORMAL);
+}
+
+static void menu_exec_recovery(void) {
+	boot_linux_from_storage(BOOTMODE_RECOVERY);
+}
+
+static void menu_dload_mode(void) {
+	if (set_download_mode(EMERGENCY_DLOAD))
+	{
+		dprintf(CRITICAL,"dload mode not supported by target\n");
+	}
+	else
+	{
+		reboot_device(DLOAD);
+		dprintf(CRITICAL,"Failed to reboot into dload mode\n");
+	}
+}
+
+static void menu_reboot(void) {
+	reboot_device(DLOAD);
+	dprintf(CRITICAL,"Failed to reboot\n");
+}
+
+static int menu_entry_handler(void* p) {
+	void (*fn)(void) = p;
+
+	fn();
+	dprintf(ALWAYS, "finish: %p\n", fn);
+	block_user = 0;
+
+	return 0;
+}
+
+static void menu_execute_entry(void (*fn)(void)) {
+	thread_t *thr;
+
+	dprintf(ALWAYS, "exec: %p\n", fn);
+
+	block_user = 1;
+	thr = thread_create("grub_sideload", menu_entry_handler, fn, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE);
+	if (!thr)
+	{
+		return;
+	}
+
+	thread_resume(thr);
+}
+
+static struct menu_entry entries[] = {
+	{"    Normal Powerup", &menu_exec_normal},
+	{"    Recovery", &menu_exec_recovery},
+	{"    Download Mode", &menu_dload_mode},
+	{"    Reboot", &menu_reboot},
+
+};
+
+static char logbuf[2048][2048];
+unsigned logbuf_row = 0;
+unsigned logbuf_col = 0;
+unsigned logbuf_posx = 0;
+static mutex_t logbuf_mutex;
+static bool is_initialized = false;
+
+void menu_putc(char c) {
+	struct fbcon_config *config = fbcon_display();
+	static int in_putc = 0;
+
+	if(in_putc) return;
+
+	// lock
+	if(is_initialized && !in_critical_section())
+		mutex_acquire(&logbuf_mutex);
+	else enter_critical_section();
+
+	in_putc = 1;
+
+	// automatic line break
+	int cwidth = pf2font_get_cwidth(c);
+	if(logbuf_posx+cwidth>config->width) {
+		logbuf_row++;
+		logbuf_col = 0;
+		logbuf_posx = 0;
+		display_server_refresh();
+	}
+
+	// scroll down
+	while(logbuf_row>ARRAY_SIZE(logbuf)-1) {
+		unsigned i;
+		for(i=1; i<ARRAY_SIZE(logbuf); i++) {
+			memcpy(logbuf[i-1], logbuf[i], ARRAY_SIZE(logbuf[0]));
+		}
+		logbuf_row--;
+	}
+
+	// write char
+	logbuf[logbuf_row][logbuf_col++] = c=='\n'?'\0':c;
+	logbuf_posx+=cwidth;
+
+	// line break
+	if(logbuf_col==ARRAY_SIZE(logbuf[logbuf_row]) || c=='\n') {
+		logbuf_row++;
+		logbuf_col = 0;
+		logbuf_posx = 0;
+		display_server_refresh();
+	}
+
+	// unlock
+	in_putc = 0;
+	if(is_initialized && !in_critical_section())
+		mutex_release(&logbuf_mutex);
+	else exit_critical_section();
+}
+
+static void menu_set_color(uint8_t r, uint8_t g, uint8_t b)
+{
+	color_r = r;
+	color_g = g;
+	color_b = b;
+
+	pf2font_set_color(r, g, b);
+}
+
+static void menu_draw_divider(int dy, int height) {
+	struct fbcon_config *config = fbcon_display();
+	uint8_t* base = config->base;
+	unsigned x;
+
+	uint8_t *row = &base[config->width * dy * config->bpp / 8];
+	for (x = 0; x < config->width*height; x++) {
+		uint8_t *pixel = &row[x * config->bpp / 8];
+		pixel[0] = color_b;
+		pixel[1] = color_g;
+		pixel[2] = color_r;
+	}
+}
+
+static void menu_draw_item(int dy, const char* str, int selected) {
+	if(selected) {
+		menu_set_color(MENU_TEXT_COLOR);
+		menu_draw_divider(dy-pf2font_get_ascent(), pf2font_get_fontheight());
+	}
+
+	if(selected)
+		menu_set_color(NORMAL_TEXT_COLOR);
+	else
+		menu_set_color(MENU_TEXT_COLOR);
+	pf2font_printf(0, dy, str);
+}
+
+static void menu_renderer(int keycode) {
+	int y = 1;
+	unsigned i;
+	int fh = pf2font_get_fontheight();
+	struct fbcon_config *config = fbcon_display();
+
+	// input handling
+	if(!block_user) {
+		// handle keypress
+		if(keycode==KEY_RIGHT && entries[selection].execute) {
+			menu_execute_entry(entries[selection].execute);
+			return;
+		}
+		if(keycode==KEY_DOWN && selection<ARRAY_SIZE(entries)-1) selection++;
+		if(keycode==KEY_UP && selection>0) selection--;
+	}
+
+	// clear
+	fbcon_clear();
+
+	// title
+	menu_set_color(NORMAL_TEXT_COLOR);
+	pf2font_printf(0, fh*y++, "Fastboot Flash Mode");
+
+	// USB status
+	if(usb_is_connected())
+		pf2font_printf(0, fh*y++, "Transfer Mode: USB Connected");
+	else
+		pf2font_printf(0, fh*y++, "Connect USB Data Cable");
+
+	// divider 1
+	menu_set_color(DIVIDER_COLOR);
+	menu_draw_divider(fh*y++ - pf2font_get_ascent()/2, 3);
+
+	// draw interactive UI
+	if(!block_user) {
+		// menu header
+		menu_set_color(NORMAL_TEXT_COLOR);
+		pf2font_printf(0, fh*y++, "Boot Mode Selection Menu");
+		pf2font_printf(0, fh*y++, "  Power Selects, Vol Up/Down Scrolls");
+
+		// menu entries
+		for(i=0; i<ARRAY_SIZE(entries); i++) {
+			if(!entries[i].name) continue;
+			menu_draw_item(fh*y++, entries[i].name, selection==i);
+		}
+
+		// divider 2
+		menu_set_color(DIVIDER_COLOR);
+		menu_draw_divider(fh*y++ - pf2font_get_ascent()/2, 3);
+	}
+
+	// draw log
+	menu_set_color(LOG_COLOR);
+	mutex_acquire(&logbuf_mutex);
+	int log_top = y;
+	int log_bottom = config->height/fh;
+	int log_size = log_bottom-log_top;
+	int start = (logbuf_row-log_size);
+	for(i=(start>=0?start:0); i<=logbuf_row; i++) {
+		pf2font_printf(0, fh*y++, logbuf[i]);
+	}
+	mutex_release(&logbuf_mutex);
+
+	// flush
+	fbcon_flush();
+};
+
+static void menu_init(const struct app_descriptor *app)
+{
+	dprintf(INFO, "Init menu.\n");
+	pf2font_init((char*)lkfont_pf2, lkfont_pf2_len);
+	mutex_init(&logbuf_mutex);
+	is_initialized = true;
+
+	display_server_set_renderer(menu_renderer);
+}
+
+APP_START(menu)
+	.init = menu_init,
+APP_END
