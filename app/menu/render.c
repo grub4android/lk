@@ -15,6 +15,8 @@
 #include <kernel/mutex.h>
 #include <app/display_server.h>
 
+#include "menu_private.h"
+
 #include LKFONT_HEADER
 
 #define MENU_TEXT_COLOR 0, 115, 255
@@ -24,55 +26,24 @@
 
 static int block_user = 0;
 static unsigned selection = 0;
+static struct menu_stack_entry* menu_stack;
 
 static uint8_t color_r = 0xff;
 static uint8_t color_g = 0xff;
 static uint8_t color_b = 0xff;
 
-struct menu_entry {
-	const char* name;
-	void (*execute)(void);
-};
-
-static void menu_exec_normal(void) {
-	boot_linux_from_storage(BOOTMODE_NORMAL);
-}
-
-static void menu_exec_recovery(void) {
-	boot_linux_from_storage(BOOTMODE_RECOVERY);
-}
-
-static void menu_dload_mode(void) {
-	if (set_download_mode(EMERGENCY_DLOAD))
-	{
-		dprintf(CRITICAL,"dload mode not supported by target\n");
-	}
-	else
-	{
-		reboot_device(DLOAD);
-		dprintf(CRITICAL,"Failed to reboot into dload mode\n");
-	}
-}
-
-static void menu_reboot(void) {
-	reboot_device(DLOAD);
-	dprintf(CRITICAL,"Failed to reboot\n");
-}
-
 static int menu_entry_handler(void* p) {
 	void (*fn)(void) = p;
 
 	fn();
-	dprintf(ALWAYS, "finish: %p\n", fn);
 	block_user = 0;
+	display_server_refresh();
 
 	return 0;
 }
 
 static void menu_execute_entry(void (*fn)(void)) {
 	thread_t *thr;
-
-	dprintf(ALWAYS, "exec: %p\n", fn);
 
 	block_user = 1;
 	thr = thread_create("grub_sideload", menu_entry_handler, fn, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE);
@@ -83,14 +54,6 @@ static void menu_execute_entry(void (*fn)(void)) {
 
 	thread_resume(thr);
 }
-
-static struct menu_entry entries[] = {
-	{"    Normal Powerup", &menu_exec_normal},
-	{"    Recovery", &menu_exec_recovery},
-	{"    Download Mode", &menu_dload_mode},
-	{"    Reboot", &menu_reboot},
-
-};
 
 static char logbuf[2048][2048];
 unsigned logbuf_row = 0;
@@ -185,6 +148,29 @@ static void menu_draw_item(int dy, const char* str, int selected) {
 	pf2font_printf(0, dy, str);
 }
 
+void menu_enter(struct menu_entry* menu) {
+	struct menu_stack_entry* prev = menu_stack;
+
+	menu_stack = calloc(sizeof(struct menu_stack_entry), 1);
+	menu_stack->entries = menu;
+	menu_stack->prev = prev;
+
+	selection = 0;
+	display_server_refresh();
+}
+
+void menu_leave(void) {
+	struct menu_stack_entry* prev = menu_stack->prev;
+
+	if(!prev) return;
+
+	free(menu_stack);
+	menu_stack = prev;
+
+	selection = 0;
+	display_server_refresh();
+}
+
 static void menu_renderer(int keycode) {
 	int y = 1;
 	unsigned i;
@@ -194,12 +180,23 @@ static void menu_renderer(int keycode) {
 	// input handling
 	if(!block_user) {
 		// handle keypress
-		if(keycode==KEY_RIGHT && entries[selection].execute) {
-			menu_execute_entry(entries[selection].execute);
+		if(keycode==KEY_RIGHT && menu_stack->entries[selection].execute) {
+			menu_execute_entry(menu_stack->entries[selection].execute);
 			return;
 		}
-		if(keycode==KEY_DOWN && selection<ARRAY_SIZE(entries)-1) selection++;
-		if(keycode==KEY_UP && selection>0) selection--;
+		if(keycode==KEY_DOWN) {
+			for(i=0; menu_stack->entries[i].name; i++);
+			if(selection<i-1) selection++;
+			else selection=0;
+		}
+		if(keycode==KEY_UP) {
+			if(selection>0)
+				selection--;
+			else {
+				for(i=0; menu_stack->entries[i].name; i++);
+				selection=i-1;
+			}
+		}
 	}
 
 	// clear
@@ -227,9 +224,15 @@ static void menu_renderer(int keycode) {
 		pf2font_printf(0, fh*y++, "  Power Selects, Vol Up/Down Scrolls");
 
 		// menu entries
-		for(i=0; i<ARRAY_SIZE(entries); i++) {
-			if(!entries[i].name) continue;
-			menu_draw_item(fh*y++, entries[i].name, selection==i);
+		for(i=0; menu_stack->entries[i].name; i++) {
+			char* buf = NULL;
+			if(menu_stack->entries[i].format)
+				menu_stack->entries[i].format(&buf);
+			else buf = strdup(menu_stack->entries[i].name);
+			menu_draw_item(fh*y++, buf, selection==i);
+
+			if(buf)
+				free(buf);
 		}
 
 		// divider 2
@@ -260,6 +263,9 @@ static void menu_init(const struct app_descriptor *app)
 	mutex_init(&logbuf_mutex);
 	is_initialized = true;
 
+	menu_stack = calloc(sizeof(struct menu_stack_entry), 1);
+	menu_stack->entries = entries_main;
+	menu_stack->prev = NULL;
 	display_server_set_renderer(menu_renderer);
 }
 

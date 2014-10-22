@@ -11,6 +11,8 @@ GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 GLOBAL_CFLAGS += -DLKFONT_HEADER=\"$(LKFONT_HEADER)\"
 
 MODULE_SRCS += \
-	$(LOCAL_DIR)/menu.c
+	$(LOCAL_DIR)/render.c \
+	$(LOCAL_DIR)/menu_main.c \
+	$(LOCAL_DIR)/menu_settings.c
 
 include make/module.mk
