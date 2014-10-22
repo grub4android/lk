@@ -177,7 +177,7 @@ static char target_boot_params[64];
 /* Assuming unauthorized kernel image by default */
 static int auth_kernel_img = 0;
 
-static device_info device = {DEVICE_MAGIC, 0, 0, 0, 0, {0}, {0}, 0, 0};
+device_info device = {DEVICE_MAGIC, 0, 0, 0, 0, {0}, {0}, 0, 0};
 
 struct atag_ptbl_entry
 {

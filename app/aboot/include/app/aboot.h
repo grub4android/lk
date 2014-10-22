@@ -31,12 +31,17 @@
 #ifndef _APP_ABOOT_H_
 #define _APP_ABOOT_H_
 
+#include "../../devinfo.h"
+
 enum bootmode {
 	BOOTMODE_AUTO,
 	BOOTMODE_NORMAL,
 	BOOTMODE_RECOVERY,
 };
 
+extern device_info device;
+
 int boot_linux_from_storage(enum bootmode bootmode);
+void write_device_info(device_info *dev);
 
 #endif
