@@ -1,5 +1,10 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
-INCLUDES += -I$(LOCAL_DIR)/include
 
-OBJS += \
-	$(LOCAL_DIR)/pf2font.o
+MODULE := $(LOCAL_DIR)
+
+GLOBAL_INCLUDES += $(LOCAL_DIR)/include
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/pf2font.c
+
+include make/module.mk
