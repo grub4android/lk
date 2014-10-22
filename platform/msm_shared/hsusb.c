@@ -44,6 +44,10 @@
 #include <dev/udc.h>
 #include "hsusb.h"
 
+#if WITH_APP_DISPLAY_SERVER
+#include <app/display_server.h>
+#endif
+
 #define MAX_TD_XFER_SIZE  (16 * 1024)
 
 
@@ -812,6 +816,11 @@ enum handler_return udc_interrupt(void *arg)
 			}
 		}
 	}
+
+#if WITH_APP_DISPLAY_SERVER
+	display_server_refresh();
+#endif
+
 	return ret;
 }
 
