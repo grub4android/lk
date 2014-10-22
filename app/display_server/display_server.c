@@ -14,6 +14,7 @@
 
 static event_t e_frame_finished;
 static event_t e_start_server;
+static event_t e_continue;
 static bool is_running = 0;
 static bool request_stop = 0;
 static bool request_refresh = 0;
@@ -50,6 +51,8 @@ void display_server_start(void) {
 		thread_yield();
 	}
 	dprintf(INFO, "Done.\n");
+
+	display_server_unpause();
 }
 
 void display_server_stop(void) {
@@ -57,6 +60,9 @@ void display_server_stop(void) {
 		dprintf(INFO, "display server is not running!\n");
 		return;
 	}
+
+	// we can't stop the server if the loop is blocked
+	display_server_unpause();
 
 	// stop server and wait for it
 	dprintf(INFO, "stopping display server...\n");
@@ -77,6 +83,15 @@ void display_server_set_renderer(renderer_t r) {
 
 void display_server_refresh(void) {
 	request_refresh = 1;
+}
+
+void display_server_pause(void) {
+	event_unsignal(&e_continue);
+	display_server_refresh();
+}
+
+void display_server_unpause(void) {
+	event_signal(&e_continue, true);
 }
 
 static int display_server_thread(void *args)
@@ -116,6 +131,8 @@ static int display_server_thread(void *args)
 			if(request_refresh) {
 				request_refresh = 0;
 			}
+
+			event_wait(&e_continue);
 		}
 
 		dprintf(INFO, "%s: EXIT\n", __func__);
@@ -131,6 +148,7 @@ static void server_init(uint x)
 
 	event_init(&e_frame_finished, false, EVENT_FLAG_AUTOUNSIGNAL);
 	event_init(&e_start_server, false, EVENT_FLAG_AUTOUNSIGNAL);
+	event_init(&e_continue, false, 0);
 
 	thread_resume(thread_create("display_server", &display_server_thread, NULL, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE));
 }

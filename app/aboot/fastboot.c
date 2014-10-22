@@ -45,6 +45,10 @@
 #include <usb30_udc.h>
 #endif
 
+#if WITH_APP_DISPLAY_SERVER
+#include <app/display_server.h>
+#endif
+
 typedef struct
 {
 	int (*udc_init)(struct udc_device *devinfo);
@@ -565,8 +569,12 @@ again:
 		for (cmd = cmdlist; cmd; cmd = cmd->next) {
 			if (memcmp(buffer, cmd->prefix, cmd->prefix_len))
 				continue;
+
+			display_server_pause();
 			cmd->handle((const char*) buffer + cmd->prefix_len,
 				    (void*) download_base, download_size);
+			display_server_unpause();
+
 			if (fastboot_state == STATE_COMMAND)
 				fastboot_fail("unknown reason");
 			goto again;
