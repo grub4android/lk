@@ -3096,7 +3096,7 @@ void aboot_fastboot_register_commands(void)
 	fastboot_register("oem disable-using-splash-partition",
 			cmd_oem_disable_use_splash_partition);
 	/* publish variables and their values */
-	fastboot_publish("product",  EXPAND(BOARD));
+	fastboot_publish("product",  TARGET);
 	fastboot_publish("kernel",   "lk");
 	fastboot_publish("serialno", sn_buf);
 
