@@ -212,6 +212,11 @@ static void menu_renderer(int keycode) {
 	else
 		pf2font_printf(0, fh*y++, "Connect USB Data Cable");
 
+	// device info
+	char sn_buf[13];
+	target_serialno((unsigned char*)sn_buf);
+	pf2font_printf(0, fh*y++, "CPU: %s Serial: %s", TARGET, sn_buf);
+
 	// divider 1
 	menu_set_color(DIVIDER_COLOR);
 	menu_draw_divider(fh*y++ - pf2font_get_ascent()/2, 3);
