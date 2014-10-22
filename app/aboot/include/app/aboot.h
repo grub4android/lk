@@ -37,9 +37,17 @@ enum bootmode {
 	BOOTMODE_AUTO,
 	BOOTMODE_NORMAL,
 	BOOTMODE_RECOVERY,
+#if WITH_XIAOMI_DUALBOOT
+	DUALBOOT_BOOT_NONE,
+	DUALBOOT_BOOT_FIRST,
+	DUALBOOT_BOOT_SECOND,
+#endif
 };
 
 extern device_info device;
+#if WITH_XIAOMI_DUALBOOT
+extern unsigned dual_boot_sign;
+#endif
 
 int boot_linux_from_storage(enum bootmode bootmode);
 void write_device_info(device_info *dev);

@@ -160,12 +160,7 @@ static const char *sndstage_cmdline = " multiboot.2ndstage=1";
 static const char *boot0_cmdline = " syspart=system ";
 static const char *boot1_cmdline = " syspart=system1";
 
-enum {
-	DUALBOOT_BOOT_NONE,
-	DUALBOOT_BOOT_FIRST,
-	DUALBOOT_BOOT_SECOND,
-};
-static unsigned dual_boot_sign = DUALBOOT_BOOT_NONE;
+unsigned dual_boot_sign = DUALBOOT_BOOT_NONE;
 #endif
 
 static unsigned page_size = 0;
@@ -1016,6 +1011,21 @@ int boot_linux_from_mmc(enum bootmode bootmode)
 			boot_into_recovery = 0;
 	}
 
+#if WITH_XIAOMI_DUALBOOT
+	else if(bootmode==DUALBOOT_BOOT_NONE) {
+		partname = "boot";
+		boot_into_recovery = 0;
+	}
+	else if(bootmode==DUALBOOT_BOOT_FIRST) {
+		partname = "boot";
+		boot_into_recovery = 0;
+	}
+	else if(bootmode==DUALBOOT_BOOT_SECOND) {
+		partname = "boot1";
+		boot_into_recovery = 0;
+	}
+#endif
+
 	else if(bootmode==BOOTMODE_RECOVERY) {
 		partname = "recovery";
 		boot_into_recovery = 1;
@@ -1410,6 +1420,21 @@ int boot_linux_from_flash(enum bootmode bootmode)
 			}
 			boot_into_recovery = 0;
 	}
+
+#if WITH_XIAOMI_DUALBOOT
+	else if(bootmode==DUALBOOT_BOOT_NONE) {
+		partname = "boot";
+		boot_into_recovery = 0;
+	}
+	else if(bootmode==DUALBOOT_BOOT_FIRST) {
+		partname = "boot";
+		boot_into_recovery = 0;
+	}
+	else if(bootmode==DUALBOOT_BOOT_SECOND) {
+		partname = "boot1";
+		boot_into_recovery = 0;
+	}
+#endif
 
 	else if(bootmode==BOOTMODE_RECOVERY) {
 		partname = "recovery";
@@ -3219,6 +3244,10 @@ boot_error:
 
 	/* initialize and start fastboot */
 	fastboot_init(target_get_scratch_address(), target_get_max_flash_size());
+
+#if WITH_XIAOMI_DUALBOOT
+	check_boot_image();
+#endif
 
 #if WITH_APP_DISPLAY_SERVER
 	display_server_start();
