@@ -33,6 +33,8 @@
 
 #include "../../devinfo.h"
 
+#define ABOOT_VERSION "0.5"
+
 enum bootmode {
 	BOOTMODE_AUTO,
 	BOOTMODE_NORMAL,

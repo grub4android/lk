@@ -204,7 +204,7 @@ static void menu_renderer(int keycode) {
 
 	// title
 	menu_set_color(NORMAL_TEXT_COLOR);
-	pf2font_printf(0, fh*y++, "Fastboot Flash Mode");
+	pf2font_printf(0, fh*y++, "Fastboot Flash Mode (%s)", ABOOT_VERSION);
 
 	// USB status
 	if(usb_is_connected())
