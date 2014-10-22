@@ -47,6 +47,7 @@ enum bootmode {
 extern device_info device;
 #if WITH_XIAOMI_DUALBOOT
 extern unsigned dual_boot_sign;
+void set_dualboot_mode(int mode);
 #endif
 
 int boot_linux_from_storage(enum bootmode bootmode);

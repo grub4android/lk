@@ -15,6 +15,16 @@ void menu_back(void) {
 	menu_leave();
 }
 
+#if WITH_XIAOMI_DUALBOOT
+void menu_exec_dualbootmode(void) {
+	set_dualboot_mode(dual_boot_sign==DUALBOOT_BOOT_SECOND?DUALBOOT_BOOT_FIRST:DUALBOOT_BOOT_SECOND);
+}
+void menu_format_dualbootmode(char** buf) {
+	*buf = calloc(100, 1);
+	snprintf(*buf, 100, "    Dualboot mode [%s]", dual_boot_sign==DUALBOOT_BOOT_SECOND?"System2":"System1");
+}
+#endif
+
 void menu_chargerscreen(void) {
 	device.charger_screen_enabled = !device.charger_screen_enabled;
 	write_device_info(&device);
@@ -44,6 +54,9 @@ void menu_forcefastboot_format(char** buf) {
 
 struct menu_entry entries_settings[] = {
 	{"    <-- Back", &menu_back, NULL},
+#if WITH_XIAOMI_DUALBOOT
+	{"", &menu_exec_dualbootmode, &menu_format_dualbootmode},
+#endif
 	{"", &menu_chargerscreen, &menu_chargerscreen_format},
 	{"", &menu_splash, &menu_splash_format},
 	{"", &menu_forcefastboot, &menu_forcefastboot_format},

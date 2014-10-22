@@ -781,7 +781,42 @@ static void check_boot_image(void)
 out:
 	/* either DUALBOOT_BOOT_FIRST or DUALBOOT_BOOT_SECOND at this point */
 	dprintf(INFO, "Dualboot choosing: %d of (1, 2) boot & system\n",
-		dual_boot_sign);
+		dual_boot_sign-DUALBOOT_BOOT_NONE);
+}
+
+void set_dualboot_mode(int mode)
+{
+	int index = INVALID_PTN;
+	unsigned long long ptn = 0;
+	struct dual_boot_message dualboot_msg;
+
+	if (mode==DUALBOOT_BOOT_SECOND) {
+		snprintf(dualboot_msg.command, 32, "boot-system1");
+		dual_boot_sign = DUALBOOT_BOOT_SECOND;
+	}
+	else {
+		snprintf(dualboot_msg.command, 32, "boot-system");
+		dual_boot_sign = DUALBOOT_BOOT_FIRST;
+	}
+
+	index = partition_get_index("misc");
+	ptn = partition_get_offset(index);
+	if (ptn == 0) {
+		dprintf(CRITICAL, "ERROR: No misc found\n");
+		goto out;
+	}
+
+	ptn += DUALBOOT_OFFSET_SECTORS * MMC_BOOT_RD_BLOCK_LEN;
+	memset(buf, 0, sizeof(buf));
+	if (mmc_write(ptn, MMC_BOOT_RD_BLOCK_LEN, (unsigned int *)&dualboot_msg)) {
+		dprintf(CRITICAL, "ERROR: Cannot read misc\n");
+		goto out;
+	}
+
+out:
+	/* either DUALBOOT_BOOT_FIRST or DUALBOOT_BOOT_SECOND at this point */
+	dprintf(INFO, "Dualboot choosing: %d of (1, 2) boot & system\n",
+		dual_boot_sign-DUALBOOT_BOOT_NONE);
 }
 #endif
 
