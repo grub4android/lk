@@ -3,7 +3,8 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
 
 MODULE_DEPS += \
-	lib/pf2font
+	lib/pf2font \
+	app/display_server
 
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
