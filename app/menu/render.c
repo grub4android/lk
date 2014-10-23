@@ -14,15 +14,11 @@
 #include <platform.h>
 #include <kernel/mutex.h>
 #include <app/display_server.h>
+#include <app/menu.h>
 
 #include "menu_private.h"
 
 #include LKFONT_HEADER
-
-#define MENU_TEXT_COLOR 0, 115, 255
-#define NORMAL_TEXT_COLOR 255, 255, 255
-#define DIVIDER_COLOR 6,140,158
-#define LOG_COLOR 255,255,0
 
 static int block_user = 0;
 static unsigned selection = 0;
@@ -95,7 +91,17 @@ void menu_putc(char c) {
 
 	// write char
 	logbuf[logbuf_row][logbuf_col++] = c=='\n'?'\0':c;
-	logbuf_posx+=cwidth;
+
+	// expression start
+	static int in_expr = 0;
+	if(!in_expr && c=='\e') in_expr = 1;
+
+	if(!in_expr) {
+		logbuf_posx+=cwidth;
+	}
+
+	// expression end
+	else if(in_expr && c=='m') in_expr = 0;
 
 	// line break
 	if(logbuf_col==ARRAY_SIZE(logbuf[logbuf_row]) || c=='\n') {
@@ -112,7 +118,7 @@ void menu_putc(char c) {
 	else exit_critical_section();
 }
 
-static void menu_set_color(uint8_t r, uint8_t g, uint8_t b)
+void menu_set_color(uint8_t r, uint8_t g, uint8_t b)
 {
 	color_r = r;
 	color_g = g;
@@ -246,7 +252,7 @@ static void menu_renderer(int keycode) {
 	}
 
 	// draw log
-	menu_set_color(LOG_COLOR);
+	menu_set_color(LOG_COLOR_NORMAL);
 	mutex_acquire(&logbuf_mutex);
 	int log_top = y;
 	int log_bottom = config->height/fh;

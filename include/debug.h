@@ -66,10 +66,19 @@ static inline void hexdump8(const void *ptr, size_t len) { }
 
 #endif /* DISABLE_DEBUG_OUTPUT */
 
+#define COLOR_RED "\e[31m"
+#define COLOR_YELLOW "\e[33m"
+#define COLOR_RESET "\e[0m"
+
+#define LOG_COLOR_SET(level) { \
+	if((level)==CRITICAL) _dputs(COLOR_RED); \
+	else if((level)==SPEW) _dputs(COLOR_YELLOW); \
+}
+
 #define dputc(level, str) do { if ((level) <= LK_DEBUGLEVEL) { _dputc(str); } } while (0)
 #define dputs(level, str) do { if ((level) <= LK_DEBUGLEVEL) { _dputs(str); } } while (0)
-#define dprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { _dprintf(x); } } while (0)
-#define dvprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { _dvprintf(x); } } while (0)
+#define dprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { LOG_COLOR_SET(level); _dprintf(x); _dputs(COLOR_RESET); } } while (0)
+#define dvprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { LOG_COLOR_SET(level); _dvprintf(x); _dputs(COLOR_RESET); } } while (0)
 
 /* systemwide halts */
 void halt(void) __NO_RETURN;

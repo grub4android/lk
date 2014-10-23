@@ -5,6 +5,10 @@
 #include <dev/fbcon.h>
 #include <lib/pf2font.h>
 
+#if WITH_APP_MENU
+#include <app/menu.h>
+#endif
+
 #include "pf2_private.h"
 #include "fontformat.h"
 
@@ -177,13 +181,15 @@ load_font_index(struct pf2_font *font, char *section, unsigned section_len)
 	return 0;
 }
 
-static int pf2_blit_glyph(struct pf2_font_glyph *src, uint32_t dx, uint32_t dy, int force_print)
+static int pf2_blit_glyph(struct pf2_font_glyph *src, uint32_t dx, uint32_t dy, int force_print, int print)
 {
 	unsigned x, y;
 	struct fbcon_config *config = fbcon_display();
 	uint8_t *data = config->base;
 
 	if(!force_print && dx+src->width>config->width) return 0;
+
+	if(!print) return 1;
 
 	for (y = 0; y < src->height; y++) {
 		if(y + dy>=config->height) break;
@@ -312,7 +318,7 @@ void pf2font_set_color(uint8_t r, uint8_t g, uint8_t b)
 	color_b = b;
 }
 
-int pf2font_puts(uint32_t x, uint32_t y, const char *str)
+static int pf2font_puts_internal(uint32_t x, uint32_t y, const char *str, int print)
 {
 	uint32_t dx = x;
 	int written = 0, rc=0;
@@ -321,28 +327,75 @@ int pf2font_puts(uint32_t x, uint32_t y, const char *str)
 		return -1;
 
 	while (*str != 0) {
-		struct pf2_font_glyph *glyph = font_get_glyph(font, *str++);
-		if (!glyph) {
-			dx += font->max_char_width + font->leading;
-			continue;
+		char c = *str++;
+
+		// ESC
+		if(c=='\e') {
+			c = *str++;
+
+			// COLOR
+			if(c=='[') {
+				char id[10];
+				int len = 0;
+
+				// read number
+				while (c != 0) {
+					c = *str++;
+					if(c=='m') break;
+
+					id[len++] = c;
+				}
+				id[len] = '\0';
+				int iid = atoi(id);
+
+				if(print) {
+#if WITH_APP_MENU
+					// set color
+					if(iid==31) menu_set_color(LOG_COLOR_RED);
+					if(iid==33) menu_set_color(LOG_COLOR_BLUE);
+					else if(iid==0) menu_set_color(LOG_COLOR_NORMAL);
+#endif
+				}
+
+				continue;
+			}
 		}
 
-		if (!glyph->width) {
-			dx += glyph->device_width + font->leading;
-			continue;
+		// TAB
+		int loop = 1, i;
+		if(c=='\t') {
+			c = ' ';
+			loop=4;
 		}
 
-		dx += glyph->offset_x + font->leading;
+		for(i=0; i<loop; i++) {
+			struct pf2_font_glyph *glyph = font_get_glyph(font, c);
+			if (!glyph) {
+				dx += font->max_char_width + font->leading;
+				continue;
+			}
 
-		rc=pf2_blit_glyph(glyph, dx,
-			       y - (glyph->height + glyph->offset_y), 0);
-		if(!rc) return written;
-		written+=rc;
+			if (!glyph->width) {
+				dx += glyph->device_width + font->leading;
+				continue;
+			}
 
-		dx += glyph->width;
+			dx += glyph->offset_x + font->leading;
+
+			rc=pf2_blit_glyph(glyph, dx,
+					   y - (glyph->height + glyph->offset_y), 0, print);
+			if(!rc) return written;
+			written+=rc;
+
+			dx += glyph->width;
+		}
 	}
 
-	return written;
+	return dx-x;
+}
+
+int pf2font_puts(uint32_t x, uint32_t y, const char *str) {
+	return pf2font_puts_internal(x, y, str, 1);
 }
 
 int pf2font_printf(uint32_t x, uint32_t y, const char *fmt, ...)
@@ -370,7 +423,6 @@ int pf2font_get_fontheight(void) {
 int pf2font_get_strwidth(const char* fmt, ...) {
 	char buf[256];
 	int err;
-	uint32_t dx = 0;
 
 	if (!font)
 		return -1;
@@ -382,24 +434,7 @@ int pf2font_get_strwidth(const char* fmt, ...) {
 
 	if(!err) return -1;
 
-	const char *str = buf;
-	while (*str != 0) {
-		struct pf2_font_glyph *glyph = font_get_glyph(font, *str++);
-		if (!glyph) {
-			dx += font->max_char_width + font->leading;
-			continue;
-		}
-
-		if (!glyph->width) {
-			dx += glyph->device_width + font->leading;
-			continue;
-		}
-
-		dx += glyph->offset_x + font->leading;
-		dx += glyph->width;
-	}
-
-	return dx;
+	return pf2font_puts_internal(0, 0, buf, 0);
 }
 
 int pf2font_get_cwidth(char c)
@@ -420,6 +455,9 @@ int pf2font_get_cwidth(char c)
 
 	ret += glyph->offset_x + font->leading;
 	ret += glyph->width;
+
+	// TAB
+	if(c=='\t') ret*=4;
 
 	return ret;
 }
