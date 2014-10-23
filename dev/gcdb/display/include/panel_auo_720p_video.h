@@ -47,7 +47,7 @@
 
 static struct panel_config auo_720p_video_panel_data = {
   "qcom,mdss_dsi_auo_720p_video", "dsi:0:", "qcom,mdss-dsi-panel",
-  10, 0, "DISPLAY_1", 0, 572000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  10, 0, "DISPLAY_1", 0, 572000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -107,12 +107,12 @@ static char auo_720p_video_on_cmd7[] = {
 
 static struct mipi_dsi_cmd auo_720p_video_on_command[] = {
 { 0x4, auo_720p_video_on_cmd0, 0x78 },
-{ 0x4, auo_720p_video_on_cmd1 },
-{ 0xC, auo_720p_video_on_cmd2 },
-{ 0xC, auo_720p_video_on_cmd3 },
-{ 0xC, auo_720p_video_on_cmd4 },
-{ 0x20, auo_720p_video_on_cmd5 },
-{ 0x4, auo_720p_video_on_cmd6 },
+{ 0x4, auo_720p_video_on_cmd1, 0 },
+{ 0xC, auo_720p_video_on_cmd2, 0 },
+{ 0xC, auo_720p_video_on_cmd3, 0 },
+{ 0xC, auo_720p_video_on_cmd4, 0 },
+{ 0x20, auo_720p_video_on_cmd5, 0 },
+{ 0x4, auo_720p_video_on_cmd6, 0 },
 { 0x4, auo_720p_video_on_cmd7, 0x14 },
 };
 #define AUO_720P_VIDEO_ON_COMMAND 8

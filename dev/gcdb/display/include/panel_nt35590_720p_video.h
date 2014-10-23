@@ -2870,7 +2870,7 @@ static struct mipi_dsi_cmd nt35590_720p_video_on_command[] = {
 };
 #define NT35590_720P_VIDEO_ON_COMMAND 466
 
-/*
+
 static char nt35590_720p_videooff_cmd0[] = {
 0x28, 0x00, 0x05, 0x80 };
 
@@ -2881,12 +2881,12 @@ static char nt35590_720p_videooff_cmd1[] = {
 
 
 
-static struct mipi_dsi_cmd nt35590_720p_video_off_command[] = {
+static struct mipi_dsi_cmd __UNUSED nt35590_720p_video_off_command[] = {
 { 0x4 , nt35590_720p_videooff_cmd0,  0x32},
 { 0x4 , nt35590_720p_videooff_cmd1,  0x78}
 };
 #define NT35590_720P_VIDEO_OFF_COMMAND 2
-*/
+
 
 static struct command_state nt35590_720p_video_state = {
   0, 1
@@ -2925,12 +2925,12 @@ const uint32_t nt35590_720p_video_timings[] = {
 };
 
 
-/*
-static struct mipi_dsi_cmd nt35590_720p_video_rotation[] = {
+
+static struct mipi_dsi_cmd __UNUSED nt35590_720p_video_rotation[] = {
 
 };
 #define NT35590_720P_VIDEO_ROTATION 0
-*/
+
 
 static struct panel_timing nt35590_720p_video_timing_info = {
   0, 4, 0x20, 0x2c

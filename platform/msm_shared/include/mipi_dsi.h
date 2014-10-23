@@ -231,6 +231,18 @@ int mdss_dsi_phy_init(struct mipi_dsi_panel_config *,
 		uint32_t ctl_base, uint32_t phy_base);
 void mdss_dsi_phy_contention_detection(struct mipi_dsi_panel_config *,
 				uint32_t phy_base);
+void mdss_dsi_phy_sw_reset(uint32_t ctl_base);
+void mdss_dsi_uniphy_pll_sw_reset(uint32_t pll_base);
+void mdss_dsi_uniphy_pll_lock_detect_setting(uint32_t pll_base);
+void mmss_bus_clocks_enable(void);
+void mmss_bus_clocks_disable(void);
+int32_t mdss_dsi_auto_pll_config(uint32_t pll_base, uint32_t ctl_base,
+				struct mdss_dsi_pll_config *pd);
+void mmss_dsi_clocks_enable(uint8_t pclk0_m, uint8_t pclk0_n, uint8_t pclk0_d);
+void mmss_dsi_clocks_disable(void);
+void mdp_clock_enable(void);
+int restore_secure_cfg(uint32_t id);
+void mdp_clock_disable(void);
 
 int mdss_dsi_video_mode_config(uint16_t disp_width,
 	uint16_t disp_height,
@@ -262,7 +274,7 @@ int mipi_dsi_cmd_bta_sw_trigger(void);
 void trigger_mdp_dsi(void);
 #endif
 
-int mdss_hdmi_on(void);
+int mdss_hdmi_on(struct msm_panel_info *pinfo);
 int mdp_get_revision(void);
 int mdp_dsi_cmd_off(void);
 int mdp_dma_on(struct msm_panel_info *pinfo);

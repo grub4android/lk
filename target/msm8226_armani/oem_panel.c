@@ -29,20 +29,23 @@
 
 #include <debug.h>
 #include <err.h>
+#include <string.h>
 #include <smem.h>
 #include <msm_panel.h>
 #include <board.h>
 #include <mipi_dsi.h>
+#include <platform/gpio.h>
 #include <target/display.h>
+#include <platform/msm_shared/timer.h>
 
-#include "include/panel.h"
-#include "panel_display.h"
+#include <panel.h>
+#include <panel_display.h>
 
 /*---------------------------------------------------------------------------*/
 /* GCDB Panel Database                                                       */
 /*---------------------------------------------------------------------------*/
-#include "include/panel_auo_720p_video.h"
-#include "include/panel_sharp_720p_video.h"
+#include <panel_auo_720p_video.h>
+#include <panel_sharp_720p_video.h>
 
 #define DISPLAY_MAX_PANEL_DETECTION 2
 

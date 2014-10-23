@@ -30,19 +30,24 @@
 #include <debug.h>
 #include <smem.h>
 #include <err.h>
+#include <string.h>
 #include <msm_panel.h>
 #include <mipi_dsi.h>
 #include <pm8x41.h>
 #include <pm8x41_wled.h>
 #include <board.h>
+#include <mipi_dsi.h>
 #include <mdp5.h>
 #include <scm.h>
 #include <platform/gpio.h>
 #include <platform/iomap.h>
+#include <platform/clock.h>
 #include <target/display.h>
+#include <platform/msm_shared/timer.h>
+#include <gcdb_display.h>
 
-#include "include/panel.h"
-#include "include/display_resource.h"
+#include <panel.h>
+#include <display_resource.h>
 
 #define HFPLL_LDO_ID 8
 
@@ -367,7 +372,7 @@ int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 			0x100 * ldo_entry_array[ldocounter].ldo_id),
 			ldo_entry_array[ldocounter].ldo_type);
 
-		dprintf(SPEW, "Setting %s\n",
+		dprintf(SPEW, "Setting %d\n",
 				ldo_entry_array[ldocounter].ldo_id);
 
 		/* Set voltage during power on */
@@ -395,7 +400,7 @@ bool target_display_panel_node(char *panel_name, char *pbuf, uint16_t buf_size)
 void target_display_init(const char *panel_name)
 {
         uint32_t panel_loop = 0;
-        uint32_t ret = 0;
+        int32_t ret = 0;
 	uint32_t fb_addr = MIPI_FB_ADDR;
 
 	if ((!strcmp(panel_name, NO_PANEL_CONFIG))
@@ -410,7 +415,7 @@ void target_display_init(const char *panel_name)
 
 	do {
 		target_force_cont_splash_disable(false);
-		ret = gcdb_display_init(panel_name, MDP_REV_50, fb_addr);
+		ret = gcdb_display_init(panel_name, MDP_REV_50, (void *) fb_addr);
 		if (!ret || ret == ERR_NOT_SUPPORTED) {
 			break;
 		} else {

@@ -203,7 +203,7 @@ int msm_display_on(void)
 		if (ret)
 			goto msm_display_on_out;
 
-		ret = mdss_hdmi_on();
+		ret = mdss_hdmi_on(pinfo);
 		if (ret)
 			goto msm_display_on_out;
 		break;

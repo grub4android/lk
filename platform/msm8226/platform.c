@@ -29,6 +29,7 @@
 #include <debug.h>
 #include <reg.h>
 #include <platform/iomap.h>
+#include <platform.h>
 #include <qgic.h>
 #include <qtimer.h>
 #include <platform/clock.h>
@@ -37,8 +38,6 @@
 #include <smem.h>
 #include <board.h>
 #include <boot_stats.h>
-
-#define MB (1024*1024)
 
 #define MSM_IOMAP_SIZE ((MSM_IOMAP_END - MSM_IOMAP_BASE)/MB)
 

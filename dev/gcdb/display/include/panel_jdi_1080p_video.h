@@ -47,7 +47,7 @@
 
 static struct panel_config jdi_1080p_video_panel_data = {
   "qcom,mdss_dsi_jdi_1080p_video", "dsi:0:", "qcom,mdss-dsi-panel",
-  10, 0, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+  10, 0, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -90,11 +90,11 @@ static char jdi_1080p_video_on_cmd4[] = {
 
 
 static struct mipi_dsi_cmd jdi_1080p_video_on_command[] = {
-{ 0x4 , jdi_1080p_video_on_cmd0},
-{ 0x4 , jdi_1080p_video_on_cmd1},
-{ 0x4 , jdi_1080p_video_on_cmd2},
-{ 0x4 , jdi_1080p_video_on_cmd3},
-{ 0x4 , jdi_1080p_video_on_cmd4}
+{ 0x4 , jdi_1080p_video_on_cmd0, 0},
+{ 0x4 , jdi_1080p_video_on_cmd1, 0},
+{ 0x4 , jdi_1080p_video_on_cmd2, 0},
+{ 0x4 , jdi_1080p_video_on_cmd3, 0},
+{ 0x4 , jdi_1080p_video_on_cmd4, 0}
 };
 #define JDI_1080P_VIDEO_ON_COMMAND 5
 
@@ -109,9 +109,9 @@ static char jdi_1080p_videooff_cmd1[] = {
 
 
 
-static struct mipi_dsi_cmd jdi_1080p_video_off_command[] = {
-{ 0x4 , jdi_1080p_videooff_cmd0},
-{ 0x4 , jdi_1080p_videooff_cmd1}
+static struct mipi_dsi_cmd __UNUSED jdi_1080p_video_off_command[] = {
+{ 0x4 , jdi_1080p_videooff_cmd0, 0},
+{ 0x4 , jdi_1080p_videooff_cmd1, 0}
 };
 #define JDI_1080P_VIDEO_OFF_COMMAND 2
 
@@ -154,7 +154,7 @@ static const uint32_t jdi_1080p_video_timings[] = {
 
 
 
-static struct mipi_dsi_cmd jdi_1080p_video_rotation[] = {
+static struct mipi_dsi_cmd __UNUSED jdi_1080p_video_rotation[] = {
 
 };
 #define JDI_1080P_VIDEO_ROTATION 0

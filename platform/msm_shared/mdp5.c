@@ -30,6 +30,7 @@
 #include <reg.h>
 #include <target/display.h>
 #include <platform/timer.h>
+#include <platform/msm_shared/timer.h>
 #include <platform/iomap.h>
 #include <dev/lcdc.h>
 #include <dev/fbcon.h>
@@ -52,12 +53,12 @@ void mdp_set_revision(int rev)
 	mdp_rev = rev;
 }
 
-int mdp_get_revision()
+int mdp_get_revision(void)
 {
 	return mdp_rev;
 }
 
-uint32_t mdss_mdp_intf_offset()
+uint32_t mdss_mdp_intf_offset(void)
 {
 	uint32_t mdss_mdp_intf_off;
 	uint32_t mdss_mdp_rev = readl(MDP_HW_REV);
@@ -156,7 +157,7 @@ static void mdss_source_pipe_config(struct fbcon_config *fb, struct msm_panel_in
 
 	stride = (fb->stride * fb->bpp/8);
 
-	writel(fb->base, pipe_base + PIPE_SSPP_SRC0_ADDR);
+	writel((unsigned)fb->base, pipe_base + PIPE_SSPP_SRC0_ADDR);
 	writel(stride, pipe_base + PIPE_SSPP_SRC_YSTRIDE);
 	writel(src_size, pipe_base + PIPE_SSPP_SRC_IMG_SIZE);
 	writel(out_size, pipe_base + PIPE_SSPP_SRC_SIZE);
@@ -178,7 +179,7 @@ static void mdss_source_pipe_config(struct fbcon_config *fb, struct msm_panel_in
 	writel(flip_bits, pipe_base + PIPE_SSPP_SRC_OP_MODE);
 }
 
-static void mdss_vbif_setup()
+static void mdss_vbif_setup(void)
 {
 	int access_secure = restore_secure_cfg(SECURE_DEVICE_MDSS);
 	uint32_t mdp_hw_rev = readl(MDP_HW_REV);
@@ -359,7 +360,7 @@ static void mdss_smp_setup(struct msm_panel_info *pinfo, uint32_t left_pipe,
 			free_smp_offset);
 }
 
-void mdss_intf_tg_setup(struct msm_panel_info *pinfo, uint32_t intf_base)
+int mdss_intf_tg_setup(struct msm_panel_info *pinfo, uint32_t intf_base)
 {
 	uint32_t hsync_period, vsync_period;
 	uint32_t hsync_start_x, hsync_end_x;
@@ -465,6 +466,8 @@ void mdss_intf_tg_setup(struct msm_panel_info *pinfo, uint32_t intf_base)
 		writel(0x212A, MDP_PANEL_FORMAT + mdss_mdp_intf_off);
 	else
 		writel(0x213F, MDP_PANEL_FORMAT + mdss_mdp_intf_off);
+
+	return NO_ERROR;
 }
 
 void mdss_intf_fetch_start_config(struct msm_panel_info *pinfo,
@@ -617,7 +620,7 @@ void mdss_fbc_cfg(struct msm_panel_info *pinfo)
 
 	dprintf(SPEW, "xres = %d, comp_mode %d, qerr_enable = %d, cd_bias = %d\n",
 			xres, fbc->comp_mode, fbc->qerr_enable, fbc->cd_bias);
-	dprintf(SPEW, "pat_enable %d, vlc_enable = %d, bflc_enable\n",
+	dprintf(SPEW, "pat_enable %d, vlc_enable = %d, bflc_enable = %d\n",
 			fbc->pat_enable, fbc->vlc_enable, fbc->bflc_enable);
 
 	budget_ctl = ((fbc->line_x_budget) << 12) |
@@ -732,7 +735,6 @@ int mdp_dsi_video_config(struct msm_panel_info *pinfo,
 		struct fbcon_config *fb)
 {
 	int ret = NO_ERROR;
-	struct lcdc_panel_info *lcdc = NULL;
 	uint32_t intf_sel = 0x100;
 	uint32_t left_pipe, right_pipe;
 	uint32_t reg;
@@ -784,13 +786,12 @@ int mdp_dsi_video_config(struct msm_panel_info *pinfo,
 	writel(0x01, MDP_UPPER_NEW_ROI_PRIOR_RO_START);
 	writel(0x01, MDP_LOWER_NEW_ROI_PRIOR_TO_START);
 
-	return 0;
+	return ret;
 }
 
 int mdp_edp_config(struct msm_panel_info *pinfo, struct fbcon_config *fb)
 {
 	int ret = NO_ERROR;
-	struct lcdc_panel_info *lcdc = NULL;
 	uint32_t left_pipe, right_pipe;
 
 	mdss_intf_tg_setup(pinfo, MDP_INTF_0_BASE);
@@ -820,13 +821,12 @@ int mdp_edp_config(struct msm_panel_info *pinfo, struct fbcon_config *fb)
 	writel(0x01, MDP_UPPER_NEW_ROI_PRIOR_RO_START);
 	writel(0x01, MDP_LOWER_NEW_ROI_PRIOR_TO_START);
 
-	return 0;
+	return ret;
 }
 
 int mdss_hdmi_config(struct msm_panel_info *pinfo, struct fbcon_config *fb)
 {
 	int ret = NO_ERROR;
-	struct lcdc_panel_info *lcdc = NULL;
 	uint32_t left_pipe, right_pipe;
 
 	mdss_intf_tg_setup(pinfo, MDP_INTF_3_BASE);
@@ -855,7 +855,7 @@ int mdss_hdmi_config(struct msm_panel_info *pinfo, struct fbcon_config *fb)
 	writel(0x01, MDP_UPPER_NEW_ROI_PRIOR_RO_START);
 	writel(0x01, MDP_LOWER_NEW_ROI_PRIOR_TO_START);
 
-	return 0;
+	return ret;
 }
 
 int mdp_dsi_cmd_config(struct msm_panel_info *pinfo,
@@ -936,7 +936,7 @@ int mdp_dsi_video_on(struct msm_panel_info *pinfo)
 	return NO_ERROR;
 }
 
-int mdp_dsi_video_off()
+int mdp_dsi_video_off(void)
 {
 	if(!target_cont_splash_screen())
 	{
@@ -953,7 +953,7 @@ int mdp_dsi_video_off()
 	return NO_ERROR;
 }
 
-int mdp_dsi_cmd_off()
+int mdp_dsi_cmd_off(void)
 {
 	if(!target_cont_splash_screen())
 	{

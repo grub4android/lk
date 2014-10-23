@@ -45,7 +45,7 @@
 /*---------------------------------------------------------------------------*/
 static struct panel_config nt35590_qvga_cmd_panel_data = {
 	"qcom,mdss_dsi_nt35590_qvga_cmd", "dsi:0:", "qcom,mdss-dsi-panel",
-	10, 1, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	10, 1, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -2877,7 +2877,7 @@ static char nt35590_qvga_cmdoff_cmd1[] = {
 	0x10, 0x00, 0x05, 0x80
 };
 
-static struct mipi_dsi_cmd nt35590_qvga_cmd_off_command[] = {
+static struct mipi_dsi_cmd __UNUSED nt35590_qvga_cmd_off_command[] = {
 	{0x4, nt35590_qvga_cmdoff_cmd0, 0x32},
 	{0x4, nt35590_qvga_cmdoff_cmd1, 0x78}
 };

@@ -30,11 +30,14 @@
 #include <assert.h>
 #include <debug.h>
 #include <reg.h>
+#include <printf.h>
+#include <assert.h>
 #include <platform/timer.h>
 #include <platform/iomap.h>
 #include <mmc.h>
 #include <clock.h>
 #include <platform/clock.h>
+#include <platform/msm_shared/timer.h>
 
 void hsusb_clock_init(void)
 {
@@ -113,7 +116,6 @@ void clock_init_mmc(uint32_t interface)
 void clock_config_mmc(uint32_t interface, uint32_t freq)
 {
 	int ret;
-	uint32_t reg;
 	char clk_name[64];
 
 	snprintf(clk_name, 64, "sdc%u_core_clk", interface);

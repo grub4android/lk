@@ -47,7 +47,7 @@
 
 static struct panel_config sharp_720p_video_panel_data = {
   "qcom,mdss_dsi_sharp_720p_video", "dsi:0:", "qcom,mdss-dsi-panel",
-  10, 0, "DISPLAY_1", 0, 557000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  10, 0, "DISPLAY_1", 0, 557000000, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -107,13 +107,13 @@ static char sharp_720p_video_on_cmd8[] = {
 
 
 static struct mipi_dsi_cmd sharp_720p_video_on_command[] = {
-{ 0x4, sharp_720p_video_on_cmd0 },
-{ 0xC, sharp_720p_video_on_cmd1 },
-{ 0x4, sharp_720p_video_on_cmd2 },
-{ 0x4, sharp_720p_video_on_cmd3 },
-{ 0x4, sharp_720p_video_on_cmd4 },
-{ 0x4, sharp_720p_video_on_cmd5 },
-{ 0x4, sharp_720p_video_on_cmd6 },
+{ 0x4, sharp_720p_video_on_cmd0, 0 },
+{ 0xC, sharp_720p_video_on_cmd1, 0 },
+{ 0x4, sharp_720p_video_on_cmd2, 0 },
+{ 0x4, sharp_720p_video_on_cmd3, 0 },
+{ 0x4, sharp_720p_video_on_cmd4, 0 },
+{ 0x4, sharp_720p_video_on_cmd5, 0 },
+{ 0x4, sharp_720p_video_on_cmd6, 0 },
 { 0x4, sharp_720p_video_on_cmd7, 0x14 },
 { 0x4, sharp_720p_video_on_cmd8, 0x64 },
 };

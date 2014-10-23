@@ -45,7 +45,7 @@
 /*---------------------------------------------------------------------------*/
 static struct panel_config ssd2080m_720p_video_panel_data = {
 	"qcom,mdss_dsi_ssd2080m_720p_video", "dsi:0:", "qcom,mdss-dsi-panel",
-	10, 0, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 1, 50000, 0, 0, 0, 0, 0, 0
+	10, 0, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 1, 50000, 0, 0, 0, 0, 0, 0, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -422,7 +422,7 @@ static char ssd2080m_720p_videooff_cmd6[] = {
 	0xc3, 0x00, 0xFF, 0xFF,
 };
 
-static struct mipi_dsi_cmd ssd2080m_720p_video_off_command[] = {
+static struct mipi_dsi_cmd __UNUSED ssd2080m_720p_video_off_command[] = {
 	{0x4, ssd2080m_720p_videooff_cmd0, 0x32},
 	{0x8, ssd2080m_720p_videooff_cmd1, 0x20},
 	{0x8, ssd2080m_720p_videooff_cmd2, 0x20},

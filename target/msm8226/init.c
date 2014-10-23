@@ -27,6 +27,7 @@
  */
 
 #include <debug.h>
+#include <printf.h>
 #include <platform/iomap.h>
 #include <platform/irqs.h>
 #include <reg.h>
@@ -35,6 +36,7 @@
 #include <dload_util.h>
 #include <uart_dm.h>
 #include <mmc_sdhci.h>
+#include <sdhci_msm.h>
 #include <platform/clock.h>
 #include <platform/gpio.h>
 #include <spmi.h>
@@ -48,6 +50,8 @@
 #include <scm.h>
 #include <stdlib.h>
 #include <partition_parser.h>
+#include <platform/msm_shared.h>
+#include <platform/msm_shared/timer.h>
 
 #if LONG_PRESS_POWER_ON
 #include <shutdown_detect.h>
@@ -58,6 +62,7 @@
 #endif
 
 extern  bool target_use_signed_kernel(void);
+extern int _emmc_recovery_init(void);
 static void set_sdc_power_ctrl(void);
 
 #define PMIC_ARB_CHANNEL_NUM               0
@@ -169,7 +174,7 @@ int target_volume_up()
 }
 
 /* Return 1 if vol_down pressed */
-uint32_t target_volume_down()
+uint32_t target_volume_down(void)
 {
 	/* Volume down button tied in with PMIC RESIN. */
 	return pm8x41_resin_status();
@@ -180,7 +185,7 @@ int target_power_key(void)
 	return pm8x41_get_pwrkey_is_pressed();
 }
 
-static void target_keystatus()
+static void target_keystatus(void)
 {
 	keys_init();
 
@@ -218,7 +223,7 @@ void target_crypto_init_params()
 	crypto_init_params(&ce_params);
 }
 
-void target_sdc_init()
+void target_sdc_init(void)
 {
 	struct mmc_config_data config = {0};
 
@@ -574,17 +579,17 @@ static void set_sdc_power_ctrl()
 	/* Drive strength configs for sdc pins */
 	struct tlmm_cfgs sdc1_hdrv_cfg[] =
 	{
-		{ SDC1_CLK_HDRV_CTL_OFF,  TLMM_CUR_VAL_16MA, TLMM_HDRV_MASK },
-		{ SDC1_CMD_HDRV_CTL_OFF,  TLMM_CUR_VAL_10MA, TLMM_HDRV_MASK },
-		{ SDC1_DATA_HDRV_CTL_OFF, TLMM_CUR_VAL_6MA, TLMM_HDRV_MASK },
+		{ SDC1_CLK_HDRV_CTL_OFF,  TLMM_CUR_VAL_16MA, TLMM_HDRV_MASK, 0 },
+		{ SDC1_CMD_HDRV_CTL_OFF,  TLMM_CUR_VAL_10MA, TLMM_HDRV_MASK, 0 },
+		{ SDC1_DATA_HDRV_CTL_OFF, TLMM_CUR_VAL_6MA, TLMM_HDRV_MASK, 0 },
 	};
 
 	/* Pull configs for sdc pins */
 	struct tlmm_cfgs sdc1_pull_cfg[] =
 	{
-		{ SDC1_CLK_PULL_CTL_OFF,  TLMM_NO_PULL, TLMM_PULL_MASK },
-		{ SDC1_CMD_PULL_CTL_OFF,  TLMM_PULL_UP, TLMM_PULL_MASK },
-		{ SDC1_DATA_PULL_CTL_OFF, TLMM_PULL_UP, TLMM_PULL_MASK },
+		{ SDC1_CLK_PULL_CTL_OFF,  TLMM_NO_PULL, TLMM_PULL_MASK, 0 },
+		{ SDC1_CMD_PULL_CTL_OFF,  TLMM_PULL_UP, TLMM_PULL_MASK, 0 },
+		{ SDC1_DATA_PULL_CTL_OFF, TLMM_PULL_UP, TLMM_PULL_MASK, 0 },
 	};
 
 	/* Set the drive strength & pull control values */

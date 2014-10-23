@@ -1,7 +1,9 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
-INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/include
+MODULE := $(LOCAL_DIR)
+
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR)/include
 
 PLATFORM := msm8226
 
@@ -19,11 +21,11 @@ SCRATCH_ADDR_512MAP     := 0x10000000
 SCRATCH_SIZE_128MAP     := 0x03D00000
 SCRATCH_SIZE_512MAP     := 0x20000000
 
-DEFINES += DISPLAY_SPLASH_SCREEN=1
-DEFINES += DISPLAY_TYPE_MIPI=1
-DEFINES += DISPLAY_TYPE_DSI6G=1
+GLOBAL_DEFINES += DISPLAY_SPLASH_SCREEN=1
+GLOBAL_DEFINES += DISPLAY_TYPE_MIPI=1
+GLOBAL_DEFINES += DISPLAY_TYPE_DSI6G=1
 
-MODULES += \
+MODULE_DEPS += \
 	dev/keys \
 	lib/ptable \
 	dev/pmic/pm8x41 \
@@ -31,7 +33,7 @@ MODULES += \
 	dev/vib \
 	lib/libfdt
 
-DEFINES += \
+GLOBAL_DEFINES += \
 	MEMSIZE=$(MEMSIZE) \
 	MEMBASE=$(MEMBASE) \
 	BASE_ADDR=$(BASE_ADDR) \
@@ -45,11 +47,13 @@ DEFINES += \
 	SCRATCH_SIZE_512MAP=$(SCRATCH_SIZE_512MAP)
 
 ifneq ($(ENABLE_2NDSTAGE_BOOT),1)
-OBJS += \
-    $(LOCAL_DIR)/target_display.o
+MODULE_SRCS += \
+    $(LOCAL_DIR)/target_display.c
 endif
 
-OBJS += \
-    $(LOCAL_DIR)/init.o \
-    $(LOCAL_DIR)/meminfo.o \
-    $(LOCAL_DIR)/oem_panel.o
+MODULE_SRCS += \
+    $(LOCAL_DIR)/init.c \
+    $(LOCAL_DIR)/meminfo.c \
+    $(LOCAL_DIR)/oem_panel.c
+
+include make/module.mk

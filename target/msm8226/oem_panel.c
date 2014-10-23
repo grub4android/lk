@@ -29,27 +29,31 @@
 
 #include <debug.h>
 #include <err.h>
+#include <string.h>
 #include <smem.h>
 #include <msm_panel.h>
 #include <board.h>
+#include <target.h>
 #include <mipi_dsi.h>
+#include <platform/gpio.h>
 #include <target/display.h>
+#include <platform/msm_shared/timer.h>
 
-#include "include/panel.h"
-#include "panel_display.h"
+#include <panel.h>
+#include <panel_display.h>
 
 /*---------------------------------------------------------------------------*/
 /* GCDB Panel Database                                                       */
 /*---------------------------------------------------------------------------*/
-#include "include/panel_toshiba_720p_video.h"
-#include "include/panel_nt35590_720p_video.h"
-#include "include/panel_nt35590_720p_cmd.h"
-#include "include/panel_hx8394a_720p_video.h"
-#include "include/panel_nt35596_1080p_video.h"
-#include "include/panel_nt35521_720p_video.h"
-#include "include/panel_ssd2080m_720p_video.h"
-#include "include/panel_jdi_1080p_video.h"
-#include "include/panel_nt35590_qvga_cmd.h"
+#include <panel_toshiba_720p_video.h>
+#include <panel_nt35590_720p_video.h>
+#include <panel_nt35590_720p_cmd.h>
+#include <panel_hx8394a_720p_video.h>
+#include <panel_nt35596_1080p_video.h>
+#include <panel_nt35521_720p_video.h>
+#include <panel_ssd2080m_720p_video.h>
+#include <panel_jdi_1080p_video.h>
+#include <panel_nt35590_qvga_cmd.h>
 
 #define DISPLAY_MAX_PANEL_DETECTION 2
 
