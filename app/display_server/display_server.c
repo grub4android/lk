@@ -108,6 +108,9 @@ static int display_server_thread(void *args)
 		dprintf(INFO, "%s: START\n", __func__);
 		is_running = 1;
 
+		// ignore first key to prevent unwanted interactions
+		getkey();
+
 		int keycode = 0;
 		for(;;) {
 			// render frame
