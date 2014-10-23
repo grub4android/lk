@@ -212,6 +212,7 @@ char display_panel_buf[MAX_PANEL_BUF_SIZE];
 char panel_display_mode[MAX_RSP_SIZE];
 char force_fastboot[MAX_RSP_SIZE];
 char use_splash_partition[MAX_RSP_SIZE];
+char screen_resolution[MAX_RSP_SIZE];
 
 extern int emmc_recovery_init(void);
 
@@ -3056,6 +3057,8 @@ static void publish_getvar_partition_info(struct getvar_partition_info *info, ui
 /* register commands and variables for fastboot */
 void aboot_fastboot_register_commands(void)
 {
+	struct fbcon_config* config = fbcon_display();
+
 	if (target_is_emmc_boot())
 	{
 		fastboot_register("flash:", cmd_flash_mmc);
@@ -3132,6 +3135,11 @@ void aboot_fastboot_register_commands(void)
 			device.use_splash_partition);
 	fastboot_publish("using-splash-partition",
 			(const char *) use_splash_partition);
+
+	snprintf(screen_resolution, MAX_RSP_SIZE, "%dx%d",
+			config->width, config->height);
+	fastboot_publish("screen-resolution",
+			(const char *) screen_resolution);
 }
 
 void aboot_init(const struct app_descriptor *app)
