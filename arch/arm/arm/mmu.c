@@ -66,6 +66,7 @@ void arm_mmu_map_section(addr_t paddr, addr_t vaddr, uint flags)
 
 static void arm_mmu_map_grub_region(void)
 {
+#ifdef GRUB_LOADING_ADDRESS
 	uint32_t sections = 32;
 	addr_t paddress = GRUB_LOADING_ADDRESS;
 	addr_t vaddress = paddress;
@@ -78,6 +79,7 @@ static void arm_mmu_map_grub_region(void)
 				    sections * MB,
 				    flags);
 	}
+#endif
 }
 
 void arm_mmu_unmap_section(addr_t vaddr)

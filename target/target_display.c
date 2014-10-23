@@ -26,6 +26,9 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+#if WITH_PLATFORM_MSM_SHARED
+
 #include <err.h>
 #include <debug.h>
 #include <platform.h>
@@ -111,3 +114,5 @@ __WEAK int target_hdmi_gpio_ctrl(bool enable)
 {
 	return 0;
 }
+
+#endif

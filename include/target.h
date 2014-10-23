@@ -26,7 +26,9 @@
 #define __TARGET_H
 
 #include <stdbool.h>
+#if WITH_PLATFORM_MSM_SHARED
 #include <crypto_hash.h>
+#endif
 
 
 /* Target helper functions exposed to USB driver */
@@ -55,6 +57,7 @@ void target_set_debug_led(unsigned int led, bool on);
 #define target_set_debug_led(led, on) ((void)(0))
 #endif
 
+#if WITH_PLATFORM_MSM_SHARED
 /* get memory address for fastboot image loading */
 void *target_get_scratch_address(void);
 
@@ -106,4 +109,5 @@ bool target_use_signed_kernel(void);
 int target_volume_up(void);
 uint32_t target_volume_down(void);
 int target_power_key(void);
+#endif
 #endif
