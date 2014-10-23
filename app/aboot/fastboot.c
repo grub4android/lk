@@ -570,10 +570,14 @@ again:
 			if (memcmp(buffer, cmd->prefix, cmd->prefix_len))
 				continue;
 
+#if WITH_APP_DISPLAY_SERVER
 			display_server_pause();
+#endif
 			cmd->handle((const char*) buffer + cmd->prefix_len,
 				    (void*) download_base, download_size);
+#if WITH_APP_DISPLAY_SERVER
 			display_server_unpause();
+#endif
 
 			if (fastboot_state == STATE_COMMAND)
 				fastboot_fail("unknown reason");
