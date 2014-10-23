@@ -39,14 +39,14 @@ typedef struct device_info device_info;
 struct device_info
 {
 	unsigned char magic[DEVICE_MAGIC_SIZE];
-	bool is_unlocked;
-	bool is_tampered;
-	bool is_verified;
-	bool charger_screen_enabled;
+	uint8_t is_unlocked;
+	uint8_t is_tampered;
+	uint8_t is_verified;
+	uint8_t charger_screen_enabled;
 	char display_panel[MAX_PANEL_ID_LEN];
 	char caf_reserved[100];
-	bool force_fastboot;
-	bool use_splash_partition;
-};
+	uint8_t force_fastboot;
+	uint8_t use_splash_partition;
+} __attribute__ ((packed));
 
 #endif
