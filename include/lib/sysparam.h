@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013, Google, Inc. All rights reserved
+ * Copyright (c) 2014, Xiaomi, Inc. All rights reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -38,6 +39,7 @@ void sysparam_dump(bool show_all);
 ssize_t sysparam_length(const char *name);
 ssize_t sysparam_read(const char *name, void *data, size_t len);
 status_t sysparam_get_ptr(const char *name, const void **ptr, size_t *len);
+status_t sysparam_add_nosave(const char *name, const void *value, size_t len);
 
 #if SYSPARAM_ALLOW_WRITE
 status_t sysparam_add(const char *name, const void *value, size_t len);
