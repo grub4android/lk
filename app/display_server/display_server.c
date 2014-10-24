@@ -31,6 +31,9 @@ static int keymap[MAX_KEYS];
 
 static int getkey(void)
 {
+	// small delay to prevent unwanted keypresses
+	spin(1000);
+
 	CHECK_AND_REPORT_KEY(KEY_UP, target_volume_up());
 	CHECK_AND_REPORT_KEY(KEY_DOWN, target_volume_down());
 	CHECK_AND_REPORT_KEY(KEY_RIGHT, target_power_key());
