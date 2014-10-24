@@ -264,7 +264,7 @@ int oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 	int32_t panel_override_id;
 	uint32_t manu_id, manu_id0;
 
-	if (panel_name) {
+	if (panel_name && panel_name[0]) {
 		panel_override_id = panel_name_to_id(supp_panels,
 				ARRAY_SIZE(supp_panels), panel_name);
 
