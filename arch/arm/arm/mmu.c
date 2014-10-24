@@ -67,9 +67,9 @@ void arm_mmu_map_section(addr_t paddr, addr_t vaddr, uint flags)
 static void arm_mmu_map_grub_region(void)
 {
 #ifdef GRUB_LOADING_ADDRESS
-	uint32_t sections = 32;
+	uint32_t sections = 128;
 	addr_t paddress = GRUB_LOADING_ADDRESS;
-	addr_t vaddress = paddress;
+	addr_t vaddress = GRUB_LOADING_ADDRESS_VIRT;
 	uint32_t flags = MMU_MEMORY_TYPE_NORMAL_WRITE_THROUGH | MMU_MEMORY_AP_READ_WRITE;
 
 	while (sections--) {
