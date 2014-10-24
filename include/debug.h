@@ -36,7 +36,7 @@ __BEGIN_CDECLS
 
 /* debug levels */
 #define CRITICAL 0
-#define ALWAYS 0
+#define ALWAYS -1
 #define INFO 1
 #define SPEW 2
 
