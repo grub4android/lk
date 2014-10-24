@@ -685,7 +685,7 @@ int qup_i2c_xfer(struct qup_i2c_dev *dev, struct i2c_msg msgs[], int num)
 	return ret;
 }
 
-uint8_t i2c_read(struct qup_i2c_dev *dev, uint8_t i2c_addr, uint8_t reg_addr)
+int i2c_read(struct qup_i2c_dev *dev, uint8_t i2c_addr, uint8_t reg_addr)
 {
 	uint8_t ret = 0;
 	/* Create a i2c_msg buffer, that is used to put the controller
@@ -704,7 +704,7 @@ uint8_t i2c_read(struct qup_i2c_dev *dev, uint8_t i2c_addr, uint8_t reg_addr)
 	return ret;
 }
 
-uint8_t i2c_write(struct qup_i2c_dev *dev, uint8_t i2c_addr, uint8_t reg_addr, uint8_t reg_val)
+int i2c_write(struct qup_i2c_dev *dev, uint8_t i2c_addr, uint8_t reg_addr, uint8_t reg_val)
 {
 	uint8_t data_buf[] = { reg_addr, reg_val };
 

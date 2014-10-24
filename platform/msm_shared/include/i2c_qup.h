@@ -114,8 +114,8 @@ struct qup_i2c_dev *qup_blsp_i2c_init(uint8_t blsp_id, uint8_t qup_id,
 				      uint32_t clk_freq, uint32_t src_clk_freq);
 int qup_i2c_deinit(struct qup_i2c_dev *dev);
 int qup_i2c_xfer(struct qup_i2c_dev *dev, struct i2c_msg msgs[], int num);
-uint8_t i2c_read(struct qup_i2c_dev *dev, uint8_t i2c_addr, uint8_t reg_addr);
-uint8_t i2c_write(struct qup_i2c_dev *dev, uint8_t i2c_addr,
+int i2c_read(struct qup_i2c_dev *dev, uint8_t i2c_addr, uint8_t reg_addr);
+int i2c_write(struct qup_i2c_dev *dev, uint8_t i2c_addr,
 				 uint8_t reg_addr, uint8_t reg_val);
 
 struct device {
