@@ -98,7 +98,7 @@ static void panel_backlight_on_mitwoa(unsigned int on)
 		lm3530_dev = NULL;
 	}
 	if (ret) {
-		dprintf(CRITICAL, "panel_backlight_on: ret %d\n", ret);
+		dprintf(CRITICAL, "%s: ret %d\n", __func__, ret);
 	}
 }
 
@@ -122,7 +122,7 @@ static void panel_backlight_on_mitwo(unsigned int on)
 		lm3530_dev = NULL;
 	}
 	if (ret) {
-		dprintf(CRITICAL, "panel_backlight_on: ret %d\n", ret);
+		dprintf(CRITICAL, "%s: ret %d\n", __func__, ret);
 	}
 }
 
