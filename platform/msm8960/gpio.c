@@ -483,7 +483,7 @@ uint8_t pmic8921_gpio_get(uint32_t gpio)
 	if (ret) {
 		status = 0xFF;
 	}
-	dprintf(CRITICAL, "pmic8921_gpio_get ret %d status %d\n", ret, status);
+	dprintf(SPEW, "pmic8921_gpio_get ret %d status %d\n", ret, status);
 
 	return status;
 }
