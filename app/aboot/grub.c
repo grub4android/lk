@@ -163,7 +163,7 @@ static int grub_load_from_mmc(void) {
 	}
 
 	// read file
-	ret = ext4_fread(&f, (void*)GRUB_LOADING_ADDRESS_VIRT, ext4_fsize(&f), &bytes_read);
+	ret = ext4_fread(&f, (void*)GRUB_LOADING_ADDRESS, ext4_fsize(&f), &bytes_read);
 	if(ret != EOK){
 		dprintf(CRITICAL, "ext4_fread ERROR = %d\n", ret);
 		return -1;
@@ -210,7 +210,7 @@ static int grub_load_from_tar(void) {
 	}
 
 	// load file into RAM
-	if(tar_read_file(&tio, &fi, (void*)GRUB_LOADING_ADDRESS_VIRT)) {
+	if(tar_read_file(&tio, &fi, (void*)GRUB_LOADING_ADDRESS)) {
 		dprintf(CRITICAL, "%s: couldn't read core.img!\n", __func__);
 		return -1;
 	}
@@ -285,7 +285,7 @@ int grub_load_from_sideload(void* data) {
 
 int grub_boot(void)
 {
-	void (*entry)(unsigned, unsigned, unsigned*) = (void*)GRUB_LOADING_ADDRESS_VIRT;
+	void (*entry)(unsigned, unsigned, unsigned*) = (void*)GRUB_LOADING_ADDRESS;
 
 	// load grub into RAM
 #ifdef GRUB_BOOT_PARTITION
