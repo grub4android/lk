@@ -43,6 +43,7 @@
 #include <target.h>
 #include <partition_parser.h>
 #include <mmc.h>
+#include <app/aboot.h>
 
 #include "recovery.h"
 #include "bootimg.h"
@@ -55,8 +56,6 @@
 static const int MISC_PAGES = 3;			// number of pages to save
 static const int MISC_COMMAND_PAGE = 1;		// bootloader command is this page
 static char buf[4096];
-
-unsigned boot_into_recovery = 0;
 
 extern uint32_t get_page_size(void);
 extern uint32_t mmc_get_device_blocksize(void);
@@ -329,7 +328,7 @@ int recovery_init (void)
 			}
 			strlcpy(msg.command, "", sizeof(msg.command));	// clearing recovery command
 			set_recovery_message(&msg);	// send recovery message
-			boot_into_recovery = 1;		// Boot in recovery mode
+			bootmode = BOOTMODE_RECOVERY;		// Boot in recovery mode
 			return 0;
 		}
 
@@ -337,7 +336,7 @@ int recovery_init (void)
 		strlcpy(msg.command, "", sizeof(msg.command));	// to safe against multiple reboot into recovery
 		strlcpy(msg.status, "OKAY", sizeof(msg.status));
 		set_recovery_message(&msg);	// send recovery message
-		boot_into_recovery = 1;		// Boot in recovery mode
+		bootmode = BOOTMODE_RECOVERY;		// Boot in recovery mode
 		return 0;
 	}
 
@@ -382,7 +381,7 @@ int recovery_init (void)
 
 SEND_RECOVERY_MSG:
 	set_recovery_message(&msg);	// send recovery message
-	boot_into_recovery = 1;		// Boot in recovery mode
+	bootmode = BOOTMODE_RECOVERY;		// Boot in recovery mode
 	reboot_device(0);
 	return 0;
 }
@@ -457,7 +456,7 @@ int _emmc_recovery_init(void)
 	}
 
 	if (!strcmp(msg->command, "boot-recovery")) {
-		boot_into_recovery = 1;
+		bootmode = BOOTMODE_RECOVERY;
 	}
 
 	if (!strcmp("update-radio",msg->command))
@@ -475,7 +474,7 @@ int _emmc_recovery_init(void)
 			dprintf(INFO,"radio update failed\n");
 			strlcpy(msg->status, "failed-update", sizeof(msg->status));
 		}
-		boot_into_recovery = 1;		// Boot in recovery mode
+		bootmode = BOOTMODE_RECOVERY;		// Boot in recovery mode
 	}
 	if (!strcmp("reset-device-info",msg->command))
 	{

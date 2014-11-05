@@ -159,10 +159,10 @@ static const char *sndstage_cmdline = " multiboot.2ndstage=1";
 /* keep them same length */
 static const char *boot0_cmdline = " syspart=system ";
 static const char *boot1_cmdline = " syspart=system1";
-
-unsigned dual_boot_sign = DUALBOOT_BOOT_NONE;
 #endif
 
+enum bootmode bootmode = BOOTMODE_AUTO;
+enum bootmode bootmode_normal = BOOTMODE_AUTO;
 static unsigned page_size = 0;
 static unsigned page_mask = 0;
 static char ffbm_mode_string[FFBM_MODE_BUF_SIZE];
@@ -210,7 +210,6 @@ char charger_screen_enabled[MAX_RSP_SIZE];
 char sn_buf[13];
 char display_panel_buf[MAX_PANEL_BUF_SIZE];
 char panel_display_mode[MAX_RSP_SIZE];
-char force_fastboot[MAX_RSP_SIZE];
 char use_splash_partition[MAX_RSP_SIZE];
 char screen_resolution[MAX_RSP_SIZE];
 
@@ -274,7 +273,7 @@ char *update_cmdline(const char * cmdline)
 	cmdline_len += strlen(usb_sn_cmdline);
 	cmdline_len += strlen(sn_buf);
 
-	if (boot_into_recovery && gpt_exists)
+	if (bootmode==BOOTMODE_RECOVERY && gpt_exists)
 		cmdline_len += strlen(secondary_gpt_enable);
 
 	if (boot_into_ffbm) {
@@ -307,7 +306,7 @@ char *update_cmdline(const char * cmdline)
 		cmdline_len += strlen(auth_kernel);
 	}
 
-	if (get_target_boot_params(cmdline, boot_into_recovery ? "recoveryfs" :
+	if (get_target_boot_params(cmdline, bootmode==BOOTMODE_RECOVERY ? "recoveryfs" :
 								 "system",
 				   target_boot_params,
 				   sizeof(target_boot_params)) == 0) {
@@ -412,7 +411,7 @@ char *update_cmdline(const char * cmdline)
 			while ((*dst++ = *src++));
 		}
 
-		if (boot_into_recovery && gpt_exists) {
+		if (bootmode==BOOTMODE_RECOVERY && gpt_exists) {
 			src = secondary_gpt_enable;
 			if (have_cmdline) --dst;
 			while ((*dst++ = *src++));
@@ -436,13 +435,11 @@ char *update_cmdline(const char * cmdline)
 
 #if WITH_XIAOMI_DUALBOOT
 		if(needs_xiaomi_syspart) {
-			if (dual_boot_sign == DUALBOOT_BOOT_SECOND) {
+			if (bootmode == BOOTMODE_SECOND) {
 				src = boot1_cmdline;
 				if (have_cmdline) --dst;
 				while ((*dst++ = *src++));
 			} else {
-				if (dual_boot_sign == DUALBOOT_BOOT_NONE)
-					dprintf(CRITICAL, "ERROR: boot and system not chosen\n");
 				src = boot0_cmdline;
 				if (have_cmdline) --dst;
 				while ((*dst++ = *src++));
@@ -746,16 +743,12 @@ BUF_DMA_ALIGN(dt_buf, BOOT_IMG_MAX_PAGE_SIZE);
 
 #if WITH_XIAOMI_DUALBOOT
 #define DUALBOOT_OFFSET_SECTORS 8	/* 4 pages, for recovery_message */
-static void check_boot_image(void)
+enum bootmode get_dualboot_mode(void)
 {
 	int index = INVALID_PTN;
 	unsigned long long ptn = 0;
 	struct dual_boot_message *dualboot_msg;
-
-	if (dual_boot_sign != DUALBOOT_BOOT_NONE)
-		goto out;
-
-	dual_boot_sign = DUALBOOT_BOOT_FIRST;
+	enum bootmode rc = BOOTMODE_NORMAL;
 
 	index = partition_get_index("misc");
 	ptn = partition_get_offset(index);
@@ -775,29 +768,28 @@ static void check_boot_image(void)
 
 	if (!strncmp(dualboot_msg->command, "boot-system", 11)) {
 		if (dualboot_msg->command[11] == '1')
-			dual_boot_sign = DUALBOOT_BOOT_SECOND;
+			rc = BOOTMODE_SECOND;
 	} else
 		dprintf(CRITICAL, "WARNING: dual_boot_message not set\n");
 
 out:
-	/* either DUALBOOT_BOOT_FIRST or DUALBOOT_BOOT_SECOND at this point */
-	dprintf(INFO, "Dualboot choosing: %d of (1, 2) boot & system\n",
-		dual_boot_sign-DUALBOOT_BOOT_NONE);
+	return rc;
 }
 
-void set_dualboot_mode(int mode)
+void set_dualboot_mode(enum bootmode mode)
 {
 	int index = INVALID_PTN;
 	unsigned long long ptn = 0;
 	struct dual_boot_message dualboot_msg;
 
-	if (mode==DUALBOOT_BOOT_SECOND) {
+	if (mode==BOOTMODE_SECOND) {
 		snprintf(dualboot_msg.command, 32, "boot-system1");
-		dual_boot_sign = DUALBOOT_BOOT_SECOND;
+	}
+	else if(mode==BOOTMODE_NORMAL) {
+		snprintf(dualboot_msg.command, 32, "boot-system");
 	}
 	else {
-		snprintf(dualboot_msg.command, 32, "boot-system");
-		dual_boot_sign = DUALBOOT_BOOT_FIRST;
+		dprintf(CRITICAL, "Invalid Dualboot bootmode '%s'\n", strbootmode(mode));
 	}
 
 	index = partition_get_index("misc");
@@ -815,9 +807,7 @@ void set_dualboot_mode(int mode)
 	}
 
 out:
-	/* either DUALBOOT_BOOT_FIRST or DUALBOOT_BOOT_SECOND at this point */
-	dprintf(INFO, "Dualboot choosing: %d of (1, 2) boot & system\n",
-		dual_boot_sign-DUALBOOT_BOOT_NONE);
+	return;
 }
 #endif
 
@@ -836,7 +826,7 @@ static void verify_signed_bootimg(uint32_t bootimg_addr, uint32_t bootimg_size)
 	dprintf(INFO, "Authenticating boot image (%d): start\n", bootimg_size);
 
 #if VERIFIED_BOOT
-	if(boot_into_recovery)
+	if(bootmode==BOOTMODE_RECOVERY)
 	{
 		ret = boot_verify_image((unsigned char *)bootimg_addr,
 				bootimg_size, "recovery");
@@ -881,7 +871,7 @@ static void verify_signed_bootimg(uint32_t bootimg_addr, uint32_t bootimg_size)
 #if VERIFIED_BOOT
 	if(boot_verify_get_state() == RED)
 	{
-		if(!boot_into_recovery)
+		if(bootmode!=BOOTMODE_RECOVERY)
 		{
 			dprintf(CRITICAL,
 					"Device verification failed. Rebooting into recovery.\n");
@@ -966,7 +956,7 @@ void boot_verifier_init(void)
 	}
 }
 
-int boot_linux_from_mmc(enum bootmode bootmode)
+int boot_linux_from_mmc(void)
 {
 	struct boot_img_hdr *hdr = (void*) buf;
 	struct boot_img_hdr *uhdr;
@@ -992,9 +982,9 @@ int boot_linux_from_mmc(enum bootmode bootmode)
 	struct kernel64_hdr *kptr = (void*) kbuf;
 
 	if (check_format_bit())
-		boot_into_recovery = 1;
+		bootmode = BOOTMODE_RECOVERY;
 
-	if (!boot_into_recovery) {
+	if (bootmode!=BOOTMODE_RECOVERY) {
 		memset(ffbm_mode_string, '\0', sizeof(ffbm_mode_string));
 		rcode = get_ffbm(ffbm_mode_string, sizeof(ffbm_mode_string));
 		if (rcode <= 0) {
@@ -1013,64 +1003,35 @@ int boot_linux_from_mmc(enum bootmode bootmode)
 	}
 
 	const char* partname = NULL;
-	if(bootmode==BOOTMODE_AUTO) {
-		if(!boot_into_recovery) {
-#if WITH_XIAOMI_DUALBOOT
-			check_boot_image();
-
-			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+	int is_auto = bootmode==BOOTMODE_AUTO;
+	switch(bootmode) {
+		case BOOTMODE_AUTO:
+		#if WITH_XIAOMI_DUALBOOT
+			if(get_dualboot_mode()==BOOTMODE_SECOND) {
+				bootmode = BOOTMODE_SECOND;
 				partname = "boot1";
-			else
-#endif
-			{
-				partname = "boot";
+				break;
 			}
-			boot_into_recovery = 0;
-		}
-		else {
+		#endif
+		case BOOTMODE_NORMAL:
+			partname = "boot";
+			break;
+	#if WITH_XIAOMI_DUALBOOT
+		case BOOTMODE_SECOND:
+			partname = "boot1";
+			break;
+	#endif
+		case BOOTMODE_RECOVERY:
 			partname = "recovery";
-			boot_into_recovery = 1;
-		}
+			break;
+
+		default:
+			dprintf(CRITICAL, "Invalid bootmode %d\n", bootmode);
+			return -1;
 	}
 
-	else if(bootmode==BOOTMODE_NORMAL) {
-#if WITH_XIAOMI_DUALBOOT
-			check_boot_image();
-
-			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
-				partname = "boot1";
-			else
-#endif
-			{
-				partname = "boot";
-			}
-			boot_into_recovery = 0;
-	}
-
-#if WITH_XIAOMI_DUALBOOT
-	else if(bootmode==DUALBOOT_BOOT_NONE) {
-		partname = "boot";
-		boot_into_recovery = 0;
-	}
-	else if(bootmode==DUALBOOT_BOOT_FIRST) {
-		partname = "boot";
-		boot_into_recovery = 0;
-	}
-	else if(bootmode==DUALBOOT_BOOT_SECOND) {
-		partname = "boot1";
-		boot_into_recovery = 0;
-	}
-#endif
-
-	else if(bootmode==BOOTMODE_RECOVERY) {
-		partname = "recovery";
-		boot_into_recovery = 1;
-	}
-
-	else {
-		dprintf(CRITICAL, "ERROR: Invalid bootmode %d\n", bootmode);
-                return -1;
-	}
+	if(is_auto)
+		dprintf(INFO, "Automatic bootmode: %s\n", strbootmode(bootmode));
 
 	index = partition_get_index(partname);
 	ptn = partition_get_offset(index);
@@ -1375,7 +1336,7 @@ int boot_linux_from_mmc(enum bootmode bootmode)
 		#endif
 	}
 
-	if (boot_into_recovery && !device.is_unlocked && !device.is_tampered)
+	if (bootmode==BOOTMODE_RECOVERY && !device.is_unlocked && !device.is_tampered)
 		target_load_ssd_keystore();
 
 unified_boot:
@@ -1387,7 +1348,7 @@ unified_boot:
 	return 0;
 }
 
-int boot_linux_from_flash(enum bootmode bootmode)
+int boot_linux_from_flash(void)
 {
 	struct boot_img_hdr *hdr = (void*) buf;
 	struct ptentry *ptn;
@@ -1423,64 +1384,35 @@ int boot_linux_from_flash(enum bootmode bootmode)
 	}
 
 	const char* partname = NULL;
-	if(bootmode==BOOTMODE_AUTO) {
-		if(!boot_into_recovery) {
-#if WITH_XIAOMI_DUALBOOT
-			check_boot_image();
-
-			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
+	int is_auto = bootmode==BOOTMODE_AUTO;
+	switch(bootmode) {
+		case BOOTMODE_AUTO:
+		#if WITH_XIAOMI_DUALBOOT
+			if(get_dualboot_mode()==BOOTMODE_SECOND) {
 				partname = "boot1";
-			else
-#endif
-			{
-				partname = "boot";
+				break;
 			}
-			boot_into_recovery = 0;
-		}
-		else {
+			dprintf(INFO, "Dualboot choosing: %s\n", strbootmode(bootmode));
+		#endif
+		case BOOTMODE_NORMAL:
+			partname = "boot";
+			break;
+	#if WITH_XIAOMI_DUALBOOT
+		case BOOTMODE_SECOND:
+			partname = "boot1";
+			break;
+	#endif
+		case BOOTMODE_RECOVERY:
 			partname = "recovery";
-			boot_into_recovery = 1;
-		}
+			break;
+
+		default:
+			dprintf(CRITICAL, "Invalid bootmode %d\n", bootmode);
+			return -1;
 	}
 
-	else if(bootmode==BOOTMODE_NORMAL) {
-#if WITH_XIAOMI_DUALBOOT
-			check_boot_image();
-
-			if (dual_boot_sign == DUALBOOT_BOOT_SECOND)
-				partname = "boot1";
-			else
-#endif
-			{
-				partname = "boot";
-			}
-			boot_into_recovery = 0;
-	}
-
-#if WITH_XIAOMI_DUALBOOT
-	else if(bootmode==DUALBOOT_BOOT_NONE) {
-		partname = "boot";
-		boot_into_recovery = 0;
-	}
-	else if(bootmode==DUALBOOT_BOOT_FIRST) {
-		partname = "boot";
-		boot_into_recovery = 0;
-	}
-	else if(bootmode==DUALBOOT_BOOT_SECOND) {
-		partname = "boot1";
-		boot_into_recovery = 0;
-	}
-#endif
-
-	else if(bootmode==BOOTMODE_RECOVERY) {
-		partname = "recovery";
-		boot_into_recovery = 1;
-	}
-
-	else {
-		dprintf(CRITICAL, "ERROR: Invalid bootmode %d\n", bootmode);
-                return -1;
-	}
+	if(is_auto)
+		dprintf(INFO, "Automatic bootmode: %s\n", strbootmode(bootmode));
 
     ptn = ptable_find(ptable, partname);
     if (ptn == NULL) {
@@ -1736,7 +1668,7 @@ static int validate_device_info(struct device_info *info)
 		info->is_tampered = 0;
 		info->charger_screen_enabled = 0;
 		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
-		info->force_fastboot = 0;
+		info->bootmode = BOOTMODE_AUTO;
 		info->use_splash_partition = 0;
 
 		return 1;
@@ -1748,8 +1680,8 @@ static int validate_device_info(struct device_info *info)
 		info->is_tampered = 0;
 	if(info->charger_screen_enabled !=0 && info->charger_screen_enabled!=1)
 		info->charger_screen_enabled = 0;
-	if(info->force_fastboot !=0 && info->force_fastboot!=1)
-		info->force_fastboot = 0;
+	if(info->bootmode>=BOOTMODE_MAX)
+		info->bootmode = BOOTMODE_AUTO;
 	if(info->use_splash_partition !=0 && info->use_splash_partition!=1)
 		info->use_splash_partition = 0;
 	if(!isprint(info->display_panel[0]) && !info->display_panel[0]=='\0')
@@ -2642,28 +2574,12 @@ void cmd_flash(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
-int boot_linux_from_storage(enum bootmode bootmode) {
-	fastboot_stop();
-
-	if (target_is_emmc_boot())
-	{
-		return boot_linux_from_mmc(bootmode);
-	}
-	else
-	{
-		return boot_linux_from_flash(bootmode);
-	}
-}
-
 void cmd_continue(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
 
-	// try to boot GRUB
-	if(grub_boot())
-		return;
-
-	boot_linux_from_storage(BOOTMODE_AUTO);
+	bootmode = BOOTMODE_AUTO;
+	aboot_continue_boot();
 }
 
 void cmd_reboot(const char *arg, void *data, unsigned sz)
@@ -2699,22 +2615,6 @@ void cmd_oem_disable_charger_screen(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Disabling charger screen check\n");
 	device.charger_screen_enabled = 0;
-	write_device_info(&device);
-	fastboot_okay("");
-}
-
-void cmd_oem_enable_force_fastboot(const char *arg, void *data, unsigned size)
-{
-	dprintf(INFO, "Enabling forcing fastboot\n");
-	device.force_fastboot = 1;
-	write_device_info(&device);
-	fastboot_okay("");
-}
-
-void cmd_oem_disable_force_fastboot(const char *arg, void *data, unsigned size)
-{
-	dprintf(INFO, "Disabling cforcing fastboot\n");
-	device.force_fastboot = 0;
 	write_device_info(&device);
 	fastboot_okay("");
 }
@@ -2791,8 +2691,6 @@ void cmd_oem_devinfo(const char *arg, void *data, unsigned sz)
 	snprintf(response, sizeof(response), "\tCharger screen enabled: %s", (device.charger_screen_enabled ? "true" : "false"));
 	fastboot_info(response);
 	snprintf(response, sizeof(response), "\tDisplay panel: %s", (device.display_panel));
-	fastboot_info(response);
-	snprintf(response, sizeof(response), "\tForcing fastboot: %s", (device.force_fastboot ? "true" : "false"));
 	fastboot_info(response);
 	snprintf(response, sizeof(response), "\tUsing splash partition: %s", (device.use_splash_partition ? "true" : "false"));
 	fastboot_info(response);
@@ -3090,10 +2988,6 @@ void aboot_fastboot_register_commands(void)
 			cmd_oem_disable_charger_screen);
 	fastboot_register("oem select-display-panel",
 			cmd_oem_select_display_panel);
-	fastboot_register("oem enable-forcing-fastboot",
-			cmd_oem_enable_force_fastboot);
-	fastboot_register("oem disable-forcing-fastboot",
-			cmd_oem_disable_force_fastboot);
 	fastboot_register("oem enable-using-splash-partition",
 			cmd_oem_enable_use_splash_partition);
 	fastboot_register("oem disable-using-splash-partition",
@@ -3126,11 +3020,6 @@ void aboot_fastboot_register_commands(void)
 	fastboot_publish("display-panel",
 			(const char *) panel_display_mode);
 
-	snprintf(force_fastboot, MAX_RSP_SIZE, "%d",
-			device.force_fastboot);
-	fastboot_publish("forcing-fastboot",
-			(const char *) force_fastboot);
-
 	snprintf(use_splash_partition, MAX_RSP_SIZE, "%d",
 			device.use_splash_partition);
 	fastboot_publish("using-splash-partition",
@@ -3142,10 +3031,121 @@ void aboot_fastboot_register_commands(void)
 			(const char *) screen_resolution);
 }
 
+void aboot_continue_boot(void) {
+	static int fastboot_initialized = 0;
+	int error = 0;
+
+	// allow to override the bootmode
+	if(bootmode==BOOTMODE_AUTO) {
+		dprintf(INFO, "Overwrite bootmode: %s->%s\n", strbootmode(bootmode), strbootmode(device.bootmode));
+		bootmode = device.bootmode;
+	}
+
+	dprintf(INFO, "Booting %s...\n", strbootmode(bootmode));
+
+	switch(bootmode) {
+		case BOOTMODE_AUTO:
+		case BOOTMODE_NORMAL:
+	#if WITH_XIAOMI_DUALBOOT
+		case BOOTMODE_SECOND:
+	#endif
+		case BOOTMODE_RECOVERY:
+			if (target_is_emmc_boot())
+			{
+				if(emmc_recovery_init())
+					dprintf(ALWAYS,"error in emmc_recovery_init\n");
+
+				if(target_use_signed_kernel())
+				{
+					if((device.is_unlocked) || (device.is_tampered))
+					{
+					#ifdef TZ_TAMPER_FUSE
+						set_tamper_fuse_cmd();
+					#endif
+					#if USE_PCOM_SECBOOT
+						set_tamper_flag(device.is_tampered);
+					#endif
+					}
+				}
+				boot_linux_from_mmc();
+			}
+			else
+			{
+				recovery_init();
+			#if USE_PCOM_SECBOOT
+				if((device.is_unlocked) || (device.is_tampered))
+					set_tamper_flag(device.is_tampered);
+			#endif
+					boot_linux_from_flash();
+				}
+			break;
+		case BOOTMODE_DLOAD:
+			if (set_download_mode(EMERGENCY_DLOAD))
+			{
+				dprintf(CRITICAL,"dload mode not supported by target\n");
+			}
+			else
+			{
+				reboot_device(DLOAD);
+				dprintf(CRITICAL,"Failed to reboot into dload mode\n");
+			}
+			error = 1;
+			break;
+		case BOOTMODE_GRUB:
+			grub_boot();
+			break;
+
+		case BOOTMODE_FASTBOOT:
+		default:
+			error = 1;
+			break;
+	}
+
+	if(error && !fastboot_initialized) {
+		/* register aboot specific fastboot commands */
+		aboot_fastboot_register_commands();
+
+		/* dump partition table for debug info */
+		partition_dump();
+
+		/* initialize and start fastboot */
+		fastboot_init(target_get_scratch_address(), target_get_max_flash_size());
+
+	#if WITH_APP_DISPLAY_SERVER
+		display_server_start();
+	#endif
+
+		fastboot_initialized = 1;
+	}
+}
+
+const char* strbootmode(enum bootmode bm) {
+	switch(bm) {
+		case BOOTMODE_AUTO:
+			return "Auto";
+		case BOOTMODE_NORMAL:
+			return "Normal";
+		#if WITH_XIAOMI_DUALBOOT
+		case BOOTMODE_SECOND:
+			return "Second";
+		#endif
+		case BOOTMODE_RECOVERY:
+			return "Recovery";
+		case BOOTMODE_FASTBOOT:
+			return "Fastboot";
+		case BOOTMODE_DLOAD:
+			return "Download";
+		case BOOTMODE_GRUB:
+			return "GRUB";
+
+		default:
+			return "unknown";
+	}
+}
+
 void aboot_init(const struct app_descriptor *app)
 {
 	unsigned reboot_mode = 0;
-	bool boot_into_fastboot = false;
 
 	/* Setup page size information for nv storage */
 	if (target_is_emmc_boot())
@@ -3194,107 +3194,40 @@ void aboot_init(const struct app_descriptor *app)
 	/* Check if we should do something other than booting up */
 	if (keys_get_state(KEY_VOLUMEUP) && keys_get_state(KEY_VOLUMEDOWN))
 	{
-		dprintf(ALWAYS,"dload mode key sequence detected\n");
-		if (set_download_mode(EMERGENCY_DLOAD))
-		{
-			dprintf(CRITICAL,"dload mode not supported by target\n");
-		}
-		else
-		{
-			reboot_device(DLOAD);
-			dprintf(CRITICAL,"Failed to reboot into dload mode\n");
-		}
-		boot_into_fastboot = true;
+		bootmode = BOOTMODE_DLOAD;
 	}
-	if (!boot_into_fastboot)
+	else
 	{
 		if (keys_get_state(KEY_HOME) || keys_get_state(KEY_VOLUMEUP))
-			boot_into_recovery = 1;
-		if (!boot_into_recovery &&
+			bootmode = BOOTMODE_RECOVERY;
+		if (bootmode!=BOOTMODE_RECOVERY &&
 			(keys_get_state(KEY_BACK) || keys_get_state(KEY_VOLUMEDOWN)))
-			boot_into_fastboot = true;
+			bootmode = BOOTMODE_FASTBOOT;
 	}
 	#if NO_KEYPAD_DRIVER
 	if (fastboot_trigger())
-		boot_into_fastboot = true;
+		bootmode = BOOTMODE_FASTBOOT;
 	#endif
 
 	reboot_mode = check_reboot_mode();
 	if (reboot_mode == REBOOT_MODE_RECOVERY) {
-		boot_into_recovery = 1;
+		bootmode = BOOTMODE_RECOVERY;
 	} else if(reboot_mode == REBOOT_MODE_FASTBOOT) {
-		boot_into_fastboot = true;
+		bootmode = BOOTMODE_FASTBOOT;
 	}
 #if WITH_XIAOMI_DUALBOOT
 	else if (reboot_mode == REBOOT_MODE_BOOT0) {
-		dual_boot_sign = DUALBOOT_BOOT_FIRST;
+		bootmode = BOOTMODE_NORMAL;
 	} else if (reboot_mode == REBOOT_MODE_BOOT1) {
-		dual_boot_sign = DUALBOOT_BOOT_SECOND;
+		bootmode = BOOTMODE_SECOND;
 	}
 #endif
 
-	if (device.force_fastboot)
-		boot_into_fastboot = true;
+	dprintf(ALWAYS, "Selected bootmode: %s\n", strbootmode(bootmode));
 
 normal_boot:
-	if (!boot_into_fastboot)
-	{
-		// try to boot GRUB
-		if(!boot_into_recovery && grub_boot()) {
-			goto boot_error;
-		}
-
-		if (target_is_emmc_boot())
-		{
-			if(emmc_recovery_init())
-				dprintf(ALWAYS,"error in emmc_recovery_init\n");
-			if(target_use_signed_kernel())
-			{
-				if((device.is_unlocked) || (device.is_tampered))
-				{
-				#ifdef TZ_TAMPER_FUSE
-					set_tamper_fuse_cmd();
-				#endif
-				#if USE_PCOM_SECBOOT
-					set_tamper_flag(device.is_tampered);
-				#endif
-				}
-			}
-			boot_linux_from_mmc(BOOTMODE_AUTO);
-		}
-		else
-		{
-			recovery_init();
-	#if USE_PCOM_SECBOOT
-		if((device.is_unlocked) || (device.is_tampered))
-			set_tamper_flag(device.is_tampered);
-	#endif
-			boot_linux_from_flash(BOOTMODE_AUTO);
-		}
-
-boot_error:
-		dprintf(CRITICAL, "ERROR: Could not do normal boot. Reverting "
-			"to fastboot mode.\n");
-	}
-
-	/* We are here means regular boot did not happen. Start fastboot. */
-
-	/* register aboot specific fastboot commands */
-	aboot_fastboot_register_commands();
-
-	/* dump partition table for debug info */
-	partition_dump();
-
-	/* initialize and start fastboot */
-	fastboot_init(target_get_scratch_address(), target_get_max_flash_size());
-
-#if WITH_XIAOMI_DUALBOOT
-	check_boot_image();
-#endif
-
-#if WITH_APP_DISPLAY_SERVER
-	display_server_start();
-#endif
+	bootmode_normal = bootmode;
+	aboot_continue_boot();
 }
 
 uint32_t get_page_size(void)

@@ -16,14 +16,29 @@ static void menu_exec_back(void) {
 }
 
 #if WITH_XIAOMI_DUALBOOT
+static enum bootmode dualboot_mode = BOOTMODE_NORMAL;
 static void menu_exec_dualbootmode(void) {
-	set_dualboot_mode(dual_boot_sign==DUALBOOT_BOOT_SECOND?DUALBOOT_BOOT_FIRST:DUALBOOT_BOOT_SECOND);
+	dualboot_mode = dualboot_mode==BOOTMODE_SECOND?BOOTMODE_NORMAL:BOOTMODE_SECOND;
+	set_dualboot_mode(dualboot_mode);
 }
 static void menu_format_dualbootmode(char** buf) {
+	dualboot_mode = get_dualboot_mode();
 	*buf = calloc(100, 1);
-	snprintf(*buf, 100, "    Dualboot mode [%s]", dual_boot_sign==DUALBOOT_BOOT_SECOND?"System2":"System1");
+	snprintf(*buf, 100, "    Dualboot mode [%s]", dualboot_mode==BOOTMODE_SECOND?"System2":"System1");
 }
 #endif
+
+static void menu_exec_bootmode(void) {
+	if(device.bootmode<BOOTMODE_MAX-1)
+		device.bootmode++;
+	else device.bootmode = 0;
+
+	write_device_info(&device);
+}
+static void menu_format_bootmode(char** buf) {
+	*buf = calloc(100, 1);
+	snprintf(*buf, 100, "    Bootmode [%s]", strbootmode(device.bootmode));
+}
 
 static void menu_exec_chargerscreen(void) {
 	device.charger_screen_enabled = !device.charger_screen_enabled;
@@ -43,22 +58,13 @@ static void menu_format_splash(char** buf) {
 	snprintf(*buf, 100, "    Splash Logo [%s]", device.use_splash_partition?"enabled":"disabled");
 }
 
-static void menu_exec_forcefastboot(void) {
-	device.force_fastboot = !device.force_fastboot;
-	write_device_info(&device);
-}
-static void menu_format_forcefastboot(char** buf) {
-	*buf = calloc(100, 1);
-	snprintf(*buf, 100, "    Force Fastboot Mode [%s]", device.force_fastboot?"enabled":"disabled");
-}
-
 struct menu_entry entries_settings[] = {
 	{"    <-- Back", &menu_exec_back, NULL},
 #if WITH_XIAOMI_DUALBOOT
 	{"", &menu_exec_dualbootmode, &menu_format_dualbootmode},
 #endif
+	{"", &menu_exec_bootmode, &menu_format_bootmode},
 	{"", &menu_exec_chargerscreen, &menu_format_chargerscreen},
 	{"", &menu_exec_splash, &menu_format_splash},
-	{"", &menu_exec_forcefastboot, &menu_format_forcefastboot},
 	{NULL,NULL,NULL},
 };

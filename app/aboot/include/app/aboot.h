@@ -36,23 +36,28 @@
 #define ABOOT_VERSION "0.5"
 
 enum bootmode {
-	BOOTMODE_AUTO,
+	BOOTMODE_AUTO = 0,
 	BOOTMODE_NORMAL,
-	BOOTMODE_RECOVERY,
 #if WITH_XIAOMI_DUALBOOT
-	DUALBOOT_BOOT_NONE,
-	DUALBOOT_BOOT_FIRST,
-	DUALBOOT_BOOT_SECOND,
+	BOOTMODE_SECOND,
 #endif
+	BOOTMODE_RECOVERY,
+	BOOTMODE_FASTBOOT,
+	BOOTMODE_DLOAD,
+	BOOTMODE_GRUB,
+
+	BOOTMODE_MAX,
 };
 
 extern device_info device;
+extern enum bootmode bootmode, bootmode_normal;
+const char* strbootmode(enum bootmode bm);
+void aboot_continue_boot(void);
 #if WITH_XIAOMI_DUALBOOT
-extern unsigned dual_boot_sign;
-void set_dualboot_mode(int mode);
+enum bootmode get_dualboot_mode(void);
+void set_dualboot_mode(enum bootmode mode);
 #endif
 
-int boot_linux_from_storage(enum bootmode bootmode);
 void write_device_info(device_info *dev);
 
 #endif

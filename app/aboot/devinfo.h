@@ -45,7 +45,7 @@ struct device_info
 	uint8_t charger_screen_enabled;
 	char display_panel[MAX_PANEL_ID_LEN];
 	char caf_reserved[100];
-	uint8_t force_fastboot;
+	uint8_t bootmode;
 	uint8_t use_splash_partition;
 } __attribute__ ((packed));
 
