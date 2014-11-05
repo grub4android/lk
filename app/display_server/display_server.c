@@ -11,6 +11,7 @@
 #include <kernel/mutex.h>
 #include <lk/init.h>
 #include <dev/keys.h>
+#include <platform.h>
 
 static event_t e_frame_finished;
 static event_t e_start_server;
@@ -123,7 +124,10 @@ static int display_server_thread(void *args)
 			event_signal(&e_frame_finished, true);
 
 			// poll key
+			lk_time_t last_refresh = current_time();
 			while(!(keycode=getkey()) && !request_stop && !request_refresh) {
+				// refresh every 59s
+				if((current_time()-last_refresh)>=59000) break;
 				thread_yield();
 			}
 
