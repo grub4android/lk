@@ -33,6 +33,7 @@
 #include <err.h>
 #include <dev/pm8921.h>
 #include <dev/pm8921_pwm.h>
+#include <dev/pm8921_rtc.h>
 #include <platform/timer.h>
 #include <platform/msm_shared/timer.h>
 #include "pm8921_hw.h"
@@ -61,6 +62,8 @@ void pm8921_init(pm8921_dev_t *pmic)
 	dev = pmic;
 
 	dev->initialized = 1;
+
+	pm8921_rtc_init(dev);
 }
 
 static int pm8921_masked_write(uint16_t addr,
@@ -558,27 +561,6 @@ int pm8921_HDMI_Switch(void)
 	}
 
 	return ret;
-}
-
-int pm8921_rtc_alarm_disable(void)
-{
-	int rc;
-	uint8_t reg;
-
-	rc = dev->read(&reg, 1, PM8921_RTC_CTRL);
-	if (rc) {
-		dprintf(CRITICAL,"Failed to read RTC_CTRL reg = %d\n",rc);
-		return rc;
-	}
-	reg = (reg & ~PM8921_RTC_ALARM_ENABLE);
-
-	rc = dev->write(&reg, 1, PM8921_RTC_CTRL);
-	if (rc) {
-		dprintf(CRITICAL,"Failed to write RTC_CTRL reg = %d\n",rc);
-		return rc;
-	}
-
-	return rc;
 }
 
 /*

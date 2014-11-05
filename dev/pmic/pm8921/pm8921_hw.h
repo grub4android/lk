@@ -176,7 +176,7 @@
 	.ctrl_reg = _ctrl_reg, \
 }
 
-struct pm89xx_vreg ldo_data[] = {
+static struct pm89xx_vreg __UNUSED ldo_data[] = {
 	LDO("LDO30", PLDO_TYPE, 0x0A3, 0x0A4),
 	LDO("LDO31", PLDO_TYPE, 0x0A5, 0x0A6),
 	LDO("LDO32", PLDO_TYPE, 0x0A7, 0x0A8),
