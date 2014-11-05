@@ -122,7 +122,6 @@ struct fastboot_cmd_desc {
 
 #define MAX_TAGS_SIZE   1024
 
-#define ALARM_BOOT      0x77665503
 /* make 4096 as default size to ensure EFS,EXT4's erasing */
 #define DEFAULT_ERASE_SIZE  4096
 #define MAX_PANEL_BUF_SIZE 128
@@ -3279,7 +3278,7 @@ void aboot_init(const struct app_descriptor *app)
 		bootmode = BOOTMODE_RECOVERY;
 	} else if(reboot_mode == REBOOT_MODE_FASTBOOT) {
 		bootmode = BOOTMODE_FASTBOOT;
-	} else if(reboot_mode == ALARM_BOOT) {
+	} else if(reboot_mode == REBOOT_MODE_ALARM) {
 		boot_reason_alarm = true;
 	}
 #if WITH_XIAOMI_DUALBOOT
