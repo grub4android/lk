@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,27 +26,21 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __MMC_WRAPPER_H__
-#define __MMC_WRAPPER_H__
+static inline void dump(const void *buff, int count)
+{
+	int i = 0;
+	printf("memory dump of %d bytes from address 0x%x\n",count, buff);
+	for (i = 0; i < count; i++) {
+		unsigned char ch = *(const unsigned char *) buff;
+		printf("0x%02X ", ch);
+		if ((i+1) % 16 == 0)
+			printf("\n");
+		buff = (const char *) buff + 1;
+	}
+	printf("\n");
+}
 
-#include <mmc_sdhci.h>
-
-#define BOARD_KERNEL_PAGESIZE                2048
-/* Wrapper APIs */
-
-struct mmc_device *get_mmc_device(void);
-uint32_t mmc_get_psn(void);
-
-uint32_t mmc_read(uint64_t data_addr, uint32_t *out, uint32_t data_len);
-uint32_t mmc_write(uint64_t data_addr, uint32_t data_len, void *in);
-uint32_t mmc_erase_card(uint64_t, uint64_t);
-uint64_t mmc_get_device_capacity(void);
-uint32_t mmc_erase_card(uint64_t addr, uint64_t len);
-uint32_t mmc_get_device_blocksize(void);
-uint32_t mmc_page_size(void);
-void mmc_device_sleep(void);
-void mmc_set_lun(uint8_t lun);
-uint8_t mmc_get_lun(void);
-void  mmc_read_partition_table(uint8_t arg);
-uint32_t mmc_write_protect(const char *name, int set_clr);
-#endif
+void rpmb_run_test();
+bool rpmb_test(struct ufs_dev *dev, uint16_t address, uint16_t rpmb_num_blocks);
+void dump_rpmb_data(struct rpmb_frame *result_frame);
+int verify_rpmb_frame(struct rpmb_frame *request_frame, struct rpmb_frame *result_frame, int type);

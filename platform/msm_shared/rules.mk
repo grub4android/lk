@@ -25,8 +25,7 @@ MODULE_SRCS += \
 ifeq ($(ENABLE_SMD_SUPPORT),1)
 MODULE_SRCS += \
 	$(LOCAL_DIR)/rpm-smd.c \
-	$(LOCAL_DIR)/smd.c \
-	$(LOCAL_DIR)/regulator.c
+	$(LOCAL_DIR)/smd.c
 endif
 
 ifeq ($(ENABLE_SDHCI_SUPPORT),1)
@@ -358,6 +357,7 @@ ifeq ($(PLATFORM),mdm9x25)
 endif
 
 ifeq ($(PLATFORM),mdm9x35)
+GLOBAL_DEFINES += DISPLAY_TYPE_QPIC=1
 	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 			$(LOCAL_DIR)/uart_dm.c \
 			$(LOCAL_DIR)/interrupts.c \
@@ -373,6 +373,10 @@ ifeq ($(PLATFORM),mdm9x35)
 			$(LOCAL_DIR)/clock_pll.c \
 			$(LOCAL_DIR)/clock_lib2.c \
 			$(LOCAL_DIR)/qmp_usb30_phy.c
+			$(LOCAL_DIR)/qmp_usb30_phy.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/qpic.c \
+			$(LOCAL_DIR)/qpic_panel.c
 endif
 
 ifeq ($(PLATFORM),msmzirc)

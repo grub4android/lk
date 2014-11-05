@@ -130,8 +130,6 @@ void target_init(void)
 
 	spmi_init(PMIC_ARB_CHANNEL_NUM, PMIC_ARB_OWNER_ID);
 
-	platform_read_boot_config();
-
 	if (platform_boot_dev_isemmc()) {
 		target_sdc_init();
 		if (partition_read_table()) {
@@ -248,7 +246,7 @@ int get_target_boot_params(const char *cmdline, const char *part, char *buf,
 		}
 		else {
 			/* Below is for emmc boot */
-			system_ptn_index = partition_get_index(part);
+			system_ptn_index = partition_get_index(part) + 1; /* Adding +1 as offsets for eMMC start at 1 and NAND at 0 */
 			if (system_ptn_index < 0) {
 				dprintf(CRITICAL,
 						"WARN: Cannot get partition index for %s\n", part);
@@ -310,6 +308,7 @@ void target_sdc_init()
 	config.pwrctl_base  = MSM_SDC1_BASE;
 	config.pwr_irq      = SDCC1_PWRCTL_IRQ;
 	config.hs400_support = 0;
+	config.use_io_switch = 1;
 
 	if (!(dev = mmc_init(&config))) {
 		dprintf(CRITICAL, "mmc init failed!");
@@ -351,4 +350,9 @@ target_usb_iface_t* target_usb30_init()
 uint32_t target_override_pll()
 {
 	return 1;
+}
+
+uint32_t target_get_hlos_subtype()
+{
+	return board_hlos_subtype();
 }

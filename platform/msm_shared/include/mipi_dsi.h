@@ -80,6 +80,10 @@
 
 #define DSI_LANE_CTRL                         REG_DSI(0x0A8)
 
+#define DSI_VIDEO_MODE_DONE_MASK              BIT(17)
+#define DSI_VIDEO_MODE_DONE_AK                BIT(16)
+#define DSI_VIDEO_MODE_DONE_STAT              BIT(16)
+
 /**********************************************************
   DSI register configuration options
  **********************************************************/
@@ -89,6 +93,7 @@
 #define TIMING_FLUSH		     0x1E4
 #define TIMING_DB_MODE		     0x1E8
 
+#define DSI_HW_REV_103			0x10030000	/* 8994 */
 #define DSI_HW_REV_103_1		0x10030001	/* 8936/8939 */
 
 #define DTYPE_GEN_WRITE2 0x23	/* 4th Byte is 0x80 */
@@ -201,6 +206,7 @@ struct mipi_dsi_cmd {
 	int size;
 	char *payload;
 	int wait;
+	uint8_t cmds_post_tg;
 };
 
 struct mipi_dsi_panel_config {
@@ -215,6 +221,7 @@ struct mipi_dsi_panel_config {
 	struct mipi_dsi_cmd *panel_cmds;
 	int num_of_panel_cmds;
 	uint32_t signature;
+	char cmds_post_tg;
 };
 
 enum {		/* mipi dsi panel */

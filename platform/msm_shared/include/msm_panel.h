@@ -53,6 +53,7 @@
 #define WRITEBACK_PANEL		10	/* Wifi display */
 #define LVDS_PANEL		11	/* LVDS */
 #define EDP_PANEL		12	/* EDP */
+#define QPIC_PANEL		13	/* QPIC */
 
 enum mdss_mdp_pipe_type {
 	MDSS_MDP_PIPE_TYPE_VIG,
@@ -157,6 +158,7 @@ struct intf_timing_params {
 };
 
 struct mipi_panel_info {
+	char cmds_post_tg;	/* send on commands after tg on */
 	char mode;		/* video/cmd */
 	char interleave_mode;
 	int eof_bllp_power;

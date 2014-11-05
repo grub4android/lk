@@ -36,6 +36,9 @@
 #include <kernel/thread.h>
 #include <kernel/timer.h>
 #include <rand.h>
+#if ARCH_ARM
+#include <arch/arm.h>
+#endif
 
 void __attribute__ ((noreturn))
 __stack_chk_fail (void)
@@ -58,8 +61,19 @@ void halt(void)
 	for(;;);
 }
 
+void dump_frame(void *frame)
+{
+	enter_critical_section(); // disable ints
+#if ARCH_ARM
+	dump_fault_frame((struct arm_fault_frame *)frame);
+#endif
+	exit_critical_section(); // disable ints
+}
+
 void _panic(void *caller, const char *fmt, ...)
 {
+	dprintf(ALWAYS, "panic (frame %p): \n", __GET_FRAME());
+	dump_frame(__GET_FRAME());
 	dprintf(ALWAYS, "panic (caller %p): ", caller);
 
 	va_list ap;

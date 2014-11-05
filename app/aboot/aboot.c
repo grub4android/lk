@@ -100,6 +100,14 @@ void write_device_info_mmc(device_info *dev);
 void write_device_info_flash(device_info *dev);
 static int aboot_save_boot_hash_mmc(uint32_t image_addr, uint32_t image_size);
 
+/* fastboot command function pointer */
+typedef void (*fastboot_cmd_fn) (const char *, void *, unsigned);
+
+struct fastboot_cmd_desc {
+	char * name;
+	fastboot_cmd_fn cb;
+};
+
 #define EXPAND(NAME) #NAME
 
 #ifdef MEMBASE
@@ -114,6 +122,7 @@ static int aboot_save_boot_hash_mmc(uint32_t image_addr, uint32_t image_size);
 
 #define MAX_TAGS_SIZE   1024
 
+#define ALARM_BOOT      0x77665503
 /* make 4096 as default size to ensure EFS,EXT4's erasing */
 #define DEFAULT_ERASE_SIZE  4096
 #define MAX_PANEL_BUF_SIZE 128
@@ -134,6 +143,7 @@ static const char *emmc_cmdline = " androidboot.emmc=true";
 #endif
 static const char *usb_sn_cmdline = " androidboot.serialno=";
 static const char *androidboot_mode = " androidboot.mode=";
+static const char *alarmboot_cmdline = " androidboot.alarmboot=true";
 static const char *loglevel         = " quiet";
 static const char *battchg_pause = " androidboot.mode=charger";
 static const char *auth_kernel = " androidboot.authorized_kernel=true";
@@ -168,6 +178,7 @@ static unsigned page_mask = 0;
 static char ffbm_mode_string[FFBM_MODE_BUF_SIZE];
 static bool boot_into_ffbm;
 static char target_boot_params[64];
+static bool boot_reason_alarm;
 
 /* Assuming unauthorized kernel image by default */
 static int auth_kernel_img = 0;
@@ -281,6 +292,8 @@ char *update_cmdline(const char * cmdline)
 		cmdline_len += strlen(ffbm_mode_string);
 		/* reduce kernel console messages to speed-up boot */
 		cmdline_len += strlen(loglevel);
+	} else if (boot_reason_alarm) {
+		cmdline_len += strlen(alarmboot_cmdline);
 	} else if (device.charger_screen_enabled &&
 			target_pause_for_battery_charge()) {
 		pause_at_bootup = 1;
@@ -425,6 +438,10 @@ char *update_cmdline(const char * cmdline)
 			if (have_cmdline) --dst;
 			while ((*dst++ = *src++));
 			src = loglevel;
+			if (have_cmdline) --dst;
+			while ((*dst++ = *src++));
+		} else if (boot_reason_alarm) {
+			src = alarmboot_cmdline;
 			if (have_cmdline) --dst;
 			while ((*dst++ = *src++));
 		} else if (pause_at_bootup) {
@@ -678,6 +695,16 @@ void boot_linux(void *kernel, unsigned *tags,
 	}
 
 	free(final_cmdline);
+
+#if VERIFIED_BOOT
+	/* Write protect the device info */
+	if (mmc_write_protect("devinfo", 1))
+	{
+		dprintf(INFO, "Failed to write protect dev info\n");
+		ASSERT(0);
+	}
+#endif
+
 	/* Perform target specific cleanup */
 	target_uninit();
 
@@ -1702,9 +1729,12 @@ void write_device_info_mmc(device_info *dev)
 
 #if BOOT_2NDSTAGE
 	index = partition_get_index("boot");
+#elif VERIFIED_BOOT
+	index = partition_get_index("devinfo");
 #else
 	index = partition_get_index("aboot");
 #endif
+
 	ptn = partition_get_offset(index);
 	if(ptn == 0)
 	{
@@ -1720,7 +1750,11 @@ void write_device_info_mmc(device_info *dev)
 
 	blocksize = mmc_get_device_blocksize();
 
+#if VERIFIED_BOOT
+	if(mmc_write(ptn, blocksize, (void *)info_buf))
+#else
 	if(mmc_write((ptn + size - blocksize), blocksize, (void *)info_buf))
+#endif
 	{
 		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
 		return;
@@ -1737,20 +1771,29 @@ void read_device_info_mmc(device_info *dev)
 
 #if BOOT_2NDSTAGE
 	index = partition_get_index("boot");
+#elif VERIFIED_BOOT
+	index = partition_get_index("devinfo");
 #else
 	index = partition_get_index("aboot");
 #endif
+
 	ptn = partition_get_offset(index);
 	if(ptn == 0)
 	{
 		return;
 	}
 
+	mmc_set_lun(partition_get_lun(index));
+
 	size = partition_get_size(index);
 
 	blocksize = mmc_get_device_blocksize();
 
+#if VERIFIED_BOOT
+	if(mmc_read(ptn, (void *)info_buf, blocksize))
+#else
 	if(mmc_read((ptn + size - blocksize), (void *)info_buf, blocksize))
+#endif
 	{
 		dprintf(CRITICAL, "ERROR: Cannot read device info\n");
 		return;
@@ -1758,6 +1801,11 @@ void read_device_info_mmc(device_info *dev)
 
 	if (validate_device_info(info))
 	{
+#if DEFAULT_UNLOCK
+		info->is_unlocked = 1;
+#else
+#endif
+		info->is_verified = 0;
 		write_device_info_mmc(info);
 	}
 	memcpy(dev, info, sizeof(device_info));
@@ -2091,7 +2139,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 		   (void*) hdr->ramdisk_addr, hdr->ramdisk_size, hdr->dt_size>0);
 }
 
-void cmd_erase(const char *arg, void *data, unsigned sz)
+void cmd_erase_nand(const char *arg, void *data, unsigned sz)
 {
 	struct ptentry *ptn;
 	struct ptable *ptable;
@@ -2167,6 +2215,13 @@ void cmd_erase_mmc(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
+void cmd_erase(const char *arg, void *data, unsigned sz)
+{
+	if(target_is_emmc_boot())
+		cmd_erase_mmc(arg, data, sz);
+	else
+		cmd_erase_nand(arg, data, sz);
+}
 
 void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 {
@@ -2526,7 +2581,7 @@ void cmd_flash_mmc(const char *arg, void *data, unsigned sz)
 	return;
 }
 
-void cmd_flash(const char *arg, void *data, unsigned sz)
+void cmd_flash_nand(const char *arg, void *data, unsigned sz)
 {
 	struct ptentry *ptn;
 	struct ptable *ptable;
@@ -2572,6 +2627,14 @@ void cmd_flash(const char *arg, void *data, unsigned sz)
 	}
 	dprintf(INFO, "partition '%s' updated\n", ptn->name);
 	fastboot_okay("");
+}
+
+void cmd_flash(const char *arg, void *data, unsigned sz)
+{
+	if(target_is_emmc_boot())
+		cmd_flash_mmc(arg, data, sz);
+	else
+		cmd_flash_nand(arg, data, sz);
 }
 
 void cmd_continue(const char *arg, void *data, unsigned sz)
@@ -2955,43 +3018,45 @@ static void publish_getvar_partition_info(struct getvar_partition_info *info, ui
 /* register commands and variables for fastboot */
 void aboot_fastboot_register_commands(void)
 {
+	int i;
 	struct fbcon_config* config = fbcon_display();
 
-	if (target_is_emmc_boot())
-	{
-		fastboot_register("flash:", cmd_flash_mmc);
-		fastboot_register("erase:", cmd_erase_mmc);
-	}
-	else
-	{
-		fastboot_register("flash:", cmd_flash);
-		fastboot_register("erase:", cmd_erase);
-	}
-
-	fastboot_register("boot",              cmd_boot);
-	fastboot_register("continue",          cmd_continue);
-	fastboot_register("reboot",            cmd_reboot);
-	fastboot_register("reboot-bootloader", cmd_reboot_bootloader);
-	fastboot_register("reboot-recovery",   cmd_reboot_recovery);
-	fastboot_register("oem unlock",        cmd_oem_unlock);
-	fastboot_register("oem lock",          cmd_oem_lock);
-	fastboot_register("oem verified",      cmd_oem_verified);
-	fastboot_register("oem device-info",   cmd_oem_devinfo);
-#if WITH_DEBUG_LOG_BUF
-	fastboot_register("oem lk_log",        cmd_oem_lk_log);
+	struct fastboot_cmd_desc cmd_list[] = {
+											/* By default the enabled list is empty. */
+											{"", NULL},
+											/* move commands enclosed within the below ifndef to here
+											 * if they need to be enabled in user build.
+											 */
+#ifndef DISABLE_FASTBOOT_CMDS
+											/* Register the following commands only for non-user builds */
+											{"flash:", cmd_flash},
+											{"erase:", cmd_erase},
+											{"boot", cmd_boot},
+											{"continue", cmd_continue},
+											{"reboot", cmd_reboot},
+											{"reboot-bootloader", cmd_reboot_bootloader},
+											{"reboot-recovery", cmd_reboot_recovery},
+											{"oem unlock", cmd_oem_unlock},
+											{"oem lock", cmd_oem_lock},
+											{"oem verified", cmd_oem_verified},
+											{"oem device-info", cmd_oem_devinfo},
+										#if WITH_DEBUG_LOG_BUF
+											{"oem lk_log", cmd_oem_lk_log},
+										#endif
+											{"oem screenshot", cmd_oem_screenshot},
+											{"preflash", cmd_preflash},
+											{"oem enable-charger-screen", cmd_oem_enable_charger_screen},
+											{"oem disable-charger-screen", cmd_oem_disable_charger_screen},
+											{"oem-select-display-panel", cmd_oem_select_display_panel},
+											{"oem enable-using-splash-partition", cmd_oem_enable_use_splash_partition},
+											{"oem disable-using-splash-partition", cmd_oem_disable_use_splash_partition},
 #endif
-	fastboot_register("oem screenshot",    cmd_oem_screenshot);
-	fastboot_register("preflash",          cmd_preflash);
-	fastboot_register("oem enable-charger-screen",
-			cmd_oem_enable_charger_screen);
-	fastboot_register("oem disable-charger-screen",
-			cmd_oem_disable_charger_screen);
-	fastboot_register("oem select-display-panel",
-			cmd_oem_select_display_panel);
-	fastboot_register("oem enable-using-splash-partition",
-			cmd_oem_enable_use_splash_partition);
-	fastboot_register("oem disable-using-splash-partition",
-			cmd_oem_disable_use_splash_partition);
+										  };
+
+	int fastboot_cmds_count = sizeof(cmd_list)/sizeof(cmd_list[0]);
+	for (i = 1; i < fastboot_cmds_count; i++)
+		fastboot_register(cmd_list[i].name,cmd_list[i].cb);
+
 	/* publish variables and their values */
 	fastboot_publish("product",  TARGET);
 	fastboot_publish("kernel",   "lk");
@@ -3214,6 +3279,8 @@ void aboot_init(const struct app_descriptor *app)
 		bootmode = BOOTMODE_RECOVERY;
 	} else if(reboot_mode == REBOOT_MODE_FASTBOOT) {
 		bootmode = BOOTMODE_FASTBOOT;
+	} else if(reboot_mode == ALARM_BOOT) {
+		boot_reason_alarm = true;
 	}
 #if WITH_XIAOMI_DUALBOOT
 	else if (reboot_mode == REBOOT_MODE_BOOT0) {

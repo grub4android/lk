@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,27 +26,45 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __MMC_WRAPPER_H__
-#define __MMC_WRAPPER_H__
+/* RPMB request and response types */
+enum rpmb_rr_type {
+	KEY_PROVISION = 0x1,
+	READ_WRITE_COUNTER,
+	AUTH_WRITE,
+	AUTH_READ,
+	READ_RESULT_FLAG,
+};
 
-#include <mmc_sdhci.h>
+/* List of all return codes for rpmb frame verification from response */
+enum rpmb_verify_return_codes
+{
+	NONCE_MISMATCH = 0x100,
+};
 
-#define BOARD_KERNEL_PAGESIZE                2048
-/* Wrapper APIs */
+/* These are error codes returned for RPMB operations */
+enum rpmb_verify_error_codes
+{
+	OPERATION_OK = 0,
+	GENERAL_FAILURE,
+	AUTH_FAILURE,
+	COUNTER_FAILURE,
+	ADDRESS_FAILURE,
+	WRITE_FAILURE,
+	READ_FAILURE,
+	KEY_NOT_PROG,
+	MAXED_WR_COUNTER = 0x80,
+};
 
-struct mmc_device *get_mmc_device(void);
-uint32_t mmc_get_psn(void);
-
-uint32_t mmc_read(uint64_t data_addr, uint32_t *out, uint32_t data_len);
-uint32_t mmc_write(uint64_t data_addr, uint32_t data_len, void *in);
-uint32_t mmc_erase_card(uint64_t, uint64_t);
-uint64_t mmc_get_device_capacity(void);
-uint32_t mmc_erase_card(uint64_t addr, uint64_t len);
-uint32_t mmc_get_device_blocksize(void);
-uint32_t mmc_page_size(void);
-void mmc_device_sleep(void);
-void mmc_set_lun(uint8_t lun);
-uint8_t mmc_get_lun(void);
-void  mmc_read_partition_table(uint8_t arg);
-uint32_t mmc_write_protect(const char *name, int set_clr);
-#endif
+/* RPMB Frame */
+struct rpmb_frame
+{
+	uint8_t  stuff_bytes[196];
+	uint8_t  keyMAC[32];
+	uint8_t  data[256];
+	uint8_t  nonce[16];
+	uint32_t writecounter;
+	uint16_t address;
+	uint16_t blockcount;
+	uint8_t  result[2];
+	uint16_t requestresponse;
+};

@@ -6,6 +6,10 @@ ifeq ($(GCC_VER_GTE49),1)
 	CFLAGS += -fdiagnostics-color=always
 endif
 
+ifeq ($(TARGET_BUILD_VARIANT),user)
+  CFLAGS += -DDISABLE_FASTBOOT_CMDS=1
+endif
+
 LKROOT ?= .
 LKINC ?=
 

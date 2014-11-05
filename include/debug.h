@@ -83,6 +83,8 @@ static inline void hexdump8(const void *ptr, size_t len) { }
 /* systemwide halts */
 void halt(void) __NO_RETURN;
 
+void dump_frame(void *frame);
+
 #if WITH_DEBUG_LOG_BUF
 /* lk_log */
 char* lk_log_getbuf(void);

@@ -328,7 +328,7 @@ void mdp_clock_enable(void)
 		ASSERT(0);
 	}
 
-	ret = clk_get_set_enable("mdss_mdp_clk_src", 240000000, 1);
+	ret = clk_get_set_enable("mdss_mdp_clk_src", 300000000, 1);
 	if(ret)
 	{
 		dprintf(CRITICAL, "failed to set mdp_clk_src ret = %d\n", ret);
@@ -348,20 +348,12 @@ void mdp_clock_enable(void)
 		dprintf(CRITICAL, "failed to set mdp_clk ret = %d\n", ret);
 		ASSERT(0);
 	}
-
-	ret = clk_get_set_enable("mdss_mdp_lut_clk", 0, 1);
-	if(ret)
-	{
-		dprintf(CRITICAL, "failed to set lut_mdp clk ret = %d\n", ret);
-		ASSERT(0);
-	}
 }
 
 void mdp_clock_disable()
 {
 	clk_disable(clk_get("mdss_vsync_clk"));
 	clk_disable(clk_get("mdss_mdp_clk"));
-	clk_disable(clk_get("mdss_mdp_lut_clk"));
 	clk_disable(clk_get("mdss_mdp_clk_src"));
 	clk_disable(clk_get("mdp_ahb_clk"));
 
@@ -371,7 +363,7 @@ void mmss_bus_clock_enable(void)
 {
 	int ret;
 	/* Configure MMSSNOC AXI clock */
-	ret = clk_get_set_enable("mmss_mmssnoc_axi_clk", 100000000, 1);
+	ret = clk_get_set_enable("mmss_mmssnoc_axi_clk", 300000000, 1);
 	if(ret)
 	{
 		dprintf(CRITICAL, "failed to set mmssnoc_axi_clk ret = %d\n", ret);
@@ -379,7 +371,7 @@ void mmss_bus_clock_enable(void)
 	}
 
 	/* Configure S0 AXI clock */
-	ret = clk_get_set_enable("mmss_s0_axi_clk", 100000000, 1);
+	ret = clk_get_set_enable("mmss_s0_axi_clk", 300000000, 1);
 	if(ret)
 	{
 		dprintf(CRITICAL, "failed to set mmss_s0_axi_clk ret = %d\n", ret);
@@ -387,7 +379,7 @@ void mmss_bus_clock_enable(void)
 	}
 
 	/* Configure AXI clock */
-	ret = clk_get_set_enable("mdss_axi_clk", 100000000, 1);
+	ret = clk_get_set_enable("mdss_axi_clk", 300000000, 1);
 	if(ret)
 	{
 		dprintf(CRITICAL, "failed to set mdss_axi_clk ret = %d\n", ret);

@@ -34,8 +34,10 @@
 #include <uic.h>
 #include <ucs.h>
 #include <dme.h>
+#include <qgic.h>
 #include <string.h>
 #include <platform/iomap.h>
+#include <platform/irqs.h>
 #include <kernel/mutex.h>
 
 static int ufs_dev_init(struct ufs_dev *dev)
@@ -83,6 +85,33 @@ static void ufs_setup_req_lists(struct ufs_dev *dev)
 	/* Enable the required irqs. */
 	val = UFS_IE_UEE | UFS_IE_UCCE ;
 	ufs_irq_enable(dev, val);
+	// Change UFS_IRQ to level based
+	qgic_change_interrupt_cfg(UFS_IRQ, INTERRUPT_LVL_N_TO_N);
+}
+
+static void ufs_rpmb_init(struct ufs_dev *dev)
+{
+	int ret = 0;
+
+	// calculate the size of rpmb partition in sectors
+	ret = dme_read_unit_desc(dev, UFS_WLUN_RPMB);
+	if (ret != UFS_SUCCESS)
+	{
+		dprintf(CRITICAL, "UFS dme_read_unit_desc failed for RPMB Partition\n");
+		return;
+	}
+
+	// gets the number of rpmb frames allowed in a single UPIU commands
+	ret = dme_read_geo_desc(dev, UFS_WLUN_RPMB);
+	if (ret != UFS_SUCCESS)
+	{
+		dprintf(CRITICAL, "UFS dme_read_geo_desc failed for RPMB Partition\n");
+		return;
+	}
+#ifdef DEBUG_UFS
+	dprintf(INFO, "RPMB: Logical Block Count: 0x%x\n", dev->rpmb_num_blocks);
+	dprintf(INFO, "RPMB: RPMB Read Write Size: 0x%x\n", dev->rpmb_rw_size);
+#endif
 }
 
 int ufs_read(struct ufs_dev* dev, uint64_t start_lba, addr_t buffer, uint32_t num_blocks)

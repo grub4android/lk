@@ -70,6 +70,7 @@ int msm_display_config(void)
 	mdp_set_revision(panel->mdp_rev);
 
 	switch (pinfo->type) {
+#ifdef DISPLAY_TYPE_MDSS
 	case LVDS_PANEL:
 		dprintf(INFO, "Config LVDS_PANEL.\n");
 		ret = mdp_lcdc_config(pinfo, &(panel->fb));
@@ -129,6 +130,13 @@ int msm_display_config(void)
 		if (ret)
 			goto msm_display_config_out;
 		break;
+#endif
+#ifdef DISPLAY_TYPE_QPIC
+	case QPIC_PANEL:
+		dprintf(INFO, "Config QPIC_PANEL.\n");
+		qpic_init(pinfo, panel->fb.base);
+		break;
+#endif
 	default:
 		return ERR_INVALID_ARGS;
 	};
@@ -160,6 +168,7 @@ int msm_display_on(void)
 	}
 
 	switch (pinfo->type) {
+#ifdef DISPLAY_TYPE_MDSS
 	case LVDS_PANEL:
 		dprintf(INFO, "Turn on LVDS PANEL.\n");
 		ret = mdp_lcdc_on();
@@ -174,6 +183,11 @@ int msm_display_on(void)
 		ret = mdp_dsi_video_on(pinfo);
 		if (ret)
 			goto msm_display_on_out;
+
+		ret = mdss_dsi_post_on(panel);
+		if (ret)
+			goto msm_display_on_out;
+
 		ret = mipi_dsi_on();
 		if (ret)
 			goto msm_display_on_out;
@@ -190,6 +204,11 @@ int msm_display_on(void)
 			if (ret)
 				goto msm_display_on_out;
 		}
+
+		ret = mdss_dsi_post_on(panel);
+		if (ret)
+			goto msm_display_on_out;
+
 		break;
 	case LCDC_PANEL:
 		dprintf(INFO, "Turn on LCDC PANEL.\n");
@@ -213,6 +232,18 @@ int msm_display_on(void)
 		if (ret)
 			goto msm_display_on_out;
 		break;
+#endif
+#ifdef DISPLAY_TYPE_QPIC
+	case QPIC_PANEL:
+		dprintf(INFO, "Turn on QPIC_PANEL.\n");
+		ret = qpic_on();
+		if (ret) {
+			dprintf(CRITICAL, "QPIC panel on failed\n");
+			goto msm_display_on_out;
+		}
+		qpic_update();
+		break;
+#endif
 	default:
 		return ERR_INVALID_ARGS;
 	};
@@ -316,6 +347,7 @@ int msm_display_off()
 	}
 
 	switch (pinfo->type) {
+#ifdef DISPLAY_TYPE_MDSS
 	case LVDS_PANEL:
 		dprintf(INFO, "Turn off LVDS PANEL.\n");
 		mdp_lcdc_off();
@@ -348,6 +380,13 @@ int msm_display_off()
 		if (ret)
 			goto msm_display_off_out;
 		break;
+#endif
+#ifdef DISPLAY_TYPE_QPIC
+	case QPIC_PANEL:
+		dprintf(INFO, "Turn off QPIC_PANEL.\n");
+		qpic_off();
+		break;
+#endif
 	default:
 		return ERR_INVALID_ARGS;
 	};

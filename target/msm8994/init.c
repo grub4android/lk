@@ -197,7 +197,7 @@ unsigned target_pause_for_battery_charge(void)
 	if (is_cold_boot &&
 			(!(pon_reason & HARD_RST)) &&
 			(!(pon_reason & KPDPWR_N)) &&
-			((pon_reason & USB_CHG) || (pon_reason & DC_CHG)))
+			((pon_reason & PON1)))
 		return 1;
 	else
 		return 0;
@@ -327,11 +327,7 @@ void target_init(void)
 	}
 
 	/* Storage initialization is complete, read the partition table info */
-	if (partition_read_table())
-	{
-		dprintf(CRITICAL, "Error reading the partition table info\n");
-		ASSERT(0);
-	}
+	mmc_read_partition_table(0);
 
 	rpm_smd_init();
 
@@ -362,6 +358,7 @@ int target_cont_splash_screen()
 			case HW_PLATFORM_SURF:
 			case HW_PLATFORM_MTP:
 			case HW_PLATFORM_FLUID:
+			case HW_PLATFORM_LIQUID:
 				dprintf(SPEW, "Target_cont_splash=1\n");
 				splash_screen = 1;
 				break;
@@ -553,12 +550,6 @@ void shutdown_device()
 	dprintf(CRITICAL, "Shutdown failed\n");
 
 	ASSERT(0);
-}
-
-void target_fastboot_init(void)
-{
-	/* We are entering fastboot mode, so read partition table */
-	mmc_read_partition_table(1);
 }
 
 uint32_t target_ddr_cfg_val()
