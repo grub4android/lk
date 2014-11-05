@@ -271,9 +271,9 @@ int mdss_dsi_phy_regulator_init(struct mdss_dsi_phy_ctrl *pd, uint32_t phy_base)
 		/* Regulator ctrl 0 */
 		writel(pd->regulator[0], DSI0_PHY_BASE + off + (4 * 0));
 		dmb();
+	}
 
 	return NO_ERROR;
-	}
 }
 
 int mdss_dsi_v2_phy_init(struct mipi_dsi_panel_config *pinfo, uint32_t ctl_base)

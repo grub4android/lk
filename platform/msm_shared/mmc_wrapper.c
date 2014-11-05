@@ -38,6 +38,7 @@
 #include <string.h>
 #include <partition_parser.h>
 #include <boot_device.h>
+#include <dme.h>
 
 /*
  * Weak function for UFS.

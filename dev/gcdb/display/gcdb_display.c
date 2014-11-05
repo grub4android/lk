@@ -283,7 +283,7 @@ bool gcdb_display_cmdline_arg(char *panel_name, char *pbuf, uint16_t buf_size)
 		buf_size -= DSI_1_STRING_LEN;
 		strlcpy(pbuf, slave_panel_node, buf_size);
 	}
-end:
+
 	return ret;
 }
 

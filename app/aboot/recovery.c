@@ -59,6 +59,7 @@ static char buf[4096];
 
 extern uint32_t get_page_size(void);
 extern uint32_t mmc_get_device_blocksize(void);
+extern void mmc_set_lun(uint8_t lun);
 extern void reset_device_info(void);
 extern void set_device_root(void);
 

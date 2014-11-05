@@ -150,6 +150,7 @@ GEN_CP15_REG_FUNCS(ats12nsouw, 0, c7, c8, 7);
 GEN_CP15_REG_FUNCS(par, 0, c7, c4, 0);
 
 void arm_invalidate_tlb(void);
+void dump_fault_frame(struct arm_fault_frame *frame);
 
 status_t arm_vtop(addr_t va, addr_t *pa);
 

@@ -74,7 +74,7 @@ static uint32_t response_value = 0;
 
 static char read_id_a1h_cmd[4] = { 0xA1, 0x00, 0x06, 0xA0 };	/* DTYPE_DCS_READ */
 static struct mipi_dsi_cmd read_ddb_start_cmd __UNUSED =
-	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd, 0};
+	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd, 0, 0};
 
 uint32_t mdss_dsi_read_panel_signature(uint32_t panel_signature)
 {
@@ -168,7 +168,7 @@ int dsi_cmd_dma_trigger_for_panel(void)
 	return status;
 }
 
-int mdss_dsi_wait4_video_done()
+int mdss_dsi_wait4_video_done(void)
 {
 	unsigned long read;
 	unsigned long count = 0;
@@ -238,8 +238,8 @@ int mdss_dual_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 			udelay(80);
 		cm++;
 	}
-#endif
 wait4video_error:
+#endif
 	return ret;
 }
 
@@ -425,7 +425,7 @@ int mdss_dsi_host_init(struct mipi_dsi_panel_config *pinfo, uint32_t
 	uint8_t lane_swap __UNUSED = 0;
 	uint32_t timing_ctl __UNUSED = 0;
 	uint32_t lane_swap_dsi1 __UNUSED = 0;
-	uint32_t ctrl_mode = 0x105;	//Default is command mode to send cmds.
+	uint32_t ctrl_mode __UNUSED = 0x105;	//Default is command mode to send cmds.
 
 #if (DISPLAY_TYPE_MDSS == 1)
 	switch (pinfo->num_of_lanes) {
@@ -502,7 +502,7 @@ int mdss_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo, uint32_t
 		broadcast)
 {
 	int status = 0;
-	uint32_t ctrl_mode = 0;
+	uint32_t ctrl_mode __UNUSED = 0;
 
 #if (DISPLAY_TYPE_MDSS == 1)
 	if (pinfo->panel_cmds) {

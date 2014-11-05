@@ -188,18 +188,18 @@ static char hx8379a_wvga_video_on_cmd11[] = {
 };
 
 static struct mipi_dsi_cmd hx8379a_wvga_video_on_command[] = {
-	{0x8, hx8379a_wvga_video_on_cmd0, 0x00},
-	{0x8, hx8379a_wvga_video_on_cmd1, 0x00},
-	{0x18, hx8379a_wvga_video_on_cmd2, 0x00},
-	{0x14, hx8379a_wvga_video_on_cmd3, 0x00},
-	{0x24, hx8379a_wvga_video_on_cmd4, 0x00},
-	{0x34, hx8379a_wvga_video_on_cmd5, 0x00},
-	{0x28, hx8379a_wvga_video_on_cmd6, 0x00},
-	{0x84, hx8379a_wvga_video_on_cmd7, 0x00},
-	{0x4, hx8379a_wvga_video_on_cmd8, 0x00},
-	{0xc, hx8379a_wvga_video_on_cmd9, 0x00},
-	{0x4, hx8379a_wvga_video_on_cmd10, 0x96},
-	{0x4, hx8379a_wvga_video_on_cmd11, 0x78}
+	{0x8, hx8379a_wvga_video_on_cmd0, 0x00, 0},
+	{0x8, hx8379a_wvga_video_on_cmd1, 0x00, 0},
+	{0x18, hx8379a_wvga_video_on_cmd2, 0x00, 0},
+	{0x14, hx8379a_wvga_video_on_cmd3, 0x00, 0},
+	{0x24, hx8379a_wvga_video_on_cmd4, 0x00, 0},
+	{0x34, hx8379a_wvga_video_on_cmd5, 0x00, 0},
+	{0x28, hx8379a_wvga_video_on_cmd6, 0x00, 0},
+	{0x84, hx8379a_wvga_video_on_cmd7, 0x00, 0},
+	{0x4, hx8379a_wvga_video_on_cmd8, 0x00, 0},
+	{0xc, hx8379a_wvga_video_on_cmd9, 0x00, 0},
+	{0x4, hx8379a_wvga_video_on_cmd10, 0x96, 0},
+	{0x4, hx8379a_wvga_video_on_cmd11, 0x78, 0}
 };
 
 #define HX8379A_WVGA_VIDEO_ON_COMMAND 12

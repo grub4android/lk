@@ -32,6 +32,7 @@
 #define _PLATFORM_MSM_SHARED_MIPI_DSI_H_
 
 #include <msm_panel.h>
+#include <bits.h>
 
 #define PASS                        0
 #define FAIL                        1
@@ -300,5 +301,6 @@ int mdss_dsi_cmd_mode_config(uint16_t disp_width,
 	uint8_t interleav,
 	uint32_t ctl_base);
 int mdss_dsi_cmds_rx(uint32_t **rp, int rp_len, int rdbk_len);
+int mdss_dsi_post_on(struct msm_fb_panel_data *panel);
 
 #endif
