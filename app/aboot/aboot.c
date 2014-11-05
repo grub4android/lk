@@ -3052,7 +3052,7 @@ void aboot_fastboot_register_commands(void)
 #endif
 	};
 
-	int fastboot_cmds_count = sizeof(cmd_list)/sizeof(cmd_list[0]);
+	int fastboot_cmds_count = ARRAY_SIZE(cmd_list);
 	for (i = 1; i < fastboot_cmds_count; i++)
 		fastboot_register(cmd_list[i].name,cmd_list[i].cb);
 
