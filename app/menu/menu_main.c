@@ -53,6 +53,11 @@ static void menu_reboot(void) {
 	dprintf(CRITICAL,"Failed to reboot\n");
 }
 
+static void menu_shutdown(void) {
+	shutdown_device();
+	dprintf(CRITICAL,"Failed to shutdown\n");
+}
+
 struct menu_entry entries_main[] = {
 	{"    Normal Powerup", &menu_exec_normal, &menu_format_normal},
 	{"    Recovery", &menu_exec_recovery, NULL},
@@ -60,5 +65,6 @@ struct menu_entry entries_main[] = {
 	{"    Download Mode", &menu_dload_mode, NULL},
 	{"    Settings...", &menu_settings, NULL},
 	{"    Reboot", &menu_reboot, NULL},
+	{"    Shutdown", &menu_shutdown, NULL},
 	{NULL,NULL,NULL},
 };
