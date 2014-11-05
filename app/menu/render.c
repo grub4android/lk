@@ -16,6 +16,10 @@
 #include <app/display_server.h>
 #include <app/menu.h>
 
+#if WITH_DEV_PMIC_PM8921
+#include <dev/pm8921_rtc.h>
+#endif
+
 #include "menu_private.h"
 
 #include LKFONT_HEADER
@@ -222,6 +226,17 @@ static void menu_renderer(int keycode) {
 	char sn_buf[13];
 	target_serialno((unsigned char*)sn_buf);
 	pf2font_printf(0, fh*y++, "CPU: %s Serial: %s", TARGET, sn_buf);
+
+#if WITH_DEV_PMIC_PM8921
+	// time
+	unsigned long time;
+	struct rtc_time tm;
+
+	pm8xxx_rtc_read_time(&time);
+	rtc_time_to_tm(time, &tm);
+
+	pf2font_printf(0, fh*y++, "Time: %d-%02d-%02d %02d:%02d", tm.tm_year+1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min);
+#endif
 
 	// divider 1
 	menu_set_color(DIVIDER_COLOR);
