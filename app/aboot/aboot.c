@@ -3021,36 +3021,36 @@ void aboot_fastboot_register_commands(void)
 	struct fbcon_config* config = fbcon_display();
 
 	struct fastboot_cmd_desc cmd_list[] = {
-											/* By default the enabled list is empty. */
-											{"", NULL},
-											/* move commands enclosed within the below ifndef to here
-											 * if they need to be enabled in user build.
-											 */
+		/* By default the enabled list is empty. */
+		{"", NULL},
+		/* move commands enclosed within the below ifndef to here
+		 * if they need to be enabled in user build.
+		 */
 #ifndef DISABLE_FASTBOOT_CMDS
-											/* Register the following commands only for non-user builds */
-											{"flash:", cmd_flash},
-											{"erase:", cmd_erase},
-											{"boot", cmd_boot},
-											{"continue", cmd_continue},
-											{"reboot", cmd_reboot},
-											{"reboot-bootloader", cmd_reboot_bootloader},
-											{"reboot-recovery", cmd_reboot_recovery},
-											{"oem unlock", cmd_oem_unlock},
-											{"oem lock", cmd_oem_lock},
-											{"oem verified", cmd_oem_verified},
-											{"oem device-info", cmd_oem_devinfo},
-										#if WITH_DEBUG_LOG_BUF
-											{"oem lk_log", cmd_oem_lk_log},
-										#endif
-											{"oem screenshot", cmd_oem_screenshot},
-											{"preflash", cmd_preflash},
-											{"oem enable-charger-screen", cmd_oem_enable_charger_screen},
-											{"oem disable-charger-screen", cmd_oem_disable_charger_screen},
-											{"oem-select-display-panel", cmd_oem_select_display_panel},
-											{"oem enable-using-splash-partition", cmd_oem_enable_use_splash_partition},
-											{"oem disable-using-splash-partition", cmd_oem_disable_use_splash_partition},
+		/* Register the following commands only for non-user builds */
+		{"flash:", cmd_flash},
+		{"erase:", cmd_erase},
+		{"boot", cmd_boot},
+		{"continue", cmd_continue},
+		{"reboot", cmd_reboot},
+		{"reboot-bootloader", cmd_reboot_bootloader},
+		{"reboot-recovery", cmd_reboot_recovery},
+		{"oem unlock", cmd_oem_unlock},
+		{"oem lock", cmd_oem_lock},
+		{"oem verified", cmd_oem_verified},
+		{"oem device-info", cmd_oem_devinfo},
+	#if WITH_DEBUG_LOG_BUF
+		{"oem lk_log", cmd_oem_lk_log},
+	#endif
+		{"oem screenshot", cmd_oem_screenshot},
+		{"preflash", cmd_preflash},
+		{"oem enable-charger-screen", cmd_oem_enable_charger_screen},
+		{"oem disable-charger-screen", cmd_oem_disable_charger_screen},
+		{"oem-select-display-panel", cmd_oem_select_display_panel},
+		{"oem enable-using-splash-partition", cmd_oem_enable_use_splash_partition},
+		{"oem disable-using-splash-partition", cmd_oem_disable_use_splash_partition},
 #endif
-										  };
+	};
 
 	int fastboot_cmds_count = sizeof(cmd_list)/sizeof(cmd_list[0]);
 	for (i = 1; i < fastboot_cmds_count; i++)
