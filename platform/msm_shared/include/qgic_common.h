@@ -30,6 +30,7 @@
 #ifndef __PLATFORM_MSM_SHARED_QGIC_COMMON_H
 #define __PLATFORM_MSM_SHARED_QGIC_COMMON_H
 
+#include <arch/arm.h>
 #include <platform/iomap.h>
 #include <platform/irqs.h>
 #include <platform/interrupts.h>

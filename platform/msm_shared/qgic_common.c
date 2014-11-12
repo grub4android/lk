@@ -35,6 +35,7 @@
 #include <platform/iomap.h>
 #include <qgic.h>
 #include <debug.h>
+#include <assert.h>
 
 static struct ihandler handler[NR_IRQS];
 

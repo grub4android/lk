@@ -334,8 +334,8 @@ int encrypt_scm(uint32_t ** img_ptr, uint32_t * img_len_ptr)
 	{
 		scm_arg.x0 = MAKE_SIP_SCM_CMD(SCM_SVC_SSD,SSD_ENCRYPT_ID);
 		scm_arg.x1 = MAKE_SCM_ARGS(0x2,SMC_PARAM_TYPE_BUFFER_READWRITE,SMC_PARAM_TYPE_VALUE);
-		scm_arg.x2 = cmd.img_ptr;
-		scm_arg.x3 = cmd.img_len_ptr;
+		scm_arg.x2 = (uint32)cmd.img_ptr;
+		scm_arg.x3 = (uint32)cmd.img_len_ptr;
 
 		ret = scm_call2(&scm_arg, NULL);
 	}
@@ -423,7 +423,7 @@ static int ssd_image_is_encrypted(uint32_t ** img_ptr, uint32_t * img_len_ptr, u
 			scm_arg.x0 = MAKE_SIP_SCM_CMD(SCM_SVC_SSD, SSD_PARSE_MD_ID);
 			scm_arg.x1 = MAKE_SCM_ARGS(0x2,SMC_PARAM_TYPE_VALUE,SMC_PARAM_TYPE_BUFFER_READWRITE);
 			scm_arg.x2 = parse_req.md_len;
-			scm_arg.x3 = parse_req.md;
+			scm_arg.x3 = (uint32)parse_req.md;
 
 			ret = scm_call2(&scm_arg, &scm_ret);
 			parse_rsp.status = scm_ret.x1;
@@ -508,7 +508,7 @@ int decrypt_scm_v2(uint32_t ** img_ptr, uint32_t * img_len_ptr)
 				scm_arg.x2 = decrypt_req.md_ctx_id;
 				scm_arg.x3 = decrypt_req.last_frag;
 				scm_arg.x4 = decrypt_req.frag_len;
-				scm_arg.x5[0] = decrypt_req.frag;
+				scm_arg.x5[0] = (uint32)decrypt_req.frag;
 
 				ret = scm_call2(&scm_arg, &scm_ret);
 				decrypt_rsp.status = scm_ret.x1;
@@ -609,7 +609,7 @@ int scm_protect_keystore(uint32_t * img_ptr, uint32_t  img_len)
 	{
 		scm_arg.x0 = MAKE_SIP_SCM_CMD(SCM_SVC_SSD, SSD_PROTECT_KEYSTORE_ID);
 		scm_arg.x1 = MAKE_SCM_ARGS(0x2,SMC_PARAM_TYPE_BUFFER_READWRITE,SMC_PARAM_TYPE_VALUE);
-		scm_arg.x2 = protect_req.keystore_ptr;
+		scm_arg.x2 = (uint32)protect_req.keystore_ptr;
 		scm_arg.x3 = protect_req.keystore_len;
 
 		ret = scm_call2(&scm_arg, &scm_ret);
@@ -660,7 +660,7 @@ void set_tamper_fuse_cmd(void)
 	{
 		scm_arg.x0 = MAKE_SIP_SCM_CMD(SCM_SVC_FUSE, SCM_BLOW_SW_FUSE_ID);
 		scm_arg.x1 = MAKE_SCM_ARGS(0x2,SMC_PARAM_TYPE_BUFFER_READWRITE,SMC_PARAM_TYPE_VALUE);
-		scm_arg.x2  = cmd_buf;
+		scm_arg.x2 = (uint32)cmd_buf;
 		scm_arg.x3 = cmd_len;
 
 		scm_call2(&scm_arg, NULL);
@@ -700,7 +700,7 @@ uint8_t get_tamper_fuse_cmd(void)
 	{
 		scm_arg.x0 = MAKE_SIP_SCM_CMD(SCM_SVC_FUSE, SCM_IS_SW_FUSE_BLOWN_ID);
 		scm_arg.x1 = MAKE_SCM_ARGS(0x2,SMC_PARAM_TYPE_BUFFER_READWRITE,SMC_PARAM_TYPE_VALUE);
-		scm_arg.x2  = cmd_buf;
+		scm_arg.x2 = (uint32)cmd_buf;
 		scm_arg.x3 = cmd_len;
 
 		scm_call2(&scm_arg, &scm_ret);
