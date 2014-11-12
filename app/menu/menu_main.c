@@ -29,15 +29,38 @@ static void menu_format_normal(char** buf) {
 	snprintf(*buf, 100, "    Normal Powerup [%s]", strbootmode(device.bootmode));
 }
 
-static void menu_exec_grub(void) {
-	bootmode=BOOTMODE_GRUB;
+static void menu_exec_android(void) {
+	bootmode=BOOTMODE_NORMAL;
+
+#if WITH_XIAOMI_DUALBOOT
+	if(get_dualboot_mode()==BOOTMODE_SECOND) {
+		bootmode=BOOTMODE_SECOND;
+	}
+#endif
+
 	aboot_continue_boot();
+}
+static void menu_format_android(char** buf) {
+	*buf = calloc(100, 1);
+
+#if WITH_XIAOMI_DUALBOOT
+	snprintf(*buf, 100, "    Android [%s]", get_dualboot_mode()==BOOTMODE_SECOND?"System2":"System1");
+	return;
+#endif
+
+	snprintf(*buf, 100, "    Android");
 }
 
 static void menu_exec_recovery(void) {
 	bootmode=BOOTMODE_RECOVERY;
 	aboot_continue_boot();
 }
+
+static void menu_exec_grub(void) {
+	bootmode=BOOTMODE_GRUB;
+	aboot_continue_boot();
+}
+
 
 static void menu_dload_mode(void) {
 	bootmode=BOOTMODE_DLOAD;
@@ -60,6 +83,7 @@ static void menu_shutdown(void) {
 
 struct menu_entry entries_main[] = {
 	{"    Normal Powerup", &menu_exec_normal, &menu_format_normal},
+	{"    Android", &menu_exec_android, &menu_format_android},
 	{"    Recovery", &menu_exec_recovery, NULL},
 	{"    GRUB", &menu_exec_grub, NULL},
 	{"    Download Mode", &menu_dload_mode, NULL},
