@@ -110,8 +110,8 @@
 #define	OP_WRITE_MEMORY_START   0x2C /* size not fixed */
 
 /* ILI9341 commands */
-#define OP_ILI9341_INTERFACE_CONTROL	0xf6
-#define OP_ILI9341_TEARING_EFFECT_LINE_ON	0x35
+#define OP_ILI9341_INTERFACE_CONTROL    0xf6
+#define OP_ILI9341_TEARING_EFFECT_LINE_ON    0x35
 
 struct qpic_panel_io_desc {
 	int rst_gpio;

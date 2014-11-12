@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,40 +27,46 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _GCDB_AUTOPLL_H_
-#define _GCDB_AUTOPLL_H_
-
-/*---------------------------------------------------------------------------*/
-/* HEADER files                                                              */
-/*---------------------------------------------------------------------------*/
 #include <debug.h>
+#include <err.h>
+#include <msm_panel.h>
+#include "splash.h"
 
-#define VCO_MIN_CLOCK 350000000
-#define VCO_MAX_CLOCK 750000000
+/* PANEL INFO */
+#define QVGA_PANEL_XRES 240
+#define QVGA_PANEL_YRES 320
+#define BPP_16 16
 
-#define HALFBIT_CLOCK1 175000000 /* VCO min clock div by 2 */
-#define HALFBIT_CLOCK2 88000000  /* VCO min clock div by 4 */
-#define HALFBIT_CLOCK3 44000000  /* VCO min clock div by 8 */
-#define HALFBIT_CLOCK4 40000000  /* VCO min clock div by 9 */
+/* FB Base Address */
+#define QPIC_FB_ADDR  0x06D00000
 
-#define VCO_MIN_CLOCK_20NM 	300000000
-#define VCO_MAX_CLOCK_20NM 	1500000000
+static struct msm_fb_panel_data panel;
 
-#define HALF_VCO_MIN_CLOCK_20NM (VCO_MIN_CLOCK_20NM >> 1)
+void target_display_init(const char *panel_name)
+{
+	uint32_t ret = 0;
+	dprintf(SPEW, "%s: Panel name = %s\n", __func__, panel_name);
 
-#define HALFBIT_CLOCK1_20NM 	500000000 /* VCO min clock div by 2 */
-#define HALFBIT_CLOCK2_20NM 	250000000  /* VCO min clock div by 4 */
-#define HALFBIT_CLOCK3_20NM 	125000000  /* VCO min clock div by 8 */
-#define HALFBIT_CLOCK4_20NM 	120000000  /* VCO min clock div by 9 */
+	/* Setting panel info */
+	panel.panel_info.xres = QVGA_PANEL_XRES;
+	panel.panel_info.yres = QVGA_PANEL_YRES;
+	panel.panel_info.bpp = BPP_16;
+	panel.panel_info.type = QPIC_PANEL;
 
-#define BITS_24 24
-#define BITS_18 18
-#define BITS_16 16
+	/* Setting FB info */
+	panel.fb.width =  panel.panel_info.xres;
+	panel.fb.height =  panel.panel_info.yres;
+	panel.fb.stride =  panel.panel_info.xres;
+	panel.fb.bpp =  panel.panel_info.bpp;
+	panel.fb.format = FB_FORMAT_RGB565;
+	panel.fb.base = QPIC_FB_ADDR;
 
-/*---------------------------------------------------------------------------*/
-/* Structure definition                                                      */
-/*---------------------------------------------------------------------------*/
+	ret = msm_display_init(&panel);
+	if (ret)
+		dprintf(CRITICAL, "%s: ERROR: Display init failed\n", __func__);
+}
 
-uint32_t calculate_clock_config(struct msm_panel_info *pinfo);
-
-#endif /*_GCDB_AUTOPLL_H_ */
+void target_display_shutdown(void)
+{
+	msm_display_off();
+}

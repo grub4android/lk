@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2011, 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,32 +26,26 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __PLATFORM_MSM_SHARED_QGIC_H
-#define __PLATFORM_MSM_SHARED_QGIC_H
+#ifndef __MSM8996_CLOCK_H
+#define __MSM8996_CLOCK_H
 
-#include "qgic_common.h"
+#include <clock.h>
+#include <clock_lib2.h>
 
-#define GIC_CPU_REG(off)            (MSM_GIC_CPU_BASE  + (off))
+#define UART_DM_CLK_RX_TX_BIT_RATE 0xCC
 
-#define GIC_CPU_CTRL                GIC_CPU_REG(0x00)
-#define GIC_CPU_PRIMASK             GIC_CPU_REG(0x04)
-#define GIC_CPU_BINPOINT            GIC_CPU_REG(0x08)
-#define GIC_CPU_INTACK              GIC_CPU_REG(0x0c)
-#define GIC_CPU_EOI                 GIC_CPU_REG(0x10)
-#define GIC_CPU_RUNNINGPRI          GIC_CPU_REG(0x14)
-#define GIC_CPU_HIGHPRI             GIC_CPU_REG(0x18)
 
-#define INTERRUPT_LVL_N_TO_N        0x0
-#define INTERRUPT_LVL_1_TO_N        0x1
-#define INTERRUPT_EDGE_N_TO_N       0x2
-#define INTERRUPT_EDGE_1_TO_N       0x3
+void platform_clock_init(void);
 
-uint32_t qgic_read_iar(void);
-void qgic_write_eoi(uint32_t);
-enum handler_return gic_platform_irq(struct arm_iframe *frame);
-status_t gic_unmask_interrupt(unsigned int vector);
-void gic_register_int_handler(unsigned int vector, int_handler func, void *arg);
-status_t gic_mask_interrupt(unsigned int vector);
-void gic_platform_fiq(struct arm_iframe *frame);
+void clock_init_mmc(uint32_t interface);
+void clock_config_mmc(uint32_t interface, uint32_t freq);
+void clock_config_uart_dm(uint8_t id);
+void hsusb_clock_init(void);
+void clock_config_ce(uint8_t instance);
+void mdp_clock_init(void);
+void clock_ce_enable(uint8_t instance);
+void clock_ce_disable(uint8_t instance);
+void clock_usb30_init(void);
+void clock_reset_usb_phy();
 
 #endif
