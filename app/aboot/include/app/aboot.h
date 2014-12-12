@@ -54,6 +54,7 @@ extern enum bootmode bootmode, bootmode_normal;
 const char* strbootmode(enum bootmode bm);
 void aboot_continue_boot(void);
 #if WITH_XIAOMI_DUALBOOT
+bool is_dualboot_supported(void);
 enum bootmode get_dualboot_mode(void);
 void set_dualboot_mode(enum bootmode mode);
 #endif

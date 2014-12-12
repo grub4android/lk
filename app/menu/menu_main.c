@@ -20,7 +20,7 @@ static void menu_format_normal(char** buf) {
 	*buf = calloc(100, 1);
 
 #if WITH_XIAOMI_DUALBOOT
-	if(device.bootmode==BOOTMODE_AUTO) {
+	if(is_dualboot_supported() && device.bootmode==BOOTMODE_AUTO) {
 		snprintf(*buf, 100, "    Normal Powerup [%s=%s]", strbootmode(device.bootmode), get_dualboot_mode()==BOOTMODE_SECOND?"System2":"System1");
 		return;
 	}
@@ -33,7 +33,7 @@ static void menu_exec_android(void) {
 	bootmode=BOOTMODE_NORMAL;
 
 #if WITH_XIAOMI_DUALBOOT
-	if(get_dualboot_mode()==BOOTMODE_SECOND) {
+	if(is_dualboot_supported() && get_dualboot_mode()==BOOTMODE_SECOND) {
 		bootmode=BOOTMODE_SECOND;
 	}
 #endif
@@ -44,8 +44,10 @@ static void menu_format_android(char** buf) {
 	*buf = calloc(100, 1);
 
 #if WITH_XIAOMI_DUALBOOT
-	snprintf(*buf, 100, "    Android [%s]", get_dualboot_mode()==BOOTMODE_SECOND?"System2":"System1");
-	return;
+	if(is_dualboot_supported()) {
+		snprintf(*buf, 100, "    Android [%s]", get_dualboot_mode()==BOOTMODE_SECOND?"System2":"System1");
+		return;
+	}
 #endif
 
 	snprintf(*buf, 100, "    Android");
@@ -65,6 +67,9 @@ static void menu_format_android2(char** buf) {
 	*buf = calloc(100, 1);
 
 	snprintf(*buf, 100, "    Android [%s]", get_dualboot_mode()==BOOTMODE_SECOND?"System1":"System2");
+}
+static bool menu_hide_android2(void) {
+	return !is_dualboot_supported();
 }
 #endif
 
@@ -99,16 +104,16 @@ static void menu_shutdown(void) {
 }
 
 struct menu_entry entries_main[] = {
-	{"    Normal Powerup", &menu_exec_normal, &menu_format_normal},
-	{"    Android", &menu_exec_android, &menu_format_android},
+	{"    Normal Powerup", &menu_exec_normal, &menu_format_normal, NULL},
+	{"    Android", &menu_exec_android, &menu_format_android, NULL},
 #if WITH_XIAOMI_DUALBOOT
-	{"    Android", &menu_exec_android2, &menu_format_android2},
+	{"    Android", &menu_exec_android2, &menu_format_android2, &menu_hide_android2},
 #endif
-	{"    Recovery", &menu_exec_recovery, NULL},
-	{"    GRUB", &menu_exec_grub, NULL},
-	{"    Download Mode", &menu_dload_mode, NULL},
-	{"    Settings...", &menu_settings, NULL},
-	{"    Reboot", &menu_reboot, NULL},
-	{"    Shutdown", &menu_shutdown, NULL},
-	{NULL,NULL,NULL},
+	{"    Recovery", &menu_exec_recovery, NULL, NULL},
+	{"    GRUB", &menu_exec_grub, NULL, NULL},
+	{"    Download Mode", &menu_dload_mode, NULL, NULL},
+	{"    Settings...", &menu_settings, NULL, NULL},
+	{"    Reboot", &menu_reboot, NULL, NULL},
+	{"    Shutdown", &menu_shutdown, NULL, NULL},
+	{NULL,NULL,NULL,NULL},
 };

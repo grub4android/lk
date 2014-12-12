@@ -195,17 +195,32 @@ static void menu_renderer(int keycode) {
 			return;
 		}
 		if(keycode==KEY_DOWN) {
-			for(i=0; menu_stack->entries[i].name; i++);
-			if(selection<i-1) selection++;
-			else selection=0;
+			int first_visible = -1;
+			int next_visible = -1;
+
+			for(i=0; menu_stack->entries[i].name; i++) {
+				if(!menu_stack->entries[i].hide || !menu_stack->entries[i].hide()) {
+					if(first_visible==-1) first_visible = i;
+					if(next_visible==-1 && i>selection) next_visible = i;
+				}
+			}
+
+			if(next_visible!=-1) selection = next_visible;
+			else selection=first_visible;
 		}
 		if(keycode==KEY_UP) {
-			if(selection>0)
-				selection--;
-			else {
-				for(i=0; menu_stack->entries[i].name; i++);
-				selection=i-1;
+			int last_visible = -1;
+			int previous_visible = -1;
+
+			for(i=0; menu_stack->entries[i].name; i++) {
+				if(!menu_stack->entries[i].hide || !menu_stack->entries[i].hide()) {
+					last_visible = i;
+					if(i<selection) previous_visible = i;
+				}
 			}
+
+			if(previous_visible!=-1) selection = previous_visible;
+			else selection=last_visible;
 		}
 	}
 
@@ -251,6 +266,8 @@ static void menu_renderer(int keycode) {
 
 		// menu entries
 		for(i=0; menu_stack->entries[i].name; i++) {
+			if(menu_stack->entries[i].hide && menu_stack->entries[i].hide()) continue;
+
 			char* buf = NULL;
 			if(menu_stack->entries[i].format)
 				menu_stack->entries[i].format(&buf);

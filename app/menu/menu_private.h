@@ -5,6 +5,7 @@ struct menu_entry {
 	const char* name;
 	void (*execute)(void);
 	void (*format)(char** buf);
+	bool (*hide)(void);
 };
 
 struct menu_stack_entry {

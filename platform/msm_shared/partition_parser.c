@@ -334,6 +334,12 @@ static unsigned int mmc_boot_read_gpt(uint32_t block_size)
 			    0x00
 			    && partition_entries[partition_count].
 			    type_guid[1] == 0x00) {
+#if WITH_XIAOMI_DUALBOOT && TARGET_MSM8960_ARIES
+				if(partition_count==1 || partition_count==18 || partition_count==23) {
+					partition_count++;
+					continue;
+				}
+#endif
 				i = ROUNDUP(max_partition_count, part_entry_cnt);
 				break;
 			}

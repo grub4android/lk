@@ -768,6 +768,12 @@ BUF_DMA_ALIGN(dt_buf, BOOT_IMG_MAX_PAGE_SIZE);
 #endif
 
 #if WITH_XIAOMI_DUALBOOT
+bool is_dualboot_supported(void)
+{
+	return (partition_get_index("boot1")!=INVALID_PTN)
+		&& (partition_get_index("system1")!=INVALID_PTN)
+		&& (partition_get_index("modem1")!=INVALID_PTN);
+}
 #define DUALBOOT_OFFSET_SECTORS 8	/* 4 pages, for recovery_message */
 enum bootmode get_dualboot_mode(void)
 {
@@ -1033,7 +1039,7 @@ int boot_linux_from_mmc(void)
 	switch(bootmode) {
 		case BOOTMODE_AUTO:
 		#if WITH_XIAOMI_DUALBOOT
-			if(get_dualboot_mode()==BOOTMODE_SECOND) {
+			if(is_dualboot_supported() && get_dualboot_mode()==BOOTMODE_SECOND) {
 				bootmode = BOOTMODE_SECOND;
 				partname = "boot1";
 				break;
@@ -1044,6 +1050,10 @@ int boot_linux_from_mmc(void)
 			break;
 	#if WITH_XIAOMI_DUALBOOT
 		case BOOTMODE_SECOND:
+			if(!is_dualboot_supported()) {
+				dprintf(CRITICAL, "Dualboot is not supported!\n");
+				return -1;
+			}
 			partname = "boot1";
 			break;
 	#endif
@@ -1414,7 +1424,7 @@ int boot_linux_from_flash(void)
 	switch(bootmode) {
 		case BOOTMODE_AUTO:
 		#if WITH_XIAOMI_DUALBOOT
-			if(get_dualboot_mode()==BOOTMODE_SECOND) {
+			if(is_dualboot_supported() && get_dualboot_mode()==BOOTMODE_SECOND) {
 				partname = "boot1";
 				break;
 			}
@@ -1425,6 +1435,10 @@ int boot_linux_from_flash(void)
 			break;
 	#if WITH_XIAOMI_DUALBOOT
 		case BOOTMODE_SECOND:
+			if(!is_dualboot_supported()) {
+				dprintf(CRITICAL, "Dualboot is not supported!\n");
+				return -1;
+			}
 			partname = "boot1";
 			break;
 	#endif
@@ -1708,6 +1722,10 @@ static int validate_device_info(struct device_info *info)
 		info->charger_screen_enabled = 0;
 	if(info->bootmode>=BOOTMODE_MAX)
 		info->bootmode = BOOTMODE_AUTO;
+#if WITH_XIAOMI_DUALBOOT
+	if(!is_dualboot_supported() && info->bootmode==BOOTMODE_SECOND)
+		info->bootmode = BOOTMODE_NORMAL;
+#endif
 	if(info->use_splash_partition !=0 && info->use_splash_partition!=1)
 		info->use_splash_partition = 0;
 	if(!isprint(info->display_panel[0]) && !info->display_panel[0]=='\0')
@@ -3282,10 +3300,12 @@ void aboot_init(const struct app_descriptor *app)
 		boot_reason_alarm = true;
 	}
 #if WITH_XIAOMI_DUALBOOT
-	else if (reboot_mode == REBOOT_MODE_BOOT0) {
-		bootmode = BOOTMODE_NORMAL;
-	} else if (reboot_mode == REBOOT_MODE_BOOT1) {
-		bootmode = BOOTMODE_SECOND;
+	else if (is_dualboot_supported()) {
+		if (reboot_mode == REBOOT_MODE_BOOT0) {
+			bootmode = BOOTMODE_NORMAL;
+		} else if (reboot_mode == REBOOT_MODE_BOOT1) {
+			bootmode = BOOTMODE_SECOND;
+		}
 	}
 #endif
 
