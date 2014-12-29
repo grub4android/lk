@@ -562,7 +562,9 @@ again:
 		r = usb_if.usb_read(buffer, MAX_RSP_SIZE);
 		if (r < 0) break;
 		buffer[r] = 0;
-		dprintf(INFO,"fastboot: %s\n", buffer);
+		if(strcmp((const char*)buffer, "oem screenshot")
+		&& strcmp((const char*)buffer, "getvar:screen-resolution"))
+			dprintf(INFO,"fastboot: %s\n", buffer);
 
 		fastboot_state = STATE_COMMAND;
 
