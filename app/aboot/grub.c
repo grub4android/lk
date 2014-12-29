@@ -241,7 +241,7 @@ static int grub_sideload_handler(void *data)
 		priv.ptn = (unsigned) hdr->ramdisk_addr;
 		priv.is_ramdisk = 1;
 		tio.blksz = BLOCK_SIZE;
-		tio.lba = hdr->ramdisk_size;
+		tio.lba = hdr->ramdisk_size / tio.blksz;
 		// set bootdev
 		grub_bootdev = strdup("hd1");
 		grub_bootpath = strdup("/boot/grub");
