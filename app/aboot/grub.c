@@ -69,7 +69,7 @@ int grub_has_tar(void) {
 
 #ifdef GRUB_BOOT_PARTITION
 #define GRUB_MOUNTPOINT "/"GRUB_BOOT_PARTITION"/"
-#define GRUB_PATH GRUB_BOOT_PATH_PREFIX"boot/grub"
+#define GRUB_PATH GRUB_BOOT_PATH_PREFIX"grub"
 #define HAS_FLAG(m, mask)	(((m) & mask) == mask)
 #define ALLOW_BOOT(m) ( \
 	S_ISREG((m)) \
@@ -188,7 +188,7 @@ static int grub_load_from_mmc(void) {
 	char buf[20];
 	sprintf(buf, "hd0,%u", index+1);
 	grub_bootdev = strdup(buf);
-	grub_bootpath = strdup(GRUB_BOOT_PATH_PREFIX "boot/grub");
+	grub_bootpath = strdup("/" GRUB_BOOT_PATH_PREFIX "grub");
 
 	dprintf(INFO, "Loaded GRUB from MMC\n");
 	return 0;
@@ -204,7 +204,7 @@ static int grub_load_from_tar(void) {
 	tio.lba = partition_get_size(priv.index) / tio.blksz - 1;
 
 	// search file
-	if(tar_get_fileinfo(&tio, "./boot/grub/core.img", &fi)) {
+	if(tar_get_fileinfo(&tio, "./grub/core.img", &fi)) {
 		dprintf(CRITICAL, "%s: couldn't find core.img!\n", __func__);
 		return -1;
 	}
@@ -216,7 +216,7 @@ static int grub_load_from_tar(void) {
 	}
 
 	grub_bootdev = strdup("hd1");
-	grub_bootpath = strdup("/boot/grub");
+	grub_bootpath = strdup("/grub");
 	grub_found_tar = 1;
 
 	dprintf(INFO, "Loaded GRUB from TAR\n");
@@ -244,7 +244,7 @@ static int grub_sideload_handler(void *data)
 		tio.lba = hdr->ramdisk_size / tio.blksz;
 		// set bootdev
 		grub_bootdev = strdup("hd1");
-		grub_bootpath = strdup("/boot/grub");
+		grub_bootpath = strdup("/grub");
 		grub_found_tar = 1;
 	}
 	else {
@@ -253,7 +253,7 @@ static int grub_sideload_handler(void *data)
 		char buf[20];
 		sprintf(buf, "hd0,%u", index+1);
 		grub_bootdev = strdup(buf);
-		grub_bootpath = strdup(GRUB_BOOT_PATH_PREFIX "boot/grub");
+		grub_bootpath = strdup("/" GRUB_BOOT_PATH_PREFIX "grub");
 	}
 	dprintf(INFO, "bootdev: %s\n", grub_bootdev);
 	dprintf(INFO, "bootpath: %s\n", grub_bootpath);
