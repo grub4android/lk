@@ -32,4 +32,6 @@ int display_get_info(int type, struct display_info *di);
 int display_draw_bitmap(ulong bitmap, int x, int y);
 void display_clear(void);
 
+extern struct api_signature *uboot_api_sig;
+
 #endif /* _API_PRIVATE_H_ */

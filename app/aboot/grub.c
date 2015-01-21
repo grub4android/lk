@@ -18,6 +18,8 @@
 
 #include "grub.h"
 #include "stat.h"
+#include <api_public.h>
+#include "uboot_api/api_private.h"
 #include "uboot_api/uboot_part.h"
 #include "bootimg.h"
 
@@ -266,7 +268,7 @@ static int grub_sideload_handler(void *data)
 	display_server_stop();
 #endif
 
-	entry(0, board_machtype(), NULL);
+	entry(0, board_machtype(), (void*)uboot_api_sig);
 
 	return 0;
 }
@@ -313,7 +315,7 @@ boot:
 	display_server_stop();
 #endif
 
-	entry(0, board_machtype(), NULL);
+	entry(0, board_machtype(), (void*)uboot_api_sig);
 	
 	return 0;
 }

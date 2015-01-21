@@ -62,6 +62,7 @@ extern void update_ker_tags_rdisk_addr(struct boot_img_hdr *hdr, bool is_arm64);
 typedef	int (*cfp_t)(va_list argp);
 
 static int calls_no;
+struct api_signature *uboot_api_sig = NULL;
 
 /*
  * pseudo signature:
@@ -784,7 +785,6 @@ int syscall(int call, int *retval, ...)
 
 void api_init(void)
 {
-	struct api_signature *sig = NULL;
 	char* api_sig_magic = API_SIG_MAGIC;
 
 	/* TODO put this into linker set one day... */
@@ -823,20 +823,20 @@ void api_init(void)
 	/*
 	 * Produce the signature so the API consumers can find it
 	 */
-	sig = memalign(8, sizeof(struct api_signature));
-	if (sig == NULL) {
+	uboot_api_sig = memalign(8, sizeof(struct api_signature));
+	if (uboot_api_sig == NULL) {
 		dprintf(CRITICAL, "API: could not allocate memory for the signature!\n");
 		return;
 	}
 
-	dprintf(INFO, "API sig @ %p\n", sig);
-	memcpy(sig->magic, api_sig_magic, 8);
-	sig->version = API_SIG_VERSION;
-	sig->syscall = &syscall;
-	sig->checksum = 0;
-	sig->checksum = calculate_crc32((unsigned char *)sig,
+	dprintf(INFO, "API sig @ %p\n", uboot_api_sig);
+	memcpy(uboot_api_sig->magic, api_sig_magic, 8);
+	uboot_api_sig->version = API_SIG_VERSION;
+	uboot_api_sig->syscall = &syscall;
+	uboot_api_sig->checksum = 0;
+	uboot_api_sig->checksum = calculate_crc32((unsigned char *)uboot_api_sig,
 			      sizeof(struct api_signature));
-	dprintf(INFO, "syscall entry: %p\n", sig->syscall);
+	dprintf(INFO, "syscall entry: %p\n", uboot_api_sig->syscall);
 
 	memset(api_sig_magic, 0, strlen(api_sig_magic));
 }
