@@ -184,16 +184,24 @@ static int init_panel_data(struct panel_struct *panelstruct,
 					 = &hitachi_720p_cmd_panel_reset_seq;
 		panelstruct->backlightinfo = &hitachi_720p_cmd_backlight;
 		if(panel_id==HITACHI_720P_CMD_PANEL) {
-			pinfo->mipi.panel_cmds
+			pinfo->mipi.panel_on_cmds
 						= hitachi_720p_cmd_on_command;
-			pinfo->mipi.num_of_panel_cmds
+			pinfo->mipi.num_of_panel_on_cmds
 						= HITACHI_720P_CMD_ON_COMMAND;
+			pinfo->mipi.panel_off_cmds
+						= hitachi_720p_cmd_off_command;
+			pinfo->mipi.num_of_panel_off_cmds
+						= HITACHI_720P_CMD_OFF_COMMAND;
 		}
 		else {
-			pinfo->mipi.panel_cmds
+			pinfo->mipi.panel_on_cmds
 					= sharp_720p_cmd_on_command;
-			pinfo->mipi.num_of_panel_cmds
+			pinfo->mipi.num_of_panel_on_cmds
 					= SHARP_720P_CMD_ON_COMMAND;
+			pinfo->mipi.panel_off_cmds
+					= sharp_720p_cmd_off_command;
+			pinfo->mipi.num_of_panel_off_cmds
+					= SHARP_720P_CMD_OFF_COMMAND;
 		}
 		memcpy(phy_db->timing,
 				hitachi_720p_cmd_timings, TIMING_SIZE);
@@ -214,30 +222,44 @@ static int init_panel_data(struct panel_struct *panelstruct,
 					 = &lgd_720p_cmd_panel_reset_seq;
 		panelstruct->backlightinfo = &lgd_720p_cmd_backlight;
 		if(panel_id==LGD_720P_CMD_PANEL) {
-			pinfo->mipi.panel_cmds
+			pinfo->mipi.panel_on_cmds
 						= lgd_720p_cmd_on_command;
-			pinfo->mipi.num_of_panel_cmds
+			pinfo->mipi.num_of_panel_on_cmds
 						= LGD_720P_CMD_ON_COMMAND;
+			pinfo->mipi.panel_off_cmds
+						= lgd_720p_cmd_off_command;
+			pinfo->mipi.num_of_panel_off_cmds
+						= LGD_720P_CMD_OFF_COMMAND;
 		}
 		else if(panel_id==AUO_720P_CMD_PANEL) {
-			pinfo->mipi.panel_cmds
+			pinfo->mipi.panel_on_cmds
 					= auo_720p_cmd_on_command;
-			pinfo->mipi.num_of_panel_cmds
+			pinfo->mipi.num_of_panel_on_cmds
 					= AUO_720P_CMD_ON_COMMAND;
+			pinfo->mipi.panel_off_cmds
+					= auo_720p_cmd_off_command;
+			pinfo->mipi.num_of_panel_off_cmds
+					= AUO_720P_CMD_OFF_COMMAND;
 		}
 		else {
-			pinfo->mipi.panel_cmds
+			pinfo->mipi.panel_on_cmds
 					= jdi_720p_cmd_on_command;
-			pinfo->mipi.num_of_panel_cmds
+			pinfo->mipi.num_of_panel_on_cmds
 					= JDI_720P_CMD_ON_COMMAND;
+			pinfo->mipi.panel_off_cmds
+					= jdi_720p_cmd_off_command;
+			pinfo->mipi.num_of_panel_off_cmds
+					= JDI_720P_CMD_OFF_COMMAND;
 		}
 		memcpy(phy_db->timing,
 				lgd_720p_cmd_timings, TIMING_SIZE);
 		break;
 	case UNKNOWN_PANEL:
 		memset(panelstruct, 0, sizeof(struct panel_struct));
-		memset(pinfo->mipi.panel_cmds, 0, sizeof(struct mipi_dsi_cmd));
-		pinfo->mipi.num_of_panel_cmds = 0;
+		memset(pinfo->mipi.panel_on_cmds, 0, sizeof(struct mipi_dsi_cmd));
+		pinfo->mipi.num_of_panel_on_cmds = 0;
+		memset(pinfo->mipi.panel_off_cmds, 0, sizeof(struct mipi_dsi_cmd));
+		pinfo->mipi.num_of_panel_off_cmds = 0;
 		memset(phy_db->timing, 0, TIMING_SIZE);
 		pinfo->mipi.signature = 0;
 		dprintf(CRITICAL, "Unknown Panel");

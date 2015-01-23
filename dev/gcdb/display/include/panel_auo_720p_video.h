@@ -117,6 +117,10 @@ static struct mipi_dsi_cmd auo_720p_video_on_command[] = {
 };
 #define AUO_720P_VIDEO_ON_COMMAND 8
 
+static struct mipi_dsi_cmd auo_720p_video_off_command[] = {
+};
+#define AUO_720P_VIDEO_OFF_COMMAND 0
+
 
 static struct command_state auo_720p_video_state = {
   0, 1

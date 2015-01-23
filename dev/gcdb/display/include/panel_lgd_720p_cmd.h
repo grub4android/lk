@@ -371,7 +371,7 @@ static struct mipi_dsi_cmd jdi_720p_cmd_on_command[] = {
 };
 #define JDI_720P_CMD_ON_COMMAND 10
 
-/*
+
 static char lgd_720p_cmdoff_cmd0[] = {
 0x28, 0x00, 0x05, 0x80 };
 
@@ -383,7 +383,15 @@ static struct mipi_dsi_cmd lgd_720p_cmd_off_command[] = {
 { 0x4 , lgd_720p_cmdoff_cmd0, 0},
 { 0x4 , lgd_720p_cmdoff_cmd1, 0}
 };
-#define LGD_720P_CMD_OFF_COMMAND 2*/
+#define LGD_720P_CMD_OFF_COMMAND 2
+
+static struct mipi_dsi_cmd auo_720p_cmd_off_command[] = {
+};
+#define AUO_720P_CMD_OFF_COMMAND 2
+
+static struct mipi_dsi_cmd jdi_720p_cmd_off_command[] = {
+};
+#define JDI_720P_CMD_OFF_COMMAND 2
 
 
 static struct command_state lgd_720p_cmd_state = {

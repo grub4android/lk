@@ -2947,12 +2947,10 @@ struct fbimage* splash_screen_mmc(void)
 		if (logo->header.width != fb_display->width || logo->header.height != fb_display->height)
 				base += LOGO_IMG_OFFSET;
 
-		{
+		if (mmc_read(ptn + sizeof(logo->header),
 			(unsigned int *)base,
-			goto err;
-		}
+			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
 
-		if (mmc_read(ptn + sizeof(logo->header),(uint32_t *)base, readsize)) {
 			fbcon_clear();
 			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
 			goto err;

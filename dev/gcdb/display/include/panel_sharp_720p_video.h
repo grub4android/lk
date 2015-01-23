@@ -119,6 +119,10 @@ static struct mipi_dsi_cmd sharp_720p_video_on_command[] = {
 };
 #define SHARP_720P_VIDEO_ON_COMMAND 9
 
+static struct mipi_dsi_cmd sharp_720p_video_off_command[] = {
+};
+#define SHARP_720P_VIDEO_OFF_COMMAND 0
+
 
 static struct command_state sharp_720p_video_state = {
   0, 1

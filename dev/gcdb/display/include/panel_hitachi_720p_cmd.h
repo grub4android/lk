@@ -167,7 +167,7 @@ static struct mipi_dsi_cmd sharp_720p_cmd_on_command[] = {
 };
 #define SHARP_720P_CMD_ON_COMMAND 12
 
-/*
+
 static char hitachi_720p_cmdoff_cmd0[] = {
 0x28, 0x00, 0x05, 0x80 };
 
@@ -180,7 +180,13 @@ static struct mipi_dsi_cmd hitachi_720p_cmd_off_command[] = {
 { 0x4 , hitachi_720p_cmdoff_cmd1, 0}
 };
 #define HITACHI_720P_CMD_OFF_COMMAND 2
-*/
+
+static struct mipi_dsi_cmd sharp_720p_cmd_off_command[] = {
+{ 0x4 , hitachi_720p_cmdoff_cmd0, 0},
+{ 0x4 , hitachi_720p_cmdoff_cmd1, 0}
+};
+#define SHARP_720P_CMD_OFF_COMMAND 2
+
 
 static struct command_state hitachi_720p_cmd_state = {
   0, 1

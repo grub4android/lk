@@ -71,7 +71,6 @@ uint32_t platform_get_sclk_count(void);
 void clock_config_cdc(uint32_t interface);
 int platform_is_msm8939(void);
 int platform_is_msm8909(void);
-void clock_config_cdc(uint8_t slot);
 int get_target_boot_params(const char *cmdline, const char *part,
 				  char *buf, int buflen);
 #endif
