@@ -325,56 +325,56 @@ static char truly_wvga_cmd_on_cmd44[] = {
 };
 
 static struct mipi_dsi_cmd truly_wvga_cmd_on_command[] = {
-	{0x4, truly_wvga_cmd_on_cmd0, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd1, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd2, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd3, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd4, 0x00, 0},
-	{0x18, truly_wvga_cmd_on_cmd5, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd6, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd7, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd8, 0x00, 0},
-	{0x14, truly_wvga_cmd_on_cmd9, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd10, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd11, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd12, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd13, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd14, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd15, 0x00, 0},
-	{0x20, truly_wvga_cmd_on_cmd16, 0x00, 0},
-	{0x20, truly_wvga_cmd_on_cmd17, 0x00, 0},
-	{0x20, truly_wvga_cmd_on_cmd18, 0x00, 0},
-	{0x18, truly_wvga_cmd_on_cmd19, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd20, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd21, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd22, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd23, 0x00, 0},
-	{0x14, truly_wvga_cmd_on_cmd24, 0x00, 0},
-	{0x10, truly_wvga_cmd_on_cmd25, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd26, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd27, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd28, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd29, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd30, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd31, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd32, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd33, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd34, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd35, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd36, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd37, 0x00, 0},
-	{0xc, truly_wvga_cmd_on_cmd38, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd39, 0x00, 0},
-	{0x8, truly_wvga_cmd_on_cmd40, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd41, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd42, 0x00, 0},
-	{0x4, truly_wvga_cmd_on_cmd43, 0x7D, 0},
-	{0x4, truly_wvga_cmd_on_cmd44, 0x3c, 0}
+	{0x4, truly_wvga_cmd_on_cmd0, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd1, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd2, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd3, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd4, 0x00},
+	{0x18, truly_wvga_cmd_on_cmd5, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd6, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd7, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd8, 0x00},
+	{0x14, truly_wvga_cmd_on_cmd9, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd10, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd11, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd12, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd13, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd14, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd15, 0x00},
+	{0x20, truly_wvga_cmd_on_cmd16, 0x00},
+	{0x20, truly_wvga_cmd_on_cmd17, 0x00},
+	{0x20, truly_wvga_cmd_on_cmd18, 0x00},
+	{0x18, truly_wvga_cmd_on_cmd19, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd20, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd21, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd22, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd23, 0x00},
+	{0x14, truly_wvga_cmd_on_cmd24, 0x00},
+	{0x10, truly_wvga_cmd_on_cmd25, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd26, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd27, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd28, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd29, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd30, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd31, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd32, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd33, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd34, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd35, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd36, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd37, 0x00},
+	{0xc, truly_wvga_cmd_on_cmd38, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd39, 0x00},
+	{0x8, truly_wvga_cmd_on_cmd40, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd41, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd42, 0x00},
+	{0x4, truly_wvga_cmd_on_cmd43, 0x7D},
+	{0x4, truly_wvga_cmd_on_cmd44, 0x3c}
 };
 
 #define TRULY_WVGA_CMD_ON_COMMAND 45
 
-/*
+
 static char truly_wvga_cmdoff_cmd0[] = {
 	0x28, 0x00, 0x05, 0x80
 };
@@ -384,12 +384,12 @@ static char truly_wvga_cmdoff_cmd1[] = {
 };
 
 static struct mipi_dsi_cmd truly_wvga_cmd_off_command[] = {
-	{0x4, truly_wvga_cmdoff_cmd0, 0x32, 0},
-	{0x4, truly_wvga_cmdoff_cmd1, 0x78, 0}
+	{0x4, truly_wvga_cmdoff_cmd0, 0x32},
+	{0x4, truly_wvga_cmdoff_cmd1, 0x78}
 };
 
 #define TRULY_WVGA_CMD_OFF_COMMAND 2
-*/
+
 
 static struct command_state truly_wvga_cmd_state = {
 	0, 0

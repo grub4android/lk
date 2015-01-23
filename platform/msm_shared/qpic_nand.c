@@ -973,7 +973,7 @@ qpic_nand_blk_erase(uint32_t page)
 	status = qpic_nand_check_status(status);
 
 	/* Dummy read to unlock pipe. */
-	nand_ret = qpic_nand_read_reg(NAND_FLASH_STATUS, BAM_DESC_UNLOCK_FLAG);
+	qpic_nand_read_reg(NAND_FLASH_STATUS, BAM_DESC_UNLOCK_FLAG);
 
 	/* Check for status errors*/
 	if (status)

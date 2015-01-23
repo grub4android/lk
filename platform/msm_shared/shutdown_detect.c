@@ -34,6 +34,7 @@
 #include <kernel/timer.h>
 #include <platform/timer.h>
 #include <platform.h>
+#include <target.h>
 #include <shutdown_detect.h>
 
 /* sleep clock is 32.768 khz, 0x8000 count per second */

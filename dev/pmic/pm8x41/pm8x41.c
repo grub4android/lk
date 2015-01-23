@@ -59,7 +59,6 @@ static uint8_t mpp_slave_id;
 void pmi8994_config_mpp_slave_id(uint8_t slave_id)
 {
 	mpp_slave_id = slave_id;
-	return NO_ERROR;
 }
 /* SPMI helper functions */
 uint8_t pm8x41_reg_read(uint32_t addr)
@@ -631,7 +630,7 @@ int pm8xxx_is_battery_broken(void)
 }
 
 /* Detect broken battery for pmi 8994*/
-bool pmi8994_is_battery_broken()
+bool pmi8994_is_battery_broken(void)
 {
 	bool batt_is_broken;
 	uint8_t fast_charge = 0;

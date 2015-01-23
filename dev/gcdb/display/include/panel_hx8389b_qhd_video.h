@@ -198,25 +198,25 @@ static char hx8389b_qhd_video_on_cmd13[] = {
 };
 
 static struct mipi_dsi_cmd hx8389b_qhd_video_on_command[] = {
-	{0x8, hx8389b_qhd_video_on_cmd0, 0x0A, 0},
-	{0x4, hx8389b_qhd_video_on_cmd1, 0x01, 0},
-	{0x8, hx8389b_qhd_video_on_cmd2, 0x01, 0},
-	{0xc, hx8389b_qhd_video_on_cmd3, 0x01, 0},
-	{0x18, hx8389b_qhd_video_on_cmd4, 0x01, 0},
-	{0xc, hx8389b_qhd_video_on_cmd5, 0x01, 0},
-	{0x8, hx8389b_qhd_video_on_cmd6, 0x01, 0},
-	{0x1c, hx8389b_qhd_video_on_cmd7, 0x01, 0},
-	{0x40, hx8389b_qhd_video_on_cmd8, 0x01, 0},
-	{0x28, hx8389b_qhd_video_on_cmd9, 0x01, 0},
-	{0x84, hx8389b_qhd_video_on_cmd10, 0x05, 0},
-	{0xc, hx8389b_qhd_video_on_cmd11, 0x01, 0},
-	{0x4, hx8389b_qhd_video_on_cmd12, 0x78, 0},
-	{0x4, hx8389b_qhd_video_on_cmd13, 0x32, 0}
+	{0x8, hx8389b_qhd_video_on_cmd0, 0x0A},
+	{0x4, hx8389b_qhd_video_on_cmd1, 0x01},
+	{0x8, hx8389b_qhd_video_on_cmd2, 0x01},
+	{0xc, hx8389b_qhd_video_on_cmd3, 0x01},
+	{0x18, hx8389b_qhd_video_on_cmd4, 0x01},
+	{0xc, hx8389b_qhd_video_on_cmd5, 0x01},
+	{0x8, hx8389b_qhd_video_on_cmd6, 0x01},
+	{0x1c, hx8389b_qhd_video_on_cmd7, 0x01},
+	{0x40, hx8389b_qhd_video_on_cmd8, 0x01},
+	{0x28, hx8389b_qhd_video_on_cmd9, 0x01},
+	{0x84, hx8389b_qhd_video_on_cmd10, 0x05},
+	{0xc, hx8389b_qhd_video_on_cmd11, 0x01},
+	{0x4, hx8389b_qhd_video_on_cmd12, 0x78},
+	{0x4, hx8389b_qhd_video_on_cmd13, 0x32}
 };
 
 #define HX8389B_QHD_VIDEO_ON_COMMAND 14
 
-/*
+
 static char hx8389b_qhd_videooff_cmd0[] = {
 	0x28, 0x00, 0x05, 0x80
 };
@@ -231,7 +231,7 @@ static struct mipi_dsi_cmd hx8389b_qhd_video_off_command[] = {
 };
 
 #define HX8389B_QHD_VIDEO_OFF_COMMAND 2
-*/
+
 
 static struct command_state hx8389b_qhd_video_state = {
 	0, 0

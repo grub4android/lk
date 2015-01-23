@@ -92,6 +92,6 @@ int rpm_send_data(uint32_t *data, uint32_t len, msg_type type);
 uint32_t rpm_recv_data(uint32_t *len);
 void rpm_clk_enable(uint32_t *data, uint32_t len);
 void rpm_clk_disable(uint32_t *data, uint32_t len);
-void rpm_smd_init();
-void rpm_smd_uninit();
+void rpm_smd_init(void);
+void rpm_smd_uninit(void);
 #endif
