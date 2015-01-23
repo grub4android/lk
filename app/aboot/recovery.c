@@ -43,6 +43,7 @@
 #include <target.h>
 #include <partition_parser.h>
 #include <mmc.h>
+#include <malloc.h>
 #include <app/aboot.h>
 
 #include "recovery.h"

@@ -30,7 +30,6 @@
 #include <crypto_hash.h>
 #endif
 
-
 /* Target helper functions exposed to USB driver */
 typedef struct {
 	void (*mux_config) (void);
@@ -98,13 +97,18 @@ bool target_is_cdp_qvga(void);
 uint32_t target_hw_interposer(void);
 uint32_t target_override_pll(void);
 uint32_t target_ddr_cfg_val(void);
+void target_usb_init(void);
+void target_usb_stop(void);
 uint32_t target_get_hlos_subtype(void);
-uint8_t target_is_edp(void);
+void shutdown_device();
 bool target_warm_boot(void);
+bool target_use_signed_kernel(void);
+int _emmc_recovery_init(void);
+void ulpi_write(unsigned val, unsigned reg);
+uint8_t target_is_edp(void);
 
 void target_crypto_init_params(void);
 crypto_engine_type board_ce_type(void);
-bool target_use_signed_kernel(void);
 
 int target_volume_up(void);
 uint32_t target_volume_down(void);

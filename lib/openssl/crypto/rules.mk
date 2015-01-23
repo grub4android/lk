@@ -17,7 +17,8 @@ GLOBAL_INCLUDES += \
 			$(LOCAL_DIR)/x509 \
 			$(LOCAL_DIR)/../.. \
 			$(LOCAL_DIR)/../include \
-			$(LOCAL_DIR)/../include/openssl
+			$(LOCAL_DIR)/../include/openssl \
+			$(LOCAL_DIR)/../../openssl
 
 MODULE_SRCS +=  $(LOCAL_DIR)/bn/asm/armv4-mont.S $(LOCAL_DIR)/fixup.c
 

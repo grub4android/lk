@@ -159,10 +159,14 @@
 #define DSI1_PHY_BASE               (0x1AA0500)
 #define DSI0_PLL_BASE               (0x1A98300)
 #define DSI1_PLL_BASE               DSI0_PLL_BASE
+#define DSIPHY_PLL_CTRL(x)       REG_DSI(DSI0_PLL_BASE + (x) * 4)
 #define REG_DSI(off)                (MIPI_DSI_BASE + 0x04 + (off))
 #define MDP_BASE                    (0x1A00000)
 #define REG_MDP(off)                (MDP_BASE + (off))
 #define MDP_HW_REV                              REG_MDP(0x1000)
+#define MDP_INTR_EN                             REG_MDP(0x1010)
+#define MDP_INTR_CLEAR                          REG_MDP(0x1018)
+#define MDP_HIST_INTR_EN                        REG_MDP(0x101C)
 #define MDP_VP_0_VIG_0_BASE                     REG_MDP(0x5000)
 #define MDP_VP_0_VIG_1_BASE                     REG_MDP(0x7000)
 #define MDP_VP_0_RGB_0_BASE                     REG_MDP(0x15000)
@@ -219,6 +223,10 @@
 #define VBIF_VBIF_ABIT_SHORT                    REG_MDP(0xc8070)
 #define VBIF_VBIF_ABIT_SHORT_CONF               REG_MDP(0xc8074)
 #define VBIF_VBIF_GATE_OFF_WRREQ_EN             REG_MDP(0xc80A8)
+
+#define MDSS_MDP_REG_PP_FBC_MODE                0x034
+#define MDSS_MDP_REG_PP_FBC_BUDGET_CTL          0x038
+#define MDSS_MDP_REG_PP_FBC_LOSSY_MODE          0x03C
 
 #define SOFT_RESET                  0x118
 #define CLK_CTRL                    0x11C

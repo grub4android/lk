@@ -53,10 +53,13 @@
 #include "include/panel_hx8379a_fwvga_video.h"
 #include "include/panel_hx8394d_720p_video.h"
 #include "include/panel_nt35521_wxga_video.h"
+#include "include/panel_samsung_wxga_video.h"
+#include "include/panel_hx8279a_wsvga_video.h"
 
 #define DISPLAY_MAX_PANEL_DETECTION 2
 #define OTM8019A_FWVGA_VIDEO_PANEL_ON_DELAY 50
 #define NT35590_720P_CMD_PANEL_ON_DELAY 40
+#define SAMSUNG_WXGA_VIDEO_PANEL_ON_DELAY 100
 
 /*---------------------------------------------------------------------------*/
 /* static panel selection variable                                           */
@@ -65,22 +68,6 @@ static uint32_t auto_pan_loop = 0;
 
 uint32_t panel_regulator_settings[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
-enum {
-JDI_1080P_VIDEO_PANEL,
-NT35590_720P_VIDEO_PANEL,
-NT35590_720P_CMD_PANEL,
-INNOLUX_720P_VIDEO_PANEL,
-OTM8019A_FWVGA_VIDEO_PANEL,
-OTM1283A_720P_VIDEO_PANEL,
-NT35596_1080P_VIDEO_PANEL,
-SHARP_WQXGA_DUALDSI_VIDEO_PANEL,
-JDI_FHD_VIDEO_PANEL,
-HX8379A_FWVGA_VIDEO_PANEL,
-HX8394D_720P_VIDEO_PANEL,
-NT35521_WXGA_VIDEO_PANEL,
-UNKNOWN_PANEL
 };
 
 /*
@@ -99,7 +86,9 @@ static struct panel_list supp_panels[] = {
 	{"jdi_fhd_video", JDI_FHD_VIDEO_PANEL},
 	{"hx8379a_wvga_video", HX8379A_FWVGA_VIDEO_PANEL},
 	{"hx8394d_720p_video", HX8394D_720P_VIDEO_PANEL},
-	{"nt35521_wxga_video", NT35521_WXGA_VIDEO_PANEL}
+	{"nt35521_wxga_video", NT35521_WXGA_VIDEO_PANEL},
+	{"samsung_wxga_video", SAMSUNG_WXGA_VIDEO_PANEL},
+	{"hx8279a_wsvga_video", HX8279A_WSVGA_VIDEO_PANEL}
 };
 
 static uint32_t panel_id;
@@ -121,6 +110,9 @@ int oem_panel_on()
 	} else if (panel_id == NT35590_720P_CMD_PANEL) {
 		/* needs extra delay to avoid snow screen artifacts */
 		mdelay(NT35590_720P_CMD_PANEL_ON_DELAY);
+	} else if (panel_id == SAMSUNG_WXGA_VIDEO_PANEL) {
+		/* needs extra delay to avoid unexpected artifacts */
+		mdelay(SAMSUNG_WXGA_VIDEO_PANEL_ON_DELAY);
 	}
 
 	return NO_ERROR;
@@ -155,10 +147,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &jdi_1080p_video_panel_reset_seq;
 		panelstruct->backlightinfo = &jdi_1080p_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 			= jdi_1080p_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 			= JDI_1080P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= jdi_1080p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= JDI_1080P_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			jdi_1080p_video_timings, TIMING_SIZE);
 		pinfo->mipi.signature 	= JDI_1080P_VIDEO_SIGNATURE;
@@ -176,10 +172,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &nt35590_720p_video_panel_reset_seq;
 		panelstruct->backlightinfo = &nt35590_720p_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= nt35590_720p_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= NT35590_720P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= nt35590_720p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= NT35590_720P_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				nt35590_720p_video_timings, TIMING_SIZE);
 		pinfo->mipi.signature 	= NT35590_720P_VIDEO_SIGNATURE;
@@ -196,10 +196,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					= &nt35590_720p_cmd_panel_reset_seq;
 		panelstruct->backlightinfo = &nt35590_720p_cmd_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= nt35590_720p_cmd_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= NT35590_720P_CMD_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= nt35590_720p_cmd_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= NT35590_720P_CMD_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				nt35590_720p_cmd_timings, TIMING_SIZE);
 		pinfo->mipi.signature 	= NT35590_720P_CMD_SIGNATURE;
@@ -217,10 +221,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					= &innolux_720p_video_reset_seq;
 		panelstruct->backlightinfo = &innolux_720p_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= innolux_720p_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= INNOLUX_720P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= innolux_720p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= INNOLUX_720P_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				innolux_720p_video_timings, TIMING_SIZE);
 		break;
@@ -237,10 +245,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					= &otm8019a_fwvga_video_reset_seq;
 		panelstruct->backlightinfo = &otm8019a_fwvga_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= otm8019a_fwvga_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= OTM8019A_FWVGA_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= otm8019a_fwvga_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= OTM8019A_FWVGA_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				otm8019a_fwvga_video_timings, TIMING_SIZE);
 		break;
@@ -257,10 +269,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					= &otm1283a_720p_video_reset_seq;
 		panelstruct->backlightinfo = &otm1283a_720p_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= otm1283a_720p_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= OTM1283A_720P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= otm1283a_720p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= OTM1283A_720P_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				otm1283a_720p_video_timings, TIMING_SIZE);
 		break;
@@ -277,10 +293,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					= &nt35596_1080p_skuk_video_reset_seq;
 		panelstruct->backlightinfo = &nt35596_1080p_skuk_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= nt35596_1080p_skuk_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= NT35596_1080P_SKUK_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= nt35596_1080p_skuk_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= NT35596_1080P_SKUK_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				nt35596_1080p_skuk_video_timings, TIMING_SIZE);
 		break;
@@ -297,10 +317,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &sharp_wqxga_dualdsi_video_reset_seq;
 		panelstruct->backlightinfo = &sharp_wqxga_dualdsi_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 			= sharp_wqxga_dualdsi_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 			= SHARP_WQXGA_DUALDSI_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= sharp_wqxga_dualdsi_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= SHARP_WQXGA_DUALDSI_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			sharp_wqxga_dualdsi_video_timings, TIMING_SIZE);
 		pinfo->mipi.signature 	= SHARP_WQXGA_DUALDSI_VIDEO_SIGNATURE;
@@ -318,10 +342,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
                 panelstruct->panelresetseq
                                         = &jdi_fhd_video_reset_seq;
                 panelstruct->backlightinfo = &jdi_fhd_video_backlight;
-                pinfo->mipi.panel_cmds
+                pinfo->mipi.panel_on_cmds
                                         = jdi_fhd_video_on_command;
-                pinfo->mipi.num_of_panel_cmds
+                pinfo->mipi.num_of_panel_on_cmds
                                         = JDI_FHD_VIDEO_ON_COMMAND;
+                pinfo->mipi.panel_off_cmds
+                                        = jdi_fhd_video_off_command;
+                pinfo->mipi.num_of_panel_off_cmds
+                                        = JDI_FHD_VIDEO_OFF_COMMAND;
                 memcpy(phy_db->timing,
                                 jdi_fhd_video_timings, TIMING_SIZE);
                 break;
@@ -338,10 +366,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					= &hx8379a_fwvga_video_reset_seq;
 		panelstruct->backlightinfo = &hx8379a_fwvga_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= hx8379a_fwvga_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= HX8379A_FWVGA_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= hx8379a_fwvga_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= HX8379A_FWVGA_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 					hx8379a_fwvga_video_timings, TIMING_SIZE);
 		break;
@@ -358,10 +390,14 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &hx8394d_720p_video_panel_reset_seq;
 		panelstruct->backlightinfo = &hx8394d_720p_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= hx8394d_720p_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= HX8394D_720P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= hx8394d_720p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= HX8394D_720P_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				hx8394d_720p_video_timings, TIMING_SIZE);
 		pinfo->mipi.signature = HX8394D_720P_VIDEO_SIGNATURE;
@@ -379,18 +415,74 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					= &nt35521_wxga_video_reset_seq;
 		panelstruct->backlightinfo = &nt35521_wxga_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 					= nt35521_wxga_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 					= NT35521_WXGA_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= nt35521_wxga_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= NT35521_WXGA_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 				nt35521_wxga_video_timings, TIMING_SIZE);
+		break;
+	case SAMSUNG_WXGA_VIDEO_PANEL:
+		panelstruct->paneldata    = &samsung_wxga_video_panel_data;
+		panelstruct->panelres     = &samsung_wxga_video_panel_res;
+		panelstruct->color        = &samsung_wxga_video_color;
+		panelstruct->videopanel   = &samsung_wxga_video_video_panel;
+		panelstruct->commandpanel = &samsung_wxga_video_command_panel;
+		panelstruct->state        = &samsung_wxga_video_state;
+		panelstruct->laneconfig   = &samsung_wxga_video_lane_config;
+		panelstruct->paneltiminginfo
+					= &samsung_wxga_video_timing_info;
+		panelstruct->panelresetseq
+					= &samsung_wxga_video_reset_seq;
+		panelstruct->backlightinfo = &samsung_wxga_video_backlight;
+		pinfo->mipi.panel_on_cmds
+					= samsung_wxga_video_on_command;
+		pinfo->mipi.num_of_panel_on_cmds
+					= SAMSUNG_WXGA_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= samsung_wxga_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= SAMSUNG_WXGA_VIDEO_OFF_COMMAND;
+		memcpy(phy_db->timing,
+				samsung_wxga_video_timings, TIMING_SIZE);
+		break;
+	case HX8279A_WSVGA_VIDEO_PANEL:
+		panelstruct->paneldata    = &hx8279a_wsvga_video_panel_data;
+		panelstruct->panelres     = &hx8279a_wsvga_video_panel_res;
+		panelstruct->color        = &hx8279a_wsvga_video_color;
+		panelstruct->videopanel   = &hx8279a_wsvga_video_video_panel;
+		panelstruct->commandpanel = &hx8279a_wsvga_video_command_panel;
+		panelstruct->state        = &hx8279a_wsvga_video_state;
+		panelstruct->laneconfig   = &hx8279a_wsvga_video_lane_config;
+		panelstruct->paneltiminginfo
+					= &hx8279a_wsvga_video_timing_info;
+		panelstruct->panelresetseq
+					= &hx8279a_wsvga_video_reset_seq;
+		panelstruct->backlightinfo = &hx8279a_wsvga_video_backlight;
+		pinfo->mipi.panel_on_cmds
+					= hx8279a_wsvga_video_on_command;
+		pinfo->mipi.num_of_panel_on_cmds
+					= HX8279A_WSVGA_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+					= hx8279a_wsvga_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+					= HX8279A_WSVGA_VIDEO_OFF_COMMAND;
+		memcpy(phy_db->timing,
+				hx8279a_wsvga_video_timings, TIMING_SIZE);
 		break;
 	case UNKNOWN_PANEL:
 	default:
 		memset(panelstruct, 0, sizeof(struct panel_struct));
-		memset(pinfo->mipi.panel_cmds, 0, sizeof(struct mipi_dsi_cmd));
-		pinfo->mipi.num_of_panel_cmds = 0;
+		memset(pinfo->mipi.panel_on_cmds, 0,
+					sizeof(struct mipi_dsi_cmd));
+		pinfo->mipi.num_of_panel_on_cmds = 0;
+		memset(pinfo->mipi.panel_off_cmds, 0,
+					sizeof(struct mipi_dsi_cmd));
+		pinfo->mipi.num_of_panel_off_cmds = 0;
 		memset(phy_db->timing, 0, TIMING_SIZE);
 		pan_type = PANEL_TYPE_UNKNOWN;
 		break;
@@ -433,22 +525,28 @@ int oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 	switch (hw_id) {
 	case HW_PLATFORM_MTP:
 		panel_id = JDI_1080P_VIDEO_PANEL;
+		if (hw_subtype == HW_PLATFORM_SUBTYPE_MTP_3)
+			panel_id = JDI_FHD_VIDEO_PANEL;
 		break;
 	case HW_PLATFORM_SURF:
-		panel_id = JDI_1080P_VIDEO_PANEL;
-		switch (auto_pan_loop) {
-		case 0:
+		if (hw_subtype == HW_PLATFORM_SUBTYPE_CDP_1) {
+			panel_id = JDI_FHD_VIDEO_PANEL;
+		} else {
 			panel_id = JDI_1080P_VIDEO_PANEL;
-			break;
-		case 1:
-			panel_id = NT35590_720P_VIDEO_PANEL;
-			break;
-		default:
-			panel_id = UNKNOWN_PANEL;
-			dprintf(CRITICAL, "Unknown panel\n");
-			return PANEL_TYPE_UNKNOWN;
+			switch (auto_pan_loop) {
+			case 0:
+				panel_id = JDI_1080P_VIDEO_PANEL;
+				break;
+			case 1:
+				panel_id = NT35590_720P_VIDEO_PANEL;
+				break;
+			default:
+				panel_id = UNKNOWN_PANEL;
+				dprintf(CRITICAL, "Unknown panel\n");
+				return PANEL_TYPE_UNKNOWN;
+			}
+			auto_pan_loop++;
 		}
-		auto_pan_loop++;
 		break;
 	case HW_PLATFORM_QRD:
 		target_id = board_target_id();
@@ -481,8 +579,15 @@ int oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 					panel_id = HX8379A_FWVGA_VIDEO_PANEL;
 				break;
 			case HW_PLATFORM_SUBTYPE_SKUT1:
-				/* qrd SKUT1 */
-				panel_id = NT35521_WXGA_VIDEO_PANEL;
+				if ((plat_hw_ver_major & 0x0F) == 0x1)
+					/* qrd SKUT1 */
+					panel_id = NT35521_WXGA_VIDEO_PANEL;
+				else if ((plat_hw_ver_major & 0x0F) == 0x2)
+					/* qrd SKUT2 */
+					panel_id = SAMSUNG_WXGA_VIDEO_PANEL;
+				else if ((plat_hw_ver_major & 0x0F) == 0x3)
+					/* qrd SKUT3 */
+					panel_id = HX8279A_WSVGA_VIDEO_PANEL;
 				break;
 			default:
 				dprintf(CRITICAL, "Invalid subtype id %d for QRD HW\n",

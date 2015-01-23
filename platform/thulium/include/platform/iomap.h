@@ -87,13 +87,13 @@
 #define APCS_CLOCK_BRANCH_ENA_VOTE  (CLK_CTL_BASE + 0x52004)
 
 /* UART Clocks */
-#define BLSP1_AHB_CBCR              (CLK_CTL_BASE + 0x17004)
-#define BLSP1_UART2_APPS_CBCR       (CLK_CTL_BASE + 0x1C004)
-#define BLSP1_UART2_APPS_CMD_RCGR   (CLK_CTL_BASE + 0x1C00C)
-#define BLSP1_UART2_APPS_CFG_RCGR   (CLK_CTL_BASE + 0x1C010)
-#define BLSP1_UART2_APPS_M          (CLK_CTL_BASE + 0x1C014)
-#define BLSP1_UART2_APPS_N          (CLK_CTL_BASE + 0x1C018)
-#define BLSP1_UART2_APPS_D          (CLK_CTL_BASE + 0x1C01C)
+#define BLSP1_AHB_CBCR              (CLK_CTL_BASE + 0x29004)
+#define BLSP2_UART2_APPS_CBCR       (CLK_CTL_BASE + 0x29008)
+#define BLSP2_UART2_APPS_CMD_RCGR   (CLK_CTL_BASE + 0x2900C)
+#define BLSP2_UART2_APPS_CFG_RCGR   (CLK_CTL_BASE + 0x29010)
+#define BLSP2_UART2_APPS_M          (CLK_CTL_BASE + 0x29014)
+#define BLSP2_UART2_APPS_N          (CLK_CTL_BASE + 0x29018)
+#define BLSP2_UART2_APPS_D          (CLK_CTL_BASE + 0x2901C)
 
 /* USB3 clocks */
 #define USB_30_BCR                  (CLK_CTL_BASE + 0xF000)
@@ -143,6 +143,7 @@
 #define SPMI_BASE                   0x4000000
 #define SPMI_GENI_BASE              (SPMI_BASE + 0xA000)
 #define SPMI_PIC_BASE               (SPMI_BASE + 0x1800000)
+#define PMIC_ARB_CORE               0x400F000
 
 #define MSM_CE_BAM_BASE             0x67A000
 #define MSM_CE_BASE                 0x644000

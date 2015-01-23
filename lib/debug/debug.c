@@ -44,6 +44,7 @@ void __attribute__ ((noreturn))
 __stack_chk_fail (void)
 {
 	panic("stack smashing detected.");
+	for(;;);
 }
 
 void spin(uint32_t usecs)

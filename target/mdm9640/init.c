@@ -46,6 +46,8 @@
 #include <platform/clock.h>
 #include <qmp_phy.h>
 #include <qusb2_phy.h>
+#include <rpm-smd.h>
+#include <scm.h>
 
 extern void smem_ptable_init(void);
 extern void smem_add_modem_partitions(struct ptable *flash_ptable);
@@ -200,6 +202,13 @@ void target_baseband_detect(struct board_data *board)
 	board->baseband = BASEBAND_MSM;
 }
 
+void target_serialno(unsigned char *buf)
+{
+	uint32_t serialno;
+	serialno = board_chip_serial();
+	snprintf((char *)buf, 13, "%x", serialno);
+}
+
 unsigned check_reboot_mode(void)
 {
 	unsigned restart_reason = 0;
@@ -302,18 +311,25 @@ void target_sdc_init()
 	set_sdc_power_ctrl();
 
 	config.slot = 1;
-	config.bus_width = DATA_BUS_WIDTH_4BIT;
+	config.bus_width = DATA_BUS_WIDTH_8BIT;
 	config.max_clk_rate = MMC_CLK_200MHZ;
 	config.sdhc_base    = MSM_SDC1_SDHCI_BASE;
 	config.pwrctl_base  = MSM_SDC1_BASE;
 	config.pwr_irq      = SDCC1_PWRCTL_IRQ;
 	config.hs400_support = 0;
+	config.hs200_support = 0;
 	config.use_io_switch = 1;
 
 	if (!(dev = mmc_init(&config))) {
 		dprintf(CRITICAL, "mmc init failed!");
 		ASSERT(0);
 	}
+}
+
+int target_cont_splash_screen()
+{
+	/* FOR OEMs - Set cont_splash_screen to keep the splash enable after LK.*/
+	return false;
 }
 
 void target_uninit(void)

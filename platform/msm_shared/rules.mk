@@ -384,7 +384,8 @@ GLOBAL_DEFINES += DISPLAY_TYPE_QPIC=1
 			$(LOCAL_DIR)/qpic_panel.c
 endif
 
-ifeq ($(PLATFORM),msmzirc)
+ifeq ($(PLATFORM),mdm9640)
+GLOBAL_DEFINES += DISPLAY_TYPE_QPIC=1
 	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 			$(LOCAL_DIR)/uart_dm.c \
 			$(LOCAL_DIR)/interrupts.c \
@@ -401,7 +402,10 @@ ifeq ($(PLATFORM),msmzirc)
 			$(LOCAL_DIR)/gpio.c \
 			$(LOCAL_DIR)/scm.c \
 			$(LOCAL_DIR)/qmp_usb30_phy.c \
-			$(LOCAL_DIR)/qusb2_phy.c
+			$(LOCAL_DIR)/qusb2_phy.c \
+			$(LOCAL_DIR)/display.c \
+			$(LOCAL_DIR)/qpic.c \
+			$(LOCAL_DIR)/qpic_panel.c
 endif
 
 ifeq ($(PLATFORM),fsm9900)
@@ -493,6 +497,7 @@ GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
 endif
 
 ifeq ($(PLATFORM),msm8909)
+GLOBAL_DEFINES += DISPLAY_TYPE_MDSS=1
 	MODULE_SRCS += $(LOCAL_DIR)/qgic.c \
 			$(LOCAL_DIR)/qtimer.c \
 			$(LOCAL_DIR)/qtimer_mmap.c \

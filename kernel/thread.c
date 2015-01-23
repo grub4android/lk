@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2008-2009 Travis Geiselbrecht
  *
+ * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -361,6 +363,7 @@ void thread_exit(int retcode)
 	thread_resched();
 
 	panic("somehow fell through thread_exit()\n");
+	for(;;);
 }
 
 static void idle_thread_routine(void)

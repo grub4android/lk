@@ -45,7 +45,7 @@
 /*---------------------------------------------------------------------------*/
 static struct panel_config jdi_fhd_video_panel_data = {
 	"qcom,mdss_dsi_jdi_fhd_video", "dsi:0:", "qcom,mdss-dsi-panel",
-	10, 0, "DISPLAY_1", 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0
+	10, 0, "DISPLAY_1", 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0
 };
 
 /*---------------------------------------------------------------------------*/
@@ -118,11 +118,11 @@ static char jdi_fhd_video_on_cmd12[] = {
 };
 
 static char jdi_fhd_video_on_cmd13[] = {
-	0x11, 0xFF, 0x05, 0x80
+	0x11, 0x00, 0x05, 0x80
 };
 
 static char jdi_fhd_video_on_cmd14[] = {
-	0x29, 0xFF, 0x05, 0x80
+	0x29, 0x00, 0x05, 0x80
 };
 
 static struct mipi_dsi_cmd jdi_fhd_video_on_command[] = {

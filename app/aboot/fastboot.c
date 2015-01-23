@@ -68,6 +68,7 @@ typedef struct
 usb_controller_interface_t usb_if;
 
 #define MAX_USBFS_BULK_SIZE (32 * 1024)
+#define MAX_USBSS_BULK_SIZE (0x1000000)
 
 void boot_linux(void *bootimg, unsigned sz);
 static void fastboot_notify(struct udc_gadget *gadget, unsigned event);
@@ -189,10 +190,14 @@ static void req_complete(struct udc_request *req, unsigned actual, int status)
 }
 
 #ifdef USB30_SUPPORT
-static int usb30_usb_read(void *buf, unsigned len)
+static int usb30_usb_read(void *_buf, unsigned len)
 {
 	int r;
 	struct udc_request req;
+	uint32_t xfer;
+	int count = 0;
+	uint32_t trans_len = len;
+	const char *buf = _buf;
 
 	ASSERT(buf);
 	ASSERT(len);
@@ -202,34 +207,53 @@ static int usb30_usb_read(void *buf, unsigned len)
 
 	dprintf(SPEW, "usb_read(): len = %d\n", len);
 
-	req.buf      = (void*) PA((addr_t)buf);
-	req.length   = len;
-	req.complete = req_complete;
-
-	r = usb30_udc_request_queue(out, &req);
-	if (r < 0)
+	while (len > 0)
 	{
-		dprintf(CRITICAL, "usb_read() queue failed. r = %d\n", r);
-		goto oops;
-	}
-	event_wait(&txn_done);
+		xfer = (len > MAX_USBSS_BULK_SIZE) ? MAX_USBSS_BULK_SIZE : len;
 
-	if (txn_status < 0)
-	{
-		dprintf(CRITICAL, "usb_read() transaction failed. txn_status = %d\n",
-				txn_status);
-		goto oops;
-	}
+		req.buf      = (void*) PA((addr_t)buf);
+		req.length   = xfer;
+		req.complete = req_complete;
 
-	/* note: req->length is update by callback to reflect the amount of data
-	 * actually read.
-	 */
-	dprintf(SPEW, "usb_read(): DONE. req.length = %d\n", req.length);
+		r = usb30_udc_request_queue(out, &req);
+		if (r < 0)
+		{
+			dprintf(CRITICAL, "usb_read() queue failed. r = %d\n", r);
+			goto oops;
+		}
+		event_wait(&txn_done);
+
+		if (txn_status < 0)
+		{
+			dprintf(CRITICAL, "usb_read() transaction failed. txn_status = %d\n",
+					txn_status);
+			goto oops;
+		}
+
+		count += req.length;
+		buf += req.length;
+		len -= req.length;
+
+		/* note: req.length is update by callback to reflect the amount of data
+		 * actually read.
+		 */
+		dprintf(SPEW, "usb_read(): DONE. req.length = %d\n\n", req.length);
+
+		/* For USB3.0 if the data transfer is less than MaxpacketSize, its
+		 * short packet and DWC layer generates transfer complete. App layer
+		 * shold handle this and continue trasnferring the data instead of treating
+		 * this as a transfer complete. This case is not applicable for transfers
+		 * which involve protocol communication to exchange information whose length
+		 * is always equal to MAX_RSP_SIZE. This check ensures that we dont abort
+		 * data transfers on short packet.
+		 */
+		if (req.length != xfer && trans_len == MAX_RSP_SIZE) break;
+	}
 
 	/* invalidate any cached buf data (controller updates main memory) */
-	arch_invalidate_cache_range((addr_t) buf, len);
+	arch_invalidate_cache_range((addr_t) _buf, count);
 
-	return req.length;
+	return count;
 
 oops:
 	fastboot_state = STATE_ERROR;
@@ -294,7 +318,7 @@ static int hsusb_usb_read(void *_buf, unsigned len)
 
 	while (len > 0) {
 		xfer = (len > MAX_USBFS_BULK_SIZE) ? MAX_USBFS_BULK_SIZE : len;
-		req->buf = (void*) PA((addr_t)buf);
+		req->buf = (unsigned char *)PA((addr_t)buf);
 		req->length = xfer;
 		req->complete = req_complete;
 		r = udc_request_queue(out, req);
@@ -340,7 +364,7 @@ static int hsusb_usb_write(void *buf, unsigned len)
 
 	while (len > 0) {
 		xfer = (len > MAX_USBFS_BULK_SIZE) ? MAX_USBFS_BULK_SIZE : len;
-		req->buf = (void*) PA((addr_t)_buf);
+		req->buf = (unsigned char *)PA((addr_t)_buf);
 		req->length = xfer;
 		req->complete = req_complete;
 		r = udc_request_queue(in, req);
@@ -380,10 +404,10 @@ static void fastboot_ack(const char *code, const char *reason)
 	if (reason == 0)
 		reason = "";
 
-	snprintf(response, MAX_RSP_SIZE, "%s%s", code, reason);
+	snprintf((char *)response, MAX_RSP_SIZE, "%s%s", code, reason);
 	fastboot_state = STATE_COMPLETE;
 
-	usb_if.usb_write(response, strlen(response));
+	usb_if.usb_write(response, strlen((const char *)response));
 
 }
 
@@ -414,9 +438,9 @@ void fastboot_info(const char *reason)
 	if (reason == 0)
 		return;
 
-	snprintf(response, MAX_RSP_SIZE, "INFO%s", reason);
+	snprintf((char *)response, MAX_RSP_SIZE, "INFO%s", reason);
 
-	usb_if.usb_write(response, strlen(response));
+	usb_if.usb_write(response, strlen((const char *)response));
 }
 
 void fastboot_write(void *data, unsigned len)
@@ -524,8 +548,8 @@ static void cmd_download(const char *arg, void *data, unsigned sz)
 		return;
 	}
 
-	snprintf(response, MAX_RSP_SIZE, "DATA%08x", len);
-	if (usb_if.usb_write(response, strlen(response)) < 0)
+	snprintf((char *)response, MAX_RSP_SIZE, "DATA%08x", len);
+	if (usb_if.usb_write(response, strlen((const char *)response)) < 0)
 		return;
 
 	r = usb_if.usb_read(download_base, len);

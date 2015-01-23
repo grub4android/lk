@@ -36,16 +36,31 @@
 #include <string.h>
 #include <pm8x41_hw.h>
 #include <pm8x41.h>
+#include <rpm-smd.h>
+#include <regulator.h>
 #include <platform/timer.h>
+
+/* Enable LN BB CLK */
+static uint32_t ln_bb_clk[][8] = {
+	{
+		RPM_CLK_BUFFER_A_REQ, LNBB_CLK_ID,
+		KEY_SOFTWARE_ENABLE, 4, GENERIC_DISABLE,
+		RPM_KEY_PIN_CTRL_CLK_BUFFER_ENABLE_KEY, 4, RPM_CLK_BUFFER_PIN_CONTROL_ENABLE_NONE,
+	},
+	{
+		RPM_CLK_BUFFER_A_REQ, LNBB_CLK_ID,
+		KEY_SOFTWARE_ENABLE, 4, GENERIC_ENABLE,
+		RPM_KEY_PIN_CTRL_CLK_BUFFER_ENABLE_KEY, 4, RPM_CLK_BUFFER_PIN_CONTROL_ENABLE_NONE,
+	},
+};
 
 static uint8_t mpp_slave_id;
 
-uint8_t pmi8994_config_mpp_slave_id(uint8_t slave_id)
+void pmi8994_config_mpp_slave_id(uint8_t slave_id)
 {
 	mpp_slave_id = slave_id;
 	return NO_ERROR;
 }
-
 /* SPMI helper functions */
 uint8_t pm8x41_reg_read(uint32_t addr)
 {
@@ -531,20 +546,14 @@ uint8_t pm8x41_get_is_cold_boot(void)
 /* api to control lnbb clock */
 void pm8x41_lnbb_clock_ctrl(uint8_t enable)
 {
-	uint8_t reg;
-
-	reg = REG_READ(LNBB_CLK_EN_CTL);
-
 	if (enable)
 	{
-		reg |= BIT(LNBB_CLK_EN_BIT);
+		rpm_clk_enable(&ln_bb_clk[GENERIC_ENABLE][0], 24);
 	}
 	else
 	{
-		reg &= ~BIT(LNBB_CLK_EN_BIT);
+		rpm_clk_enable(&ln_bb_clk[GENERIC_DISABLE][0], 24);
 	}
-
-	REG_WRITE(LNBB_CLK_EN_CTL, reg);
 }
 
 /* api to control diff clock */
@@ -617,6 +626,41 @@ int pm8xxx_is_battery_broken(void)
 	pm8x41_reg_write(PM8XXX_IBAT_ATC_A, trkl_default);
 	/* restore VBAT_DET_LO setting to original value */
 	pm8x41_reg_write(PM8XXX_VBAT_DET, vbat_det_default);
+
+	return batt_is_broken;
+}
+
+/* Detect broken battery for pmi 8994*/
+bool pmi8994_is_battery_broken()
+{
+	bool batt_is_broken;
+	uint8_t fast_charge = 0;
+
+	/* Disable the input missing ppoller */
+	REG_WRITE(PMI8994_CHGR_TRIM_OPTIONS_7_0, REG_READ(PMI8994_CHGR_TRIM_OPTIONS_7_0) & ~INPUT_MISSING_POLLER_EN);
+	/* Disable current termination */
+	REG_WRITE(PMI8994_CHGR_CFG2, REG_READ(PMI8994_CHGR_CFG2) & ~CURRENT_TERM_EN);
+	/* Fast-charge current to 300 mA */
+	fast_charge = REG_READ(PMI8994_FCC_CFG);
+	REG_WRITE(PMI8994_FCC_CFG, 0x0);
+	/* Change the float voltage to 4.50V */
+	REG_WRITE(PMI8994_FV_CFG, 0x3F);
+
+	mdelay(5);
+
+	if (REG_READ(PMI8994_INT_RT_STS) & BAT_TAPER_MODE_CHARGING_RT_STS)
+		batt_is_broken = true;
+	else
+		batt_is_broken = false;
+
+	/* Set float voltage back to 4.35V */
+	REG_WRITE(PMI8994_FV_CFG, 0x2B);
+	/* Enable current termination */
+	REG_WRITE(PMI8994_CHGR_CFG2, REG_READ(PMI8994_CHGR_CFG2) | CURRENT_TERM_EN);
+	/* Fast-charge current back to default mA */
+	REG_WRITE(PMI8994_FCC_CFG, fast_charge);
+	/* Re-enable the input missing poller */
+	REG_WRITE(PMI8994_CHGR_TRIM_OPTIONS_7_0, REG_READ(PMI8994_CHGR_TRIM_OPTIONS_7_0) | INPUT_MISSING_POLLER_EN);
 
 	return batt_is_broken;
 }

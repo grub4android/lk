@@ -78,6 +78,7 @@
 #define PMIC_WLED_SLAVE_ID      3
 #define DDR_CFG_DLY_VAL         0x80040870
 
+void target_crypto_init_params(void);
 static void set_sdc_power_ctrl(uint8_t slot);
 static uint32_t mmc_pwrctl_base[] =
 	{ MSM_SDC1_BASE, MSM_SDC2_BASE };
@@ -151,7 +152,10 @@ void target_uninit(void)
 	}
 
 	if (crypto_initialized())
+	{
 		crypto_eng_cleanup();
+		clock_ce_disable(CE_INSTANCE);
+	}
 
 	rpm_smd_uninit();
 }
@@ -212,7 +216,7 @@ static void set_sdc_power_ctrl(uint8_t slot)
 
 	if (slot == 0x1)
 	{
-		clk = TLMM_CUR_VAL_16MA;
+		clk = TLMM_CUR_VAL_10MA;
 		cmd = TLMM_CUR_VAL_8MA;
 		dat = TLMM_CUR_VAL_8MA;
 		reg = SDC1_HDRV_PULL_CTL;
@@ -359,6 +363,7 @@ int target_cont_splash_screen()
 			case HW_PLATFORM_MTP:
 			case HW_PLATFORM_FLUID:
 			case HW_PLATFORM_LIQUID:
+			case HW_PLATFORM_DRAGON:
 				dprintf(SPEW, "Target_cont_splash=1\n");
 				splash_screen = 1;
 				break;

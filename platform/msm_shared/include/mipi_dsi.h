@@ -207,7 +207,6 @@ struct mipi_dsi_cmd {
 	int size;
 	char *payload;
 	int wait;
-	uint8_t cmds_post_tg;
 };
 
 struct mipi_dsi_panel_config {
@@ -219,8 +218,8 @@ struct mipi_dsi_panel_config {
 	uint8_t t_clk_post;
 	struct mipi_dsi_phy_ctrl *dsi_phy_config;
 	struct mdss_dsi_phy_ctrl *mdss_dsi_phy_config;
-	struct mipi_dsi_cmd *panel_cmds;
-	int num_of_panel_cmds;
+	struct mipi_dsi_cmd *panel_on_cmds;
+	int num_of_panel_on_cmds;
 	uint32_t signature;
 	char cmds_post_tg;
 };

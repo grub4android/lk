@@ -115,7 +115,7 @@ void clock_init_mmc(uint32_t interface)
 /* Configure MMC clock */
 void clock_config_mmc(uint32_t interface, uint32_t freq)
 {
-	int ret;
+	int ret = 0;
 	char clk_name[64];
 
 	snprintf(clk_name, 64, "sdc%u_core_clk", interface);

@@ -56,6 +56,7 @@ struct host_caps {
 	uint8_t ddr_support;     /* Dual Data rate */
 	uint8_t sdr50_support;   /* UHS mode, with 100 MHZ clock */
 	uint8_t sdr104_support;  /* UHS mode, with 200 MHZ clock */
+	uint8_t hs200_support;   /* Hs200 mode, with 200 MHZ clock */
 	uint8_t hs400_support;   /* Hs400 mode, with 400 MHZ clock */
 };
 
@@ -98,7 +99,7 @@ struct mmc_command {
 	uint32_t trans_mode;    /* Transfer mode, read/write */
 	uint32_t cmd_retry;     /* Retry the command, if card is busy */
 	uint32_t cmd23_support; /* If card supports cmd23 */
-	uint64_t cmd_timeout;   /* Command timeout in ms */
+	uint64_t cmd_timeout;   /* Command timeout in us */
 	struct mmc_data data;   /* Data pointer */
 };
 

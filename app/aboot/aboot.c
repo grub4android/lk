@@ -60,6 +60,7 @@
 #include <platform/msm_shared.h>
 #include <boot_device.h>
 #include <boot_verifier.h>
+#include <image_verify.h>
 #if WITH_APP_DISPLAY_SERVER
 #include <app/display_server.h>
 #endif
@@ -667,7 +668,7 @@ void boot_linux(void *kernel, unsigned *tags,
 	uint32_t tags_phys = PA((addr_t)tags);
 	struct kernel64_hdr *kptr = (struct kernel64_hdr*)kernel;
 
-	ramdisk = (void*)PA((unsigned)ramdisk);
+	ramdisk = (void *)PA((addr_t)ramdisk);
 
 	final_cmdline = update_cmdline(cmdline);
 
@@ -714,7 +715,7 @@ void boot_linux(void *kernel, unsigned *tags,
 
 
 	dprintf(INFO, "booting linux @ %p, ramdisk @ %p (%d), tags/device tree @ %p\n",
-		entry, ramdisk, ramdisk_size, (void*)tags_phys);
+		entry, ramdisk, ramdisk_size, (void *)tags_phys);
 
 #if WITH_APP_DISPLAY_SERVER
 	display_server_stop();
@@ -941,7 +942,7 @@ static bool check_format_bit(void)
 	}
 	buf = (char *) memalign(CACHE_LINE, ROUNDUP(page_size, CACHE_LINE));
 	ASSERT(buf);
-	if (mmc_read(offset, (unsigned int *)buf, page_size))
+	if (mmc_read(offset, (uint32_t *)buf, page_size))
 	{
 		dprintf(INFO, "mmc read failure /bootselect %d\n", page_size);
 		free(buf);
@@ -1076,7 +1077,7 @@ int boot_linux_from_mmc(void)
                 return -1;
 	}
 
-	if (mmc_read(ptn + offset, (unsigned int *) buf, page_size)) {
+	if (mmc_read(ptn + offset, (uint32_t *) buf, page_size)) {
 		dprintf(CRITICAL, "ERROR: Cannot read boot image header\n");
                 return -1;
 	}
@@ -1100,7 +1101,7 @@ int boot_linux_from_mmc(void)
 	 * which lives in the second page for arm64 targets.
 	 */
 
-	if (mmc_read(ptn + page_size, (unsigned int *) kbuf, page_size)) {
+	if (mmc_read(ptn + page_size, (uint32_t *) kbuf, page_size)) {
 		dprintf(CRITICAL, "ERROR: Cannot read boot image header\n");
                 return -1;
 	}
@@ -1184,7 +1185,7 @@ int boot_linux_from_mmc(void)
 		dprintf(INFO, "Loading boot image (%d): start\n", imagesize_actual);
 		bs_set_timestamp(BS_KERNEL_LOAD_START);
 
-		if (check_aboot_addr_range_overlap((unsigned)image_addr, imagesize_actual))
+		if (check_aboot_addr_range_overlap((uint32_t)image_addr, imagesize_actual))
 		{
 			dprintf(CRITICAL, "Boot image buffer address overlaps with aboot addresses.\n");
 			return -1;
@@ -1202,7 +1203,7 @@ int boot_linux_from_mmc(void)
 
 		offset = imagesize_actual;
 
-		if (check_aboot_addr_range_overlap((unsigned)image_addr + offset, page_size))
+		if (check_aboot_addr_range_overlap((uint32_t)image_addr + offset, page_size))
 		{
 			dprintf(CRITICAL, "Signature read buffer address overlaps with aboot addresses.\n");
 			return -1;
@@ -1215,7 +1216,7 @@ int boot_linux_from_mmc(void)
 			return -1;
 		}
 
-		verify_signed_bootimg((unsigned)image_addr, imagesize_actual);
+		verify_signed_bootimg((uint32_t)image_addr, imagesize_actual);
 
 		/* Move kernel, ramdisk and device tree to correct address */
 		memmove((void*) hdr->kernel_addr, (char *)(image_addr + page_size), hdr->kernel_size);
@@ -1562,7 +1563,7 @@ int boot_linux_from_flash(void)
 			return -1;
 		}
 
-		verify_signed_bootimg((unsigned)image_addr, imagesize_actual);
+		verify_signed_bootimg((uint32_t)image_addr, imagesize_actual);
 
 		/* Move kernel and ramdisk to correct address */
 		memmove((void*) hdr->kernel_addr, (char *)(image_addr + page_size), hdr->kernel_size);
@@ -2341,7 +2342,7 @@ void cmd_flash_mmc_sparse_img(const char *arg, void *data, unsigned sz)
 	unsigned long long ptn = 0;
 	unsigned long long size = 0;
 	int index = INVALID_PTN;
-	unsigned int i;
+	uint32_t i;
 	uint8_t lun = 0;
 
 	index = partition_get_index(arg);
@@ -2817,7 +2818,6 @@ void cmd_preflash(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
-static struct fbimage logo_header = {{{0},0,0,0,{0}}, NULL};
 struct fbimage* splash_screen_flash(void);
 
 int splash_screen_check_header(struct fbimage *logo)
@@ -2834,28 +2834,31 @@ struct fbimage* splash_screen_flash(void)
 	struct ptentry *ptn;
 	struct ptable *ptable;
 	struct fbcon_config *fb_display = NULL;
-	struct fbimage *logo = &logo_header;
+	struct fbimage *logo = NULL;
 
+
+	logo = (struct fbimage *) malloc(ROUNDUP(page_size, sizeof(struct fbimage)));
+	ASSERT(logo);
 
 	ptable = flash_get_ptable();
 	if (ptable == NULL) {
 	dprintf(CRITICAL, "ERROR: Partition table not found\n");
-	return NULL;
+	goto err;
 	}
 	ptn = ptable_find(ptable, SPLASH_PARTITION_NAME);
 	if (ptn == NULL) {
 		dprintf(CRITICAL, "ERROR: splash Partition not found\n");
-		return NULL;
+		goto err;
 	}
 
 	if (flash_read(ptn, 0,(unsigned int *) logo, sizeof(logo->header))) {
 		dprintf(CRITICAL, "ERROR: Cannot read boot image header\n");
-		return NULL;
+		goto err;
 	}
 
 	if (splash_screen_check_header(logo)) {
 		dprintf(CRITICAL, "ERROR: Boot image header invalid\n");
-		return NULL;
+		goto err;
 	}
 
 	fb_display = fbcon_display();
@@ -2870,7 +2873,7 @@ struct fbimage* splash_screen_flash(void)
 			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
 			fbcon_clear();
 			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
-			return NULL;
+			goto err;
 		}
 
 #if DISPLAY_USE_BGR
@@ -2893,6 +2896,10 @@ struct fbimage* splash_screen_flash(void)
 	}
 
 	return logo;
+
+err:
+	free(logo);
+	return NULL;
 }
 
 struct fbimage* splash_screen_mmc(void)
@@ -2900,7 +2907,10 @@ struct fbimage* splash_screen_mmc(void)
 	int index = INVALID_PTN;
 	unsigned long long ptn = 0;
 	struct fbcon_config *fb_display = NULL;
-	struct fbimage *logo = &logo_header;
+	struct fbimage *logo = NULL;
+	uint32_t blocksize;
+	uint32_t readsize;
+	uint32_t ptn_size;
 
 	index = partition_get_index(SPLASH_PARTITION_NAME);
 	if (index == 0) {
@@ -2914,14 +2924,21 @@ struct fbimage* splash_screen_mmc(void)
 		return NULL;
 	}
 
-	if (mmc_read(ptn, (unsigned int *) logo, sizeof(logo->header))) {
+	ptn_size = partition_get_size(index);
+	blocksize = mmc_get_device_blocksize();
+	readsize = ROUNDUP(sizeof(logo->header), blocksize);
+
+	logo = (struct fbimage *)memalign(CACHE_LINE, ROUNDUP(readsize, CACHE_LINE));
+	ASSERT(logo);
+
+	if (mmc_read(ptn, (uint32_t *) logo, readsize)) {
 		dprintf(CRITICAL, "ERROR: Cannot read splash image header\n");
-		return NULL;
+		goto err;
 	}
 
 	if (splash_screen_check_header(logo)) {
 		dprintf(CRITICAL, "ERROR: Splash image header invalid\n");
-		return NULL;
+		goto err;
 	}
 
 	fb_display = fbcon_display();
@@ -2930,12 +2947,15 @@ struct fbimage* splash_screen_mmc(void)
 		if (logo->header.width != fb_display->width || logo->header.height != fb_display->height)
 				base += LOGO_IMG_OFFSET;
 
-		if (mmc_read(ptn + sizeof(logo->header),
+		{
 			(unsigned int *)base,
-			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
+			goto err;
+		}
+
+		if (mmc_read(ptn + sizeof(logo->header),(uint32_t *)base, readsize)) {
 			fbcon_clear();
 			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
-			return NULL;
+			goto err;
 		}
 
 #if DISPLAY_USE_BGR
@@ -2958,6 +2978,10 @@ struct fbimage* splash_screen_mmc(void)
 	}
 
 	return logo;
+
+err:
+	free(logo);
+	return NULL;
 }
 
 

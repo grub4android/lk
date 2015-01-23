@@ -49,12 +49,22 @@ static struct gpio_pin bkl_gpio = {
   "msmgpio", 98, 3, 1, 0, 1
 };
 
+/*Use GPIO 75 for incell panel setup*/
+static struct gpio_pin enable_gpio_1 = {
+  "msmgpio", 75, 3, 1, 0, 1
+};
+
 static struct gpio_pin enp_gpio = {
   "msmgpio", 97, 3, 1, 0, 1
 };
 
 static struct gpio_pin enn_gpio = {
   "msmgpio", 32, 3, 1, 0, 1
+};
+
+/*Use GPIO 77 for incell panel setup*/
+static struct gpio_pin enn_gpio_1 = {
+  "msmgpio", 77, 3, 1, 0, 1
 };
 
 static struct gpio_pin te_gpio = {
@@ -79,6 +89,10 @@ static struct gpio_pin enn_gpio_skuk = {
 
 static struct gpio_pin enable_gpio_skut1 = {
   "msmgpio", 8, 3, 1, 0, 1
+};
+
+static struct gpio_pin enable_gpio_skut2 = {
+  "msmgpio", 22, 3, 1, 0, 1
 };
 
 /*---------------------------------------------------------------------------*/
@@ -133,10 +147,31 @@ static const uint32_t panel_physical_ctrl[] = {
 enum qrd_subtype
 {
 	HW_PLATFORM_SUBTYPE_DEFAULT = 0,
+	HW_PLATFORM_SUBTYPE_CDP_1 = 1,
+	HW_PLATFORM_SUBTYPE_MTP_3 = 3,
 	HW_PLATFORM_SUBTYPE_SKUH = 4,
 	HW_PLATFORM_SUBTYPE_SKUI = 5, /* msm8916 */
 	HW_PLATFORM_SUBTYPE_SKUK = 5, /* msm8939 */
 	HW_PLATFORM_SUBTYPE_SKUT1 = 0x40, /* msm8916 */
+};
+
+
+enum {
+	JDI_1080P_VIDEO_PANEL,
+	NT35590_720P_VIDEO_PANEL,
+	NT35590_720P_CMD_PANEL,
+	INNOLUX_720P_VIDEO_PANEL,
+	OTM8019A_FWVGA_VIDEO_PANEL,
+	OTM1283A_720P_VIDEO_PANEL,
+	NT35596_1080P_VIDEO_PANEL,
+	SHARP_WQXGA_DUALDSI_VIDEO_PANEL,
+	JDI_FHD_VIDEO_PANEL,
+	HX8379A_FWVGA_VIDEO_PANEL,
+	HX8394D_720P_VIDEO_PANEL,
+	NT35521_WXGA_VIDEO_PANEL,
+	SAMSUNG_WXGA_VIDEO_PANEL,
+	HX8279A_WSVGA_VIDEO_PANEL,
+	UNKNOWN_PANEL
 };
 
 #endif

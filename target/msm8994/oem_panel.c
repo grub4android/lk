@@ -44,6 +44,8 @@
 #include "include/panel_jdi_qhd_dualdsi_video.h"
 #include "include/panel_jdi_qhd_dualdsi_cmd.h"
 #include "include/panel_jdi_4k_dualdsi_video.h"
+#include "include/panel_jdi_1080p_video.h"
+#include "include/panel_hx8379a_truly_fwvga_video.h"
 
 /*---------------------------------------------------------------------------*/
 /* static panel selection variable                                           */
@@ -53,6 +55,8 @@ SHARP_WQXGA_DUALDSI_VIDEO_PANEL,
 JDI_QHD_DUALDSI_VIDEO_PANEL,
 JDI_QHD_DUALDSI_CMD_PANEL,
 JDI_4K_DUALDSI_VIDEO_PANEL,
+JDI_1080P_VIDEO_PANEL,
+HX8379A_TRULY_FWVGA_VIDEO_PANEL,
 UNKNOWN_PANEL
 };
 
@@ -65,6 +69,8 @@ static struct panel_list supp_panels[] = {
 	{"jdi_qhd_dualdsi_video", JDI_QHD_DUALDSI_VIDEO_PANEL},
 	{"jdi_qhd_dualdsi_cmd", JDI_QHD_DUALDSI_CMD_PANEL},
 	{"jdi_4k_dualdsi_video", JDI_4K_DUALDSI_VIDEO_PANEL},
+	{"jdi_1080p_video", JDI_1080P_VIDEO_PANEL},
+	{"hx8379a_truly_fwvga_video", HX8379A_TRULY_FWVGA_VIDEO_PANEL},
 };
 
 static uint32_t panel_id;
@@ -121,10 +127,14 @@ static bool init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &sharp_wqxga_dualdsi_video_reset_seq;
 		panelstruct->backlightinfo = &sharp_wqxga_dualdsi_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 			= sharp_wqxga_dualdsi_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 			= SHARP_WQXGA_DUALDSI_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= sharp_wqxga_dualdsi_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= SHARP_WQXGA_DUALDSI_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			sharp_wqxga_dualdsi_video_timings, TIMING_SIZE);
 		break;
@@ -143,10 +153,14 @@ static bool init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &jdi_qhd_dualdsi_video_reset_seq;
 		panelstruct->backlightinfo = &jdi_qhd_dualdsi_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 			= jdi_qhd_dualdsi_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 			= JDI_QHD_DUALDSI_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= jdi_qhd_dualdsi_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= JDI_QHD_DUALDSI_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			jdi_qhd_dualdsi_video_timings, TIMING_SIZE);
 		break;
@@ -165,10 +179,14 @@ static bool init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &jdi_qhd_dualdsi_cmd_reset_seq;
 		panelstruct->backlightinfo = &jdi_qhd_dualdsi_cmd_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 			= jdi_qhd_dualdsi_cmd_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 			= JDI_QHD_DUALDSI_CMD_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= jdi_qhd_dualdsi_cmd_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= JDI_QHD_DUALDSI_CMD_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			jdi_qhd_dualdsi_cmd_timings, TIMING_SIZE);
 		break;
@@ -188,14 +206,71 @@ static bool init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 					 = &jdi_4k_dualdsi_video_reset_seq;
 		panelstruct->backlightinfo = &jdi_4k_dualdsi_video_backlight;
-		pinfo->mipi.panel_cmds
+		pinfo->mipi.panel_on_cmds
 			= jdi_4k_dualdsi_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.num_of_panel_on_cmds
 			= JDI_4K_DUALDSI_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= jdi_4k_dualdsi_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= JDI_4K_DUALDSI_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			jdi_4k_dualdsi_video_timings, TIMING_SIZE);
 		memcpy(&panelstruct->fbcinfo, &jdi_4k_dualdsi_video_fbc,
 				sizeof(struct fb_compression));
+		break;
+	case JDI_1080P_VIDEO_PANEL:
+		pan_type = PANEL_TYPE_DSI;
+		pinfo->lcd_reg_en = 1;
+		panelstruct->paneldata    = &jdi_1080p_video_panel_data;
+		panelstruct->panelres     = &jdi_1080p_video_panel_res;
+		panelstruct->color        = &jdi_1080p_video_color;
+		panelstruct->videopanel   = &jdi_1080p_video_video_panel;
+		panelstruct->commandpanel = &jdi_1080p_video_command_panel;
+		panelstruct->state        = &jdi_1080p_video_state;
+		panelstruct->laneconfig   = &jdi_1080p_video_lane_config;
+		panelstruct->paneltiminginfo
+			= &jdi_1080p_video_timing_info;
+		panelstruct->panelresetseq
+					 = &jdi_1080p_video_panel_reset_seq;
+		panelstruct->backlightinfo = &jdi_1080p_video_backlight;
+		pinfo->mipi.panel_on_cmds
+			= jdi_1080p_video_on_command;
+		pinfo->mipi.num_of_panel_on_cmds
+			= JDI_1080P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= jdi_1080p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= JDI_1080P_VIDEO_OFF_COMMAND;
+		memcpy(phy_db->timing,
+			jdi_1080p_video_timings, TIMING_SIZE);
+		break;
+	case HX8379A_TRULY_FWVGA_VIDEO_PANEL:
+		pan_type = PANEL_TYPE_DSI;
+		pinfo->lcd_reg_en = 1;
+		panelstruct->paneldata    = &hx8379a_truly_fwvga_video_panel_data;
+		panelstruct->panelres     = &hx8379a_truly_fwvga_video_panel_res;
+		panelstruct->color        = &hx8379a_truly_fwvga_video_color;
+		panelstruct->videopanel   = &hx8379a_truly_fwvga_video_video_panel;
+		panelstruct->commandpanel = &hx8379a_truly_fwvga_video_command_panel;
+		panelstruct->state        = &hx8379a_truly_fwvga_video_state;
+		panelstruct->laneconfig   = &hx8379a_truly_fwvga_video_lane_config;
+		panelstruct->paneltiminginfo
+			= &hx8379a_truly_fwvga_video_timing_info;
+		panelstruct->panelresetseq
+			= &hx8379a_truly_fwvga_video_reset_seq;
+		panelstruct->backlightinfo = &hx8379a_truly_fwvga_video_backlight;
+		pinfo->mipi.panel_on_cmds
+			= hx8379a_truly_fwvga_video_on_command;
+		pinfo->mipi.num_of_panel_on_cmds
+			= HX8379A_TRULY_FWVGA_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= hx8379a_truly_fwvga_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= HX8379A_TRULY_FWVGA_VIDEO_OFF_COMMAND;
+		pinfo->mipi.broadcast = 0;
+		memcpy(phy_db->timing,
+					hx8379a_truly_fwvga_video_timings, TIMING_SIZE);
 		break;
 	default:
 	case UNKNOWN_PANEL:
@@ -238,6 +313,9 @@ bool oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 	case HW_PLATFORM_LIQUID:
 		panel_id = JDI_4K_DUALDSI_VIDEO_PANEL;
 		break;
+	case HW_PLATFORM_DRAGON:
+		panel_id = HX8379A_TRULY_FWVGA_VIDEO_PANEL;
+		break;
 	default:
 		dprintf(CRITICAL, "Display not enabled for %d HW type\n"
 					, hw_id);
@@ -245,7 +323,7 @@ bool oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 	}
 
 panel_init:
-	if (panel_id == JDI_4K_DUALDSI_VIDEO_PANEL)
+	if (panel_id == JDI_4K_DUALDSI_VIDEO_PANEL || panel_id == HX8379A_TRULY_FWVGA_VIDEO_PANEL)
 		phy_db->regulator_mode = DSI_PHY_REGULATOR_LDO_MODE;
 	return init_panel_data(panelstruct, pinfo, phy_db);
 }

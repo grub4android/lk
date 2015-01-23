@@ -37,8 +37,6 @@
 #include <smem.h>
 #include <board.h>
 
-#define MB (1024*1024)
-
 #define MSM_IOMAP_SIZE ((MSM_IOMAP_END - MSM_IOMAP_BASE)/MB)
 
 /* LK memory - cacheable, write through */
@@ -181,4 +179,9 @@ addr_t get_bs_info_addr()
 		return ((addr_t)BS_INFO_ADDR);
 	else
 		return ((addr_t)BS_INFO_ADDR2);
+}
+
+int boot_device_mask(int val)
+{
+	return ((val & 0x3E) >> 1);
 }
