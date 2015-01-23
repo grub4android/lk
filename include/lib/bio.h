@@ -40,6 +40,7 @@ typedef struct bdev {
 	char *serial;
 	char *label;
 	bool is_gpt;
+	bool is_subdev;
 
 	/* function pointers */
 	ssize_t (*read)(struct bdev *, void *buf, off_t offset, size_t len);
@@ -72,6 +73,9 @@ void bio_initialize_bdev(bdev_t *dev, const char *name, size_t block_size, bnum_
 
 /* debug stuff */
 void bio_dump_devices(void);
+
+/* iterate over all registered devices */
+void bio_foreach(void (*cb)(const char*), bool subdevs);
 
 /* subdevice support */
 status_t bio_publish_subdevice(const char *parent_dev, const char *subdev, bnum_t startblock, bnum_t block_count);
