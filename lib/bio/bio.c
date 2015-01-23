@@ -477,6 +477,20 @@ void bio_foreach(void (*cb)(const char*), bool subdevs)
 	}
 }
 
+int bio_num_devices(bool subdevs)
+{
+	int count = 0;
+	bdev_t *entry;
+	mutex_acquire(&bdevs->lock);
+	list_for_every_entry(&bdevs->list, entry, bdev_t, node) {
+		if(!subdevs && entry->is_subdev) continue;
+		count++;
+	}
+	mutex_release(&bdevs->lock);
+
+	return count;
+}
+
 static void bio_init(uint level)
 {
 	bdevs = malloc(sizeof(*bdevs));
