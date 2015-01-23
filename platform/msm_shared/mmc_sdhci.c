@@ -1491,6 +1491,7 @@ static uint32_t mmc_card_init(struct mmc_device *dev)
 {
 	uint32_t mmc_return = 0;
 	uint8_t bus_width = 0;
+	bool is_sdcard = false;
 
 	struct sdhci_host *host;
 	struct mmc_card *card;
@@ -1510,6 +1511,7 @@ static uint32_t mmc_card_init(struct mmc_device *dev)
 	mmc_return = mmc_reset_card_and_send_op(host, card);
 	if (mmc_return)
 	{
+		is_sdcard = true;
 		dprintf(CRITICAL, "MMC card failed to respond, try for SD card\n");
 		/* Reset the card & get the OCR */
 		mmc_return = mmc_sd_card_init(host, card);
@@ -1694,7 +1696,9 @@ static uint32_t mmc_card_init(struct mmc_device *dev)
 		if (mmc_return)
 		{
 			dprintf(CRITICAL, "Failed to enable RST_n_FUNCTION\n");
-			return mmc_return;
+			if(!is_sdcard)
+				return mmc_return;
+			else mmc_return = 0;
 		}
 	}
 
