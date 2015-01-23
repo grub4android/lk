@@ -72,5 +72,4 @@ void target_display_init(const char *panel_name)
 #endif
 
 	fbcon_setup(config);
-	display_image_on_screen();
 }
