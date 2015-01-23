@@ -77,6 +77,8 @@ void bio_dump_devices(void);
 /* iterate over all registered devices */
 void bio_foreach(void (*cb)(const char*), bool subdevs);
 
+int bio_num_devices(bool subdevs);
+
 /* subdevice support */
 status_t bio_publish_subdevice(const char *parent_dev, const char *subdev, bnum_t startblock, bnum_t block_count);
 
