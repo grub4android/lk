@@ -250,7 +250,7 @@ void display_image_on_screen(void)
 	}
 
 	fbcon_putImage(fbimg, flag);
-	if (fbimg)
+	if (flag && fbimg)
 		free(fbimg);
 }
 

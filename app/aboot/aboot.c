@@ -2872,7 +2872,7 @@ struct fbimage* splash_screen_flash(void)
 			base,
 			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
 			fbcon_clear();
-			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
+			dprintf(CRITICAL, "ERROR: Cannot read splash image from partition\n");
 			goto err;
 		}
 
@@ -2944,15 +2944,20 @@ struct fbimage* splash_screen_mmc(void)
 	fb_display = fbcon_display();
 	if (fb_display) {
 		uint8_t *base = (uint8_t *) fb_display->base;
+		uint32_t hdrsz = readsize;
+		readsize = ROUNDUP((logo->header.width * logo->header.height * fb_display->bpp/8), blocksize);
 		if (logo->header.width != fb_display->width || logo->header.height != fb_display->height)
 				base += LOGO_IMG_OFFSET;
 
-		if (mmc_read(ptn + sizeof(logo->header),
-			(unsigned int *)base,
-			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
+		if (readsize > ptn_size)
+		{
+			dprintf(CRITICAL, "@%d:Invalid logo header readsize:%u exceeds ptn_size:%u\n", __LINE__, readsize,ptn_size);
+			goto err;
+		}
 
+		if (mmc_read(ptn + hdrsz,(uint32_t *)base, readsize)) {
 			fbcon_clear();
-			dprintf(CRITICAL, "ERROR: Cannot read splash image\n");
+			dprintf(CRITICAL, "ERROR: Cannot read splash image from partition\n");
 			goto err;
 		}
 
