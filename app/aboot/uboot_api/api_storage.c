@@ -10,6 +10,11 @@
 //#include <common.h>
 #include <debug.h>
 #include <api_public.h>
+#include <lib/bio.h>
+#include <malloc.h>
+#include <string.h>
+#include <assert.h>
+#include <printf.h>
 #include "uboot_part.h"
 
 
@@ -32,17 +37,78 @@ struct stor_spec {
 
 static struct stor_spec specs[ENUM_MAX] = { { 0, 0, 0, 0, "" }, };
 
+static block_dev_desc_t* mmc_devices = NULL;
+
+block_dev_desc_t *get_dev(const char *ifname, int dev) {
+	if(strcmp(ifname, "mmc")==0) {
+		if(dev>specs[ENUM_MMC].max_dev-1)
+			return NULL;
+
+		return &mmc_devices[dev];
+	}
+
+	return NULL;
+}
+
+static unsigned long dev_mmc_block_read(int dev, lbaint_t start, lbaint_t blkcnt, void *buffer) {
+	block_dev_desc_t *ubootdev = get_dev("mmc", dev);
+	if(!ubootdev || !ubootdev->biodev)
+		return API_EIO;
+
+	bio_read_block(ubootdev->biodev, buffer, start, blkcnt);
+
+	return 0;
+}
+
+static unsigned long dev_mmc_block_write(int dev, lbaint_t start, lbaint_t blkcnt, const void *buffer) {
+	block_dev_desc_t *ubootdev = get_dev("mmc", dev);
+	if(!ubootdev || !ubootdev->biodev)
+		return API_EIO;
+
+	bio_write_block(ubootdev->biodev, buffer, start, blkcnt);
+
+	return 0;
+}
+
+void bio_foreach_cb(const char* name) {
+	int id = specs[ENUM_MMC].max_dev++;
+	mmc_devices = realloc(mmc_devices, specs[ENUM_MMC].max_dev*sizeof(*mmc_devices));
+
+	bdev_t* dev = bio_open(name);
+	ASSERT(dev);
+
+	mmc_devices[id].name = dev->name;
+	mmc_devices[id].type = DEV_TYPE_HARDDISK;
+	mmc_devices[id].blksz = dev->block_size;
+	mmc_devices[id].lba = dev->size/mmc_devices[id].blksz;
+	mmc_devices[id].biodev = NULL;
+	mmc_devices[id].block_read = &dev_mmc_block_read;
+	mmc_devices[id].block_write = &dev_mmc_block_write;
+
+	bio_close(dev);
+}
 
 void dev_stor_init(void)
 {
-//#if defined(CONFIG_CMD_MMC)
-	specs[ENUM_MMC].max_dev = 2;
+	specs[ENUM_MMC].max_dev = 0;
 	specs[ENUM_MMC].enum_started = 0;
 	specs[ENUM_MMC].enum_ended = 0;
 	specs[ENUM_MMC].type = DEV_TYP_STOR | DT_STOR_MMC;
 	specs[ENUM_MMC].name = "mmc";
-//#endif
+
+	bio_foreach(&bio_foreach_cb, false);
 }
+
+void dev_stor_scan_devices(void)
+{
+	if(mmc_devices) {
+		free(mmc_devices);
+		mmc_devices = NULL;
+	}
+
+	dev_stor_init();
+}
+
 
 /*
  * Finds next available device in the storage group
@@ -282,23 +348,39 @@ static int dev_stor_is_valid(int type, block_dev_desc_t *dd)
 int dev_open_stor(void *cookie)
 {
 	int type = dev_stor_type(cookie);
+	block_dev_desc_t* ubootdev = cookie;
 
 	if (type == ENUM_MAX)
 		return API_ENODEV;
 
-	if (dev_stor_is_valid(type, (block_dev_desc_t *)cookie))
-		return 0;
+	if (!dev_stor_is_valid(type, ubootdev))
+		return API_ENODEV;
 
-	return API_ENODEV;
+	ubootdev->biodev = bio_open(ubootdev->name);
+	if(!ubootdev->biodev)
+		return API_ENODEV;
+
+	return 0;
 }
 
 
 int dev_close_stor(void *cookie)
 {
-	/*
-	 * Not much to do as we actually do not alter storage devices upon
-	 * close
-	 */
+	int type = dev_stor_type(cookie);
+	block_dev_desc_t* ubootdev = cookie;
+
+	if (type == ENUM_MAX)
+		return API_ENODEV;
+
+	if (!dev_stor_is_valid(type, ubootdev))
+		return API_ENODEV;
+
+	if(!ubootdev->biodev)
+		return 0;
+
+	bio_close(ubootdev->biodev);
+	ubootdev->biodev = NULL;
+	
 	return 0;
 }
 

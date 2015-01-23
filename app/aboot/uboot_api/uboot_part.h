@@ -9,6 +9,8 @@
 #ifndef _UBOOT_PART_H_
 #define _UBOOT_PART_H_
 
+#include <lib/bio.h>
+
 #ifdef CONFIG_SYS_64BIT_LBA
 typedef uint64_t lbaint_t;
 #define LBAF "%llx"
@@ -22,6 +24,8 @@ typedef ulong lbaint_t;
 typedef struct block_dev_desc {
 	int		if_type;	/* type of the interface */
 	int		dev;		/* device number */
+	const char* name;
+	bdev_t* biodev;
 	unsigned char	part_type;	/* partition type */
 	unsigned char	target;		/* target SCSI ID */
 	unsigned char	lun;		/* target LUN */
@@ -56,7 +60,5 @@ typedef struct block_dev_desc {
 #define DEV_TYPE_TAPE		0x01	/* Tape */
 #define DEV_TYPE_CDROM		0x05	/* CD-ROM */
 #define DEV_TYPE_OPDISK		0x07	/* optical disk */
-
-block_dev_desc_t *get_dev(const char *ifname, int dev);
 
 #endif /* _UBOOT_PART_ */

@@ -27,6 +27,7 @@ lbasize_t	dev_read_stor(void *, void *, lbasize_t, lbastart_t);
 //int		dev_write_net(void *, void *, int);
 
 void dev_stor_init(void);
+void dev_stor_scan_devices(void);
 
 int display_get_info(int type, struct display_info *di);
 int display_draw_bitmap(ulong bitmap, int x, int y);

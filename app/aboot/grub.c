@@ -4,7 +4,7 @@
 #include <mmc.h>
 #include <partition_parser.h>
 #include <malloc.h>
-#include <lib/tar.h>
+#include <lib/bio.h>
 #include <platform.h>
 #include <ext4.h>
 #include <ext4_types.h>
@@ -23,37 +23,6 @@
 #include "uboot_api/uboot_part.h"
 #include "bootimg.h"
 
-struct tar_io_priv {
-	unsigned long long index;
-	unsigned long long ptn;
-	int is_ramdisk;
-};
-
-unsigned long grub_tar_read(struct tar_io *tio, ulong start, ulong blkcnt, void *buffer) {
-	struct tar_io_priv *priv = (struct tar_io_priv*) tio->priv;
-	unsigned long long ptn = ((unsigned long long) start)*BLOCK_SIZE;
-
-	if(priv->is_ramdisk) {
-		memcpy(buffer, (void*)(unsigned long)(priv->ptn+ptn), blkcnt*BLOCK_SIZE);
-	}
-	else {
-		if(mmc_read(priv->ptn + ptn, buffer, blkcnt*BLOCK_SIZE))
-			return 0;
-	}
-	return blkcnt*BLOCK_SIZE;
-}
-
-static struct tar_io_priv priv;
-static struct tar_fileinfo fi;
-static struct tar_io tio = {
-	.block_read = &grub_tar_read,
-	.priv = (void*)&priv,
-};
-
-struct tar_io* grub_tar_get_tio(void) {
-	return &tio;
-}
-
 static char* grub_bootdev = NULL;
 void grub_get_bootdev(char **value) {
 	*value = grub_bootdev;
@@ -62,11 +31,6 @@ void grub_get_bootdev(char **value) {
 static char* grub_bootpath = NULL;
 void grub_get_bootpath(char **value) {
 	*value = grub_bootpath;
-}
-
-static int grub_found_tar = 0;
-int grub_has_tar(void) {
-	return grub_found_tar;
 }
 
 #ifdef GRUB_BOOT_PARTITION
@@ -197,36 +161,9 @@ static int grub_load_from_mmc(void) {
 }
 #endif
 
-static int grub_load_from_tar(void) {
-	// prepare block api
-	priv.index = partition_get_index("aboot");
-	priv.ptn = partition_get_offset(priv.index) + 1024*1024; // 1MB offset to aboot
-	priv.is_ramdisk = 0;
-	tio.blksz = BLOCK_SIZE;
-	tio.lba = partition_get_size(priv.index) / tio.blksz - 1;
-
-	// search file
-	if(tar_get_fileinfo(&tio, "./grub/core.img", &fi)) {
-		dprintf(CRITICAL, "%s: couldn't find core.img!\n", __func__);
-		return -1;
-	}
-
-	// load file into RAM
-	if(tar_read_file(&tio, &fi, (void*)GRUB_LOADING_ADDRESS)) {
-		dprintf(CRITICAL, "%s: couldn't read core.img!\n", __func__);
-		return -1;
-	}
-
-	grub_bootdev = strdup("hd1");
-	grub_bootpath = strdup("/grub");
-	grub_found_tar = 1;
-
-	dprintf(INFO, "Loaded GRUB from TAR\n");
-	return 0;
-}
-
 static int grub_sideload_handler(void *data)
 {
+	char* memdisk_name = NULL;
 	struct boot_img_hdr *hdr =  (struct boot_img_hdr *)data;
 	unsigned kernel_size = ALIGN(hdr->kernel_size, hdr->page_size);
 	void* local_kernel_addr = data + hdr->page_size;
@@ -238,16 +175,15 @@ static int grub_sideload_handler(void *data)
 
 	// use ramdisk
 	if(hdr->ramdisk_size>0) {
-		// prepare block api
-		priv.index = 0;
-		priv.ptn = (unsigned) hdr->ramdisk_addr;
-		priv.is_ramdisk = 1;
-		tio.blksz = BLOCK_SIZE;
-		tio.lba = hdr->ramdisk_size / tio.blksz;
+		// register ramdisk
+		memdisk_name = malloc(20);
+		snprintf(memdisk_name, sizeof(memdisk_name), "hd%d", bio_num_devices(false));
+		create_membdev(memdisk_name, (void*)hdr->ramdisk_addr, hdr->ramdisk_size);
+		dev_stor_scan_devices();
+
 		// set bootdev
-		grub_bootdev = strdup("hd1");
+		grub_bootdev = strdup(memdisk_name);
 		grub_bootpath = strdup("/grub");
-		grub_found_tar = 1;
 	}
 	else {
 		// set bootdev
@@ -269,6 +205,16 @@ static int grub_sideload_handler(void *data)
 #endif
 
 	entry(0, board_machtype(), (void*)uboot_api_sig);
+
+	// delete ramdisk in cae we used one
+	if(memdisk_name) {
+		bdev_t* dev = bio_open(memdisk_name);
+		if (dev) {
+			bio_unregister_device(dev);
+			bio_close(dev);
+		}
+		memdisk_name = NULL;
+	}
 
 	return 0;
 }
@@ -293,13 +239,6 @@ int grub_boot(void)
 #ifdef GRUB_BOOT_PARTITION
 	if(grub_load_from_mmc()) {
 		dprintf(CRITICAL, "%s: failed to load grub from mmc.\n", __func__);
-	}
-	else goto boot;
-#endif
-
-#if !BOOT_2NDSTAGE
-	if(grub_load_from_tar()) {
-		dprintf(CRITICAL, "%s: failed to load grub from tar.\n", __func__);
 	}
 	else goto boot;
 #endif

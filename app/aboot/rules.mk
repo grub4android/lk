@@ -4,7 +4,8 @@ MODULE := $(LOCAL_DIR)
 
 MODULE_DEPS += \
 	lib/ext4 \
-	lib/tar \
+	lib/bio \
+	lib/partition \
 	app/aboot/uboot_api
 
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
