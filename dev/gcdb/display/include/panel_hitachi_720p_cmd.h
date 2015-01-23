@@ -136,34 +136,34 @@ static char hitachi_720p_cmd_on_cmd11[] = {
 
 
 static struct mipi_dsi_cmd hitachi_720p_cmd_on_command[] = {
-{ 0x4 , hitachi_720p_cmd_on_cmd0, 120, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd1, 0, 0},
-{ 0x28 , hitachi_720p_cmd_on_cmd2, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd3, 0, 0},
-{ 0x8 , hitachi_720p_cmd_on_cmd4, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd5, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd6, 0, 0},
-{ 0xc , hitachi_720p_cmd_on_cmd7, 0, 0},
-{ 0xc , hitachi_720p_cmd_on_cmd8, 20, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd9, 20, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd10, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd11, 20, 0}
+{ 0x4 , hitachi_720p_cmd_on_cmd0, 120},
+{ 0x4 , hitachi_720p_cmd_on_cmd1, 0},
+{ 0x28 , hitachi_720p_cmd_on_cmd2, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd3, 0},
+{ 0x8 , hitachi_720p_cmd_on_cmd4, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd5, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd6, 0},
+{ 0xc , hitachi_720p_cmd_on_cmd7, 0},
+{ 0xc , hitachi_720p_cmd_on_cmd8, 20},
+{ 0x4 , hitachi_720p_cmd_on_cmd9, 20},
+{ 0x4 , hitachi_720p_cmd_on_cmd10, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd11, 20}
 };
 #define HITACHI_720P_CMD_ON_COMMAND 12
 
 static struct mipi_dsi_cmd sharp_720p_cmd_on_command[] = {
-{ 0x4 , hitachi_720p_cmd_on_cmd0, 120, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd1, 0, 0},
-{ 0x28 , sharp_720p_cmd_on_cmd2, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd3, 0, 0},
-{ 0x8 , hitachi_720p_cmd_on_cmd4, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd5, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd6, 0, 0},
-{ 0xc , hitachi_720p_cmd_on_cmd7, 0, 0},
-{ 0xc , hitachi_720p_cmd_on_cmd8, 20, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd9, 20, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd10, 0, 0},
-{ 0x4 , hitachi_720p_cmd_on_cmd11, 20, 0}
+{ 0x4 , hitachi_720p_cmd_on_cmd0, 120},
+{ 0x4 , hitachi_720p_cmd_on_cmd1, 0},
+{ 0x28 , sharp_720p_cmd_on_cmd2, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd3, 0},
+{ 0x8 , hitachi_720p_cmd_on_cmd4, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd5, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd6, 0},
+{ 0xc , hitachi_720p_cmd_on_cmd7, 0},
+{ 0xc , hitachi_720p_cmd_on_cmd8, 20},
+{ 0x4 , hitachi_720p_cmd_on_cmd9, 20},
+{ 0x4 , hitachi_720p_cmd_on_cmd10, 0},
+{ 0x4 , hitachi_720p_cmd_on_cmd11, 20}
 };
 #define SHARP_720P_CMD_ON_COMMAND 12
 

@@ -85,13 +85,13 @@ static char novatek_panel_manufacture_id[4] = { 0x04, 0x00, 0x06, 0xA0 };	/* DTY
 static char novatek_panel_manufacture_id0[4] = { 0xBF, 0x00, 0x24, 0xA0 };	/* DTYPE_DCS_READ */
 
 static struct mipi_dsi_cmd novatek_panel_max_packet_cmd =
-    { sizeof(novatek_panel_max_packet), novatek_panel_max_packet, 0, 0 };
+    { sizeof(novatek_panel_max_packet), novatek_panel_max_packet, 0 };
 
 static struct mipi_dsi_cmd novatek_panel_manufacture_id_cmd =
-    { sizeof(novatek_panel_manufacture_id), novatek_panel_manufacture_id, 0, 0 };
+    { sizeof(novatek_panel_manufacture_id), novatek_panel_manufacture_id, 0 };
 
 static struct mipi_dsi_cmd novatek_panel_manufacture_id0_cmd =
-    { sizeof(novatek_panel_manufacture_id0), novatek_panel_manufacture_id0, 0, 0 };
+    { sizeof(novatek_panel_manufacture_id0), novatek_panel_manufacture_id0, 0 };
 
 static uint32_t mipi_novatek_manufacture_id(void)
 {

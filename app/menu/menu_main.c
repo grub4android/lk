@@ -7,6 +7,7 @@
 #include <dev/keys.h>
 #include <app/aboot.h>
 #include <platform.h>
+#include <target.h>
 #include <printf.h>
 
 #include "menu_private.h"

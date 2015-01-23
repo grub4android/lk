@@ -77,9 +77,6 @@ bool target_is_ssd_enabled(void);
 void *target_mmc_device(void);
 uint32_t is_user_force_reset(void);
 
-void target_usb_init(void);
-void target_usb_stop(void);
-
 int target_cont_splash_screen(void);
 bool target_display_panel_node(char *panel_name, char *pbuf,
 	uint16_t buf_size);
@@ -100,7 +97,7 @@ uint32_t target_ddr_cfg_val(void);
 void target_usb_init(void);
 void target_usb_stop(void);
 uint32_t target_get_hlos_subtype(void);
-void shutdown_device();
+void shutdown_device(void);
 bool target_warm_boot(void);
 bool target_use_signed_kernel(void);
 int _emmc_recovery_init(void);

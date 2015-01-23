@@ -74,7 +74,7 @@ static uint32_t response_value = 0;
 
 static char read_id_a1h_cmd[4] = { 0xA1, 0x00, 0x06, 0xA0 };	/* DTYPE_DCS_READ */
 static struct mipi_dsi_cmd read_ddb_start_cmd __UNUSED =
-	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd, 0, 0};
+	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd, 0};
 
 uint32_t mdss_dsi_read_panel_signature(uint32_t panel_signature)
 {
