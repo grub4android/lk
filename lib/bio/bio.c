@@ -476,9 +476,18 @@ void bio_dump_devices(void)
 	bdev_t *entry;
 	mutex_acquire(&bdevs->lock);
 	list_for_every_entry(&bdevs->list, entry, bdev_t, node) {
-		printf("\t%s, size %lld, bsize %zd, ref %d, label %s\n", entry->name, entry->size, entry->block_size, entry->ref, entry->label);
+		printf("\t%s, size %lld, bsize %zd, ref %d, label %s, subdev=%d\n", entry->name, entry->size, entry->block_size, entry->ref, entry->label, entry->is_subdev);
 	}
 	mutex_release(&bdevs->lock);
+}
+
+void bio_foreach(void (*cb)(const char*), bool subdevs)
+{
+	bdev_t *entry;
+	list_for_every_entry_reverse(&bdevs->list, entry, bdev_t, node) {
+		if(!subdevs && entry->is_subdev) continue;
+		cb(entry->name);
+	}
 }
 
 static void bio_init(uint level)
