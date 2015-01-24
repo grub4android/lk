@@ -25,6 +25,7 @@
 #include <target.h>
 #include <platform.h>
 #include <mipi_dsi.h>
+#include <scm.h>
 #include <api_public.h>
 
 #if DEVICE_TREE
@@ -43,7 +44,8 @@ extern void generate_atags(unsigned *ptr, const char *cmdline,
 extern int check_aboot_addr_range_overlap(uint32_t start, uint32_t size);
 extern void update_ker_tags_rdisk_addr(struct boot_img_hdr *hdr, bool is_arm64);
 
-
+typedef void entry_func_ptr(int, int, paddr_t);
+#define IS_ARM64(ptr) (ptr->magic_64 == KERNEL64_HDR_MAGIC) ? true : false
 
 /*****************************************************************************
  *
@@ -714,10 +716,17 @@ static int API_boot_create_tags(va_list ap)
 /*
  * pseudo signature:
  *
- * int API_boot_prepare(void)
+ * int API_boot_execute(void)
  */
-static int API_boot_prepare(va_list ap)
+static int API_boot_execute(va_list ap)
 {
+	paddr_t kernel = va_arg(ap, paddr_t);
+	int machtype = va_arg(ap, int);
+	paddr_t atags = va_arg(ap, paddr_t);
+
+	void (*entry)(int, int, paddr_t) = (entry_func_ptr*)(PA((addr_t)kernel));
+	struct kernel64_hdr *kptr = (struct kernel64_hdr*)kernel;
+
 	/* Perform target specific cleanup */
 	target_uninit();
 
@@ -737,6 +746,13 @@ static int API_boot_prepare(va_list ap)
 	arch_disable_mmu();
 	#endif
 	bs_set_timestamp(BS_KERNEL_ENTRY);
+
+	if (IS_ARM64(kptr))
+		/* Jump to a 64bit kernel */
+		scm_elexec_call((paddr_t)kernel, atags);
+	else
+		/* Jump to a 32bit kernel */
+		entry(0, machtype, atags);
 
 	return 0;
 }
@@ -813,7 +829,7 @@ void api_init(void)
 	calls_table[API_INPUT_GETKEY] = &API_input_getkey;
 	calls_table[API_BOOT_UPDATE_ADDRESSES] = &API_boot_update_addresses;
 	calls_table[API_BOOT_CREATE_TAGS] = &API_boot_create_tags;
-	calls_table[API_BOOT_PREPARE] = &API_boot_prepare;
+	calls_table[API_BOOT_EXECUTE] = &API_boot_execute;
 	calls_no = API_MAXCALL;
 
 	dprintf(INFO, "API initialized with %d calls\n", calls_no);
