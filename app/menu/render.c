@@ -250,7 +250,7 @@ static void menu_renderer(int keycode) {
 	pm8xxx_rtc_read_time(&time);
 	rtc_time_to_tm(time, &tm);
 
-	pf2font_printf(0, fh*y++, "Time: %d-%02d-%02d %02d:%02d", tm.tm_year+1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min);
+	pf2font_printf(0, fh*y++, "Time: %d-%02d-%02d %02d:%02d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min);
 #endif
 
 	// divider 1
