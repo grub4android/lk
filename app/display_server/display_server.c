@@ -21,19 +21,14 @@ static bool request_stop = 0;
 static bool request_refresh = 0;
 static renderer_t renderer = NULL;
 
-static int keymap[MAX_KEYS];
-#define CHECK_AND_REPORT_KEY(code, value) \
-	if(value) { \
-		if(!keymap[code]){ \
-			keymap[code] = 1; \
-			return code; \
-		} \
-	} else{keymap[code]=0;}
+static keymap_t keymap[MAX_KEYS];
 
 static int getkey(void)
 {
-	// small delay to prevent unwanted keypresses
-	spin(1000);
+	static lk_time_t last = INFINITE_TIME;
+
+	lk_time_t delta = current_time()-last;
+	last = current_time();
 
 	CHECK_AND_REPORT_KEY(KEY_UP, target_volume_up());
 	CHECK_AND_REPORT_KEY(KEY_DOWN, target_volume_down());
