@@ -99,6 +99,7 @@ extern uint32_t mmc_page_size(void);
 extern uint32_t mmc_get_device_blocksize(void);
 
 static int aboot_save_boot_hash_mmc(uint32_t image_addr, uint32_t image_size);
+static void bootcount_aboot_inc(void);
 
 /* fastboot command function pointer */
 typedef void (*fastboot_cmd_fn) (const char *, void *, unsigned);
@@ -1732,6 +1733,8 @@ void read_device_info(void)
 		sysparam_write();
 	}
 
+	bootcount_aboot_inc();
+
 	sysparam_dump(true);
 }
 
@@ -3065,6 +3068,11 @@ const char* strbootmode(enum bootmode bm) {
 		default:
 			return "unknown";
 	}
+}
+
+static void bootcount_aboot_inc(void) {
+	sysparam_write_u64("bootcount_aboot", sysparam_read_u64("bootcount_aboot")+1);
+	sysparam_write();
 }
 
 void aboot_init(const struct app_descriptor *app)

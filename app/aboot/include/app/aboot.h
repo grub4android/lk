@@ -86,6 +86,7 @@ void set_dualboot_mode(enum bootmode mode);
 
 sysparam_define_type(bool, bool, uint8_t);
 sysparam_define_type(bootmode, enum bootmode, enum bootmode);
+sysparam_define_type(u64, uint64_t, uint64_t);
 
 static const char* sysparm_read_str(const char* name) {
 	const char* ptr = NULL;
