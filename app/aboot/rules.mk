@@ -3,7 +3,6 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
 
 MODULE_DEPS += \
-	lib/ext4 \
 	lib/bio \
 	lib/partition \
 	app/aboot/uboot_api
