@@ -1,15 +1,11 @@
+#include <err.h>
 #include <debug.h>
 #include <string.h>
 #include <stdlib.h>
-#include <mmc.h>
-#include <partition_parser.h>
+#include <printf.h>
 #include <malloc.h>
 #include <lib/bio.h>
 #include <platform.h>
-#include <ext4.h>
-#include <ext4_types.h>
-#include <ext4_fs.h>
-#include <ext4_mmcdev.h>
 #include <kernel/thread.h>
 
 #if WITH_APP_DISPLAY_SERVER
@@ -17,7 +13,6 @@
 #endif
 
 #include "grub.h"
-#include "stat.h"
 #include <api_public.h>
 #include "uboot_api/api_private.h"
 #include "uboot_api/uboot_part.h"
@@ -36,128 +31,52 @@ void grub_get_bootpath(char **value) {
 #ifdef GRUB_BOOT_PARTITION
 #define GRUB_MOUNTPOINT "/"GRUB_BOOT_PARTITION"/"
 #define GRUB_PATH GRUB_BOOT_PATH_PREFIX"grub"
-#define HAS_FLAG(m, mask)	(((m) & mask) == mask)
-#define ALLOW_BOOT(m) ( \
-	S_ISREG((m)) \
-	&& !HAS_FLAG((m), S_IXUSR) \
-\
-	&& !HAS_FLAG((m), S_IXGRP) \
-	&& !HAS_FLAG((m), S_IWGRP) \
-\
-	&& !HAS_FLAG((m), S_IXOTH) \
-	&& !HAS_FLAG((m), S_IWOTH) \
-)
-static int grub_mmc_check_permissions(const char *path, int *allow) {
-	int ret;
-	ext4_file f;
-	struct ext4_inode_ref ref;
+#if BOOT_2NDSTAGE
+	#define GRUB_COREIMG_PART "boot"
+#else
+	#define GRUB_COREIMG_PART "aboot"
+#endif
 
-	// open file
-	ret = ext4_fopen(&f, path, "rb");
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_fopen ERROR = %d\n", ret);
-		return -1;
+static int set_mmc_as_bootpart(void) {
+	// store bootdev
+	bdev_t* dev = bio_open_by_label(GRUB_BOOT_PARTITION);
+	if (dev) {
+		grub_bootdev = strdup(dev->name);
+		grub_bootpath = strdup("/" GRUB_BOOT_PATH_PREFIX "grub");
+		bio_close(dev);
+
+		return NO_ERROR;
 	}
 
-	// get inode ref
-	ret = ext4_fs_get_inode_ref(&f.mp->fs, f.inode, &ref);
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_fs_get_inode_ref ERROR = %d\n", ret);
-		goto err_close_file;
-	}
-
-	// check permissions
-	if(ref.inode->uid==0 && ref.inode->gid==0 && ALLOW_BOOT(ref.inode->mode))
-		*allow = 1;
-	else
-		*allow = 0;
-
-	if(*allow==0) {
-		ref.inode->mode |= S_IXUGO;
-		dprintf(CRITICAL, "file %s has wrong permissions!\n", path);
-	}
-
-	ext4_fclose(&f);
-	return 0;
-
-err_close_file:
-	ext4_fclose(&f);
-	return -1;
+	return ERR_NOT_FOUND;
 }
-static int grub_load_from_mmc(void) {
-	ext4_file f;
-	uint32_t bytes_read;
-	int ret = 0, allow = 0;
 
+static int grub_load_from_mmc(void) {
 	dprintf(INFO, "%s: part=[%s] path=[%s]\n", __func__, GRUB_BOOT_PARTITION, GRUB_PATH);
 
-	// create ext4 device
-	struct ext4_blockdev* mmcdev = ext4_mmcdev_get(GRUB_BOOT_PARTITION);
-	if(!mmcdev){
-		dprintf(CRITICAL, "MMC device ERROR\n");
-		return -1;
+	// open device
+	bdev_t* dev = bio_open_by_label(GRUB_COREIMG_PART);
+	if(!dev) {
+		dprintf(CRITICAL, "Couldn't find partition %s\n", GRUB_COREIMG_PART);
+		return ERR_NOT_FOUND;
 	}
 
-	// register it
-	ret = ext4_device_register(mmcdev, 0, GRUB_BOOT_PARTITION);
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_device_register ERROR = %d\n", ret);
-		return ret;
+	// read core.img
+	off_t off = 0x100000;
+	void* entry = (void*)GRUB_LOADING_ADDRESS;
+	if(dev->read(dev, entry, off, dev->size-off)<=0) {
+		dprintf(CRITICAL, "BIO read error\n");
+		return ERR_IO;
 	}
 
-	// mount it
-	ret = ext4_mount(GRUB_BOOT_PARTITION, GRUB_MOUNTPOINT);
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_mount ERROR = %d\n", ret);
-		return -1;
-	}
+	// close device
+	bio_close(dev);
 
-	// check permissions of crucial files
-	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT GRUB_PATH "/core.img", &allow)==EOK && !allow)
-		return -1;
-	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT GRUB_PATH "/grub.cfg", &allow)==EOK && !allow)
-		return -1;
-	if(grub_mmc_check_permissions(GRUB_MOUNTPOINT GRUB_PATH "/grubenv", &allow)==EOK && !allow)
-		return -1;
-	dprintf(INFO, "Permissions are good\n");
-
-	// open file
-	ret = ext4_fopen(&f, GRUB_MOUNTPOINT GRUB_PATH "/core.img", "rb");
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_fopen ERROR = %d\n", ret);
-		return -1;
-	}
-
-	// read file
-	ret = ext4_fread(&f, (void*)GRUB_LOADING_ADDRESS, ext4_fsize(&f), &bytes_read);
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_fread ERROR = %d\n", ret);
-		return -1;
-	}
-
-	// close file
-	ret = ext4_fclose(&f);
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_fclose ERROR = %d\n", ret);
-		return -1;
-	}
-
-	// unmount partition
-	ret = ext4_umount(GRUB_MOUNTPOINT);
-	if(ret != EOK){
-		dprintf(CRITICAL, "ext4_umount ERROR = %d\n", ret);
-		return -1;
-	}
-
-	// store bootdev
-	unsigned int index = (unsigned int) partition_get_index(GRUB_BOOT_PARTITION);
-	char buf[20];
-	sprintf(buf, "hd0,%u", index+1);
-	grub_bootdev = strdup(buf);
-	grub_bootpath = strdup("/" GRUB_BOOT_PATH_PREFIX "grub");
+	// set bootpart
+	set_mmc_as_bootpart();
 
 	dprintf(INFO, "Loaded GRUB from MMC\n");
-	return 0;
+	return NO_ERROR;
 }
 #endif
 
@@ -185,14 +104,9 @@ static int grub_sideload_handler(void *data)
 		grub_bootdev = strdup(memdisk_name);
 		grub_bootpath = strdup("/grub");
 	}
-	else {
-		// set bootdev
-		unsigned int index = (unsigned int) partition_get_index(GRUB_BOOT_PARTITION);
-		char buf[20];
-		sprintf(buf, "hd0,%u", index+1);
-		grub_bootdev = strdup(buf);
-		grub_bootpath = strdup("/" GRUB_BOOT_PATH_PREFIX "grub");
-	}
+#ifdef GRUB_BOOT_PARTITION
+	else set_mmc_as_bootpart();
+#endif
 	dprintf(INFO, "bootdev: %s\n", grub_bootdev);
 	dprintf(INFO, "bootpath: %s\n", grub_bootpath);
 
@@ -216,7 +130,7 @@ static int grub_sideload_handler(void *data)
 		memdisk_name = NULL;
 	}
 
-	return 0;
+	return NO_ERROR;
 }
 
 int grub_load_from_sideload(void* data) {
@@ -225,10 +139,10 @@ int grub_load_from_sideload(void* data) {
 	thr = thread_create("grub_sideload", grub_sideload_handler, data, DEFAULT_PRIORITY, 4096);
 	if (!thr)
 	{
-		return -1;
+		return ERR_GENERIC;
 	}
 	thread_resume(thr);
-	return 0;
+	return NO_ERROR;
 }
 
 int grub_boot(void)
@@ -244,7 +158,7 @@ int grub_boot(void)
 #endif
 
 	dprintf(CRITICAL, "%s: Couldn't find grub at any known location!\n", __func__);
-	return -1;
+	return ERR_NOT_FOUND;
 
 boot:
 	// BOOT !
@@ -256,6 +170,6 @@ boot:
 
 	entry(0, board_machtype(), (void*)uboot_api_sig);
 	
-	return 0;
+	return NO_ERROR;
 }
 
