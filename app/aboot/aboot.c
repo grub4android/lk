@@ -75,7 +75,7 @@
 #endif
 
 #if BOOT_2NDSTAGE
-#include "2ndstage_tools.h"
+#include <2ndstage_tools.h>
 #endif
 
 #include "image_verify.h"
