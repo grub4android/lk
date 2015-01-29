@@ -19,15 +19,16 @@ static void menu_exec_normal(void) {
 }
 static void menu_format_normal(char** buf) {
 	*buf = calloc(100, 1);
+	enum bootmode bootmode = sysparam_read_bootmode("bootmode");
 
 #if WITH_XIAOMI_DUALBOOT
-	if(is_dualboot_supported() && device.bootmode==BOOTMODE_AUTO) {
-		snprintf(*buf, 100, "    Normal Powerup [%s=%s]", strbootmode(device.bootmode), get_dualboot_mode()==BOOTMODE_SECOND?"System2":"System1");
+	if(is_dualboot_supported() && bootmode==BOOTMODE_AUTO) {
+		snprintf(*buf, 100, "    Normal Powerup [%s=%s]", strbootmode(bootmode), get_dualboot_mode()==BOOTMODE_SECOND?"System2":"System1");
 		return;
 	}
 #endif
 
-	snprintf(*buf, 100, "    Normal Powerup [%s]", strbootmode(device.bootmode));
+	snprintf(*buf, 100, "    Normal Powerup [%s]", strbootmode(bootmode));
 }
 
 static void menu_exec_android(void) {

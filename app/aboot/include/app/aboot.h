@@ -31,9 +31,13 @@
 #ifndef _APP_ABOOT_H_
 #define _APP_ABOOT_H_
 
-#include "../../devinfo.h"
-
 #define ABOOT_VERSION "0.5"
+
+#if BOOT_2NDSTAGE
+	#define ABOOT_PARTITION "boot"
+#else
+	#define ABOOT_PARTITION "aboot"
+#endif
 
 enum bootmode {
 	BOOTMODE_AUTO = 0,
@@ -49,7 +53,6 @@ enum bootmode {
 	BOOTMODE_MAX,
 };
 
-extern device_info device;
 extern enum bootmode bootmode, bootmode_normal;
 const char* strbootmode(enum bootmode bm);
 void aboot_continue_boot(void);
@@ -59,6 +62,43 @@ enum bootmode get_dualboot_mode(void);
 void set_dualboot_mode(enum bootmode mode);
 #endif
 
-void write_device_info(device_info *dev);
+#include <err.h>
+#include <lib/sysparam.h>
+#include <printf.h>
+#define sysparam_define_type(fn, ret, internal) \
+	static inline ret sysparam_read_##fn(const char* name) { \
+		internal val = 0; \
+		if(sysparam_read(name, &val, sizeof(val))!=sizeof(val)) \
+			return 0; \
+\
+		return val; \
+	} \
+\
+	static inline status_t sysparam_write_##fn(const char* name, ret val) { \
+		internal newval = val; \
+\
+		if(!sysparam_get_ptr(name, NULL, NULL)) { \
+			sysparam_remove(name); \
+		} \
+\
+		return sysparam_add(name, &newval, sizeof(newval)); \
+	}
+
+sysparam_define_type(bool, bool, uint8_t);
+sysparam_define_type(bootmode, enum bootmode, enum bootmode);
+
+static const char* sysparm_read_str(const char* name) {
+	const char* ptr = NULL;
+	sysparam_get_ptr(name, (const void**)&ptr, NULL);
+	return ptr;
+}
+
+static status_t sysparm_write_str(const char* name, const char* val) {
+	if(!sysparam_get_ptr(name, NULL, NULL)) {
+		sysparam_remove(name);
+	}
+
+	return sysparam_add(name, val, strlen(val));
+}
 
 #endif

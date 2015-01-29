@@ -7,6 +7,7 @@
 #include <lib/bio.h>
 #include <platform.h>
 #include <kernel/thread.h>
+#include <app/aboot.h>
 
 #if WITH_APP_DISPLAY_SERVER
 #include <app/display_server.h>
@@ -31,11 +32,6 @@ void grub_get_bootpath(char **value) {
 #ifdef GRUB_BOOT_PARTITION
 #define GRUB_MOUNTPOINT "/"GRUB_BOOT_PARTITION"/"
 #define GRUB_PATH GRUB_BOOT_PATH_PREFIX"grub"
-#if BOOT_2NDSTAGE
-	#define GRUB_COREIMG_PART "boot"
-#else
-	#define GRUB_COREIMG_PART "aboot"
-#endif
 
 static int set_mmc_as_bootpart(void) {
 	// store bootdev
@@ -55,9 +51,9 @@ static int grub_load_from_mmc(void) {
 	dprintf(INFO, "%s: part=[%s] path=[%s]\n", __func__, GRUB_BOOT_PARTITION, GRUB_PATH);
 
 	// open device
-	bdev_t* dev = bio_open_by_label(GRUB_COREIMG_PART);
+	bdev_t* dev = bio_open_by_label(ABOOT_PARTITION);
 	if(!dev) {
-		dprintf(CRITICAL, "Couldn't find partition %s\n", GRUB_COREIMG_PART);
+		dprintf(CRITICAL, "Couldn't find partition %s\n", ABOOT_PARTITION);
 		return ERR_NOT_FOUND;
 	}
 

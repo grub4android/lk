@@ -32,38 +32,41 @@ static bool menu_hide_dualbootmode(void) {
 #endif
 
 static void menu_exec_bootmode(void) {
-	if(device.bootmode<BOOTMODE_MAX-1)
-		device.bootmode++;
-	else device.bootmode = 0;
+	enum bootmode bootmode = sysparam_read_bootmode("bootmode");
+
+	if(bootmode<BOOTMODE_MAX-1)
+		bootmode++;
+	else bootmode = 0;
 
 #if WITH_XIAOMI_DUALBOOT
-	if(!is_dualboot_supported() && device.bootmode==BOOTMODE_SECOND)
-		device.bootmode++;
+	if(!is_dualboot_supported() && bootmode==BOOTMODE_SECOND)
+		bootmode++;
 #endif
 
-	write_device_info(&device);
+	sysparam_write_bootmode("bootmode", bootmode);
+	sysparam_write();
 }
 static void menu_format_bootmode(char** buf) {
 	*buf = calloc(100, 1);
-	snprintf(*buf, 100, "    Bootmode [%s]", strbootmode(device.bootmode));
+	snprintf(*buf, 100, "    Bootmode [%s]", strbootmode(sysparam_read_bootmode("bootmode")));
 }
 
 static void menu_exec_chargerscreen(void) {
-	device.charger_screen_enabled = !device.charger_screen_enabled;
-	write_device_info(&device);
+	sysparam_write_bool("charger_screen", !sysparam_read_bool("charger_screen"));
+	sysparam_write();
 }
 static void menu_format_chargerscreen(char** buf) {
 	*buf = calloc(100, 1);
-	snprintf(*buf, 100, "    Charger Screen [%s]", device.charger_screen_enabled?"enabled":"disabled");
+	snprintf(*buf, 100, "    Charger Screen [%s]", sysparam_read_bool("charger_screen")?"enabled":"disabled");
 }
 
 static void menu_exec_splash(void) {
-	device.use_splash_partition = !device.use_splash_partition;
-	write_device_info(&device);
+	sysparam_write_bool("splash_partition", !sysparam_read_bool("splash_partition"));
+	printf("ret=%d\n", sysparam_write());
 }
 static void menu_format_splash(char** buf) {
 	*buf = calloc(100, 1);
-	snprintf(*buf, 100, "    Splash Logo [%s]", device.use_splash_partition?"enabled":"disabled");
+	snprintf(*buf, 100, "    Splash Logo [%s]", sysparam_read_bool("splash_partition")?"enabled":"disabled");
 }
 
 struct menu_entry entries_settings[] = {

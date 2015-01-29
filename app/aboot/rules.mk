@@ -4,12 +4,14 @@ MODULE := $(LOCAL_DIR)
 
 MODULE_DEPS += \
 	lib/bio \
+	lib/sysparam \
 	lib/partition \
 	app/aboot/uboot_api
 
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
 GLOBAL_DEFINES += ASSERT_ON_TAMPER=1
+GLOBAL_DEFINES += SYSPARAM_ALLOW_WRITE=1
 
 MODULE_SRCS += \
 	$(LOCAL_DIR)/aboot.c \

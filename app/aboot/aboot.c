@@ -61,6 +61,8 @@
 #include <boot_device.h>
 #include <boot_verifier.h>
 #include <image_verify.h>
+#include <lib/bio.h>
+#include <lib/sysparam.h>
 #if WITH_APP_DISPLAY_SERVER
 #include <app/display_server.h>
 #endif
@@ -84,7 +86,6 @@
 #include "fastboot.h"
 #include "sparse_format.h"
 #include "mmc.h"
-#include "devinfo.h"
 #include "board.h"
 #include "scm.h"
 
@@ -97,8 +98,6 @@ extern void mmc_set_lun(uint8_t lun);
 extern uint32_t mmc_page_size(void);
 extern uint32_t mmc_get_device_blocksize(void);
 
-void write_device_info_mmc(device_info *dev);
-void write_device_info_flash(device_info *dev);
 static int aboot_save_boot_hash_mmc(uint32_t image_addr, uint32_t image_size);
 
 /* fastboot command function pointer */
@@ -125,7 +124,7 @@ struct fastboot_cmd_desc {
 
 /* make 4096 as default size to ensure EFS,EXT4's erasing */
 #define DEFAULT_ERASE_SIZE  4096
-#define MAX_PANEL_BUF_SIZE 128
+#define MAX_PANEL_ID_LEN 64
 
 #define UBI_MAGIC      "UBI#"
 #define DISPLAY_DEFAULT_PREFIX "mdss_mdp"
@@ -183,8 +182,6 @@ static bool boot_reason_alarm;
 /* Assuming unauthorized kernel image by default */
 static int auth_kernel_img = 0;
 
-device_info device = {DEVICE_MAGIC, 0, 0, 0, 0, {0}, {0}, 0, 0};
-
 struct atag_ptbl_entry
 {
 	char name[16];
@@ -219,7 +216,6 @@ struct getvar_partition_info part_info[] =
 char max_download_size[MAX_RSP_SIZE];
 char charger_screen_enabled[MAX_RSP_SIZE];
 char sn_buf[13];
-char display_panel_buf[MAX_PANEL_BUF_SIZE];
 char panel_display_mode[MAX_RSP_SIZE];
 char use_splash_partition[MAX_RSP_SIZE];
 char screen_resolution[MAX_RSP_SIZE];
@@ -267,6 +263,9 @@ char *update_cmdline(const char * cmdline)
 	int have_target_boot_params = 0;
 	char *boot_dev_buf = NULL;
 
+	const char* __display_panel = sysparm_read_str("display_panel");
+	char* display_panel = __display_panel?strdup(__display_panel):NULL;
+
 	if (cmdline && cmdline[0]) {
 		cmdline_len = strlen(cmdline);
 		have_cmdline = 1;
@@ -294,7 +293,7 @@ char *update_cmdline(const char * cmdline)
 		cmdline_len += strlen(loglevel);
 	} else if (boot_reason_alarm) {
 		cmdline_len += strlen(alarmboot_cmdline);
-	} else if (device.charger_screen_enabled &&
+	} else if (sysparam_read_bool("charger_screen") &&
 			target_pause_for_battery_charge()) {
 		pause_at_bootup = 1;
 		cmdline_len += strlen(battchg_pause);
@@ -373,10 +372,10 @@ char *update_cmdline(const char * cmdline)
 
 	if (cmdline) {
 		if ((strstr(cmdline, DISPLAY_DEFAULT_PREFIX) == NULL) &&
-			target_display_panel_node(device.display_panel,
-			display_panel_buf, MAX_PANEL_BUF_SIZE) &&
-			strlen(display_panel_buf)) {
-			cmdline_len += strlen(display_panel_buf);
+			target_display_panel_node(display_panel,
+			display_panel, MAX_PANEL_ID_LEN) &&
+			strlen(display_panel)) {
+			cmdline_len += strlen(display_panel);
 		}
 	}
 
@@ -539,8 +538,8 @@ char *update_cmdline(const char * cmdline)
 				break;
 		}
 
-		if (strlen(display_panel_buf)) {
-			src = display_panel_buf;
+		if (strlen(display_panel)) {
+			src = display_panel;
 			if (have_cmdline) --dst;
 			while ((*dst++ = *src++));
 		}
@@ -854,7 +853,7 @@ static void verify_signed_bootimg(uint32_t bootimg_addr, uint32_t bootimg_size)
 #endif
 
 	/* Assume device is rooted at this time. */
-	device.is_tampered = 1;
+	sysparam_write_bool("is_tampered", true);
 
 	dprintf(INFO, "Authenticating boot image (%d): start\n", bootimg_size);
 
@@ -881,17 +880,17 @@ static void verify_signed_bootimg(uint32_t bootimg_addr, uint32_t bootimg_size)
 	if (ret)
 	{
 		/* Authorized kernel */
-		device.is_tampered = 0;
+		sysparam_write_bool("is_tampered", false);
 		auth_kernel_img = 1;
 	}
 
 #if USE_PCOM_SECBOOT
-	set_tamper_flag(device.is_tampered);
+	set_tamper_flag(sysparam_read_bool("is_tampered"));
 #endif
 
-	if(device.is_tampered)
+	if(sysparam_read_bool("is_tampered"))
 	{
-		write_device_info_mmc(&device);
+		sysparam_write();
 	#ifdef TZ_TAMPER_FUSE
 		set_tamper_fuse_cmd();
 	#endif
@@ -968,7 +967,7 @@ void boot_verifier_init(void)
 
 	uint32_t boot_state;
 	/* Check if device unlock */
-	if(device.is_unlocked)
+	if(sysparam_read_bool("is_unlocked"))
 	{
 		boot_verify_send_event(DEV_UNLOCK);
 		boot_verify_print_state();
@@ -1145,14 +1144,14 @@ int boot_linux_from_mmc(void)
 	/* Authenticate Kernel */
 	dprintf(INFO, "use_signed_kernel=%d, is_unlocked=%d, is_tampered=%d.\n",
 		(int) target_use_signed_kernel(),
-		device.is_unlocked,
-		device.is_tampered);
+		sysparam_read_bool("is_unlocked"),
+		sysparam_read_bool("is_tampered"));
 
 #if VERIFIED_BOOT
 	boot_verifier_init();
 #endif
 
-	if(target_use_signed_kernel() && (!device.is_unlocked))
+	if(target_use_signed_kernel() && (!sysparam_read_bool("is_unlocked")))
 	{
 		offset = 0;
 
@@ -1373,7 +1372,7 @@ int boot_linux_from_mmc(void)
 		#endif
 	}
 
-	if (bootmode==BOOTMODE_RECOVERY && !device.is_unlocked && !device.is_tampered)
+	if (bootmode==BOOTMODE_RECOVERY && !sysparam_read_bool("is_unlocked") && !sysparam_read_bool("is_tampered"))
 		target_load_ssd_keystore();
 
 unified_boot:
@@ -1513,7 +1512,7 @@ int boot_linux_from_flash(void)
 #endif
 
 	/* Authenticate Kernel */
-	if(target_use_signed_kernel() && (!device.is_unlocked))
+	if(target_use_signed_kernel() && (!sysparam_read_bool("is_unlocked")))
 	{
 		image_addr = (unsigned char *)target_get_scratch_address();
 		offset = 0;
@@ -1585,12 +1584,12 @@ int boot_linux_from_flash(void)
 #endif
 
 		/* Make sure everything from scratch address is read before next step!*/
-		if(device.is_tampered)
+		if(sysparam_read_bool("is_tampered"))
 		{
-			write_device_info_flash(&device);
+			sysparam_write();
 		}
 #if USE_PCOM_SECBOOT
-		set_tamper_flag(device.is_tampered);
+		set_tamper_flag(sysparam_read_bool("is_tampered"));
 #endif
 	}
 	else
@@ -1688,251 +1687,66 @@ continue_boot:
 	return 0;
 }
 
-#if BOOT_2NDSTAGE
-void fakeread_device_info(device_info *dev)
+static int validate_device_info(void)
 {
-	memcpy(dev->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
-	dev->is_tampered = 0;
-	dev->is_unlocked = 0;
-	dev->charger_screen_enabled = 0;
-	strlcpy(dev->display_panel, "fakepanel",
-			sizeof(dev->display_panel));
-}
-#endif
-
-static int validate_device_info(struct device_info *info)
-{
-	if (memcmp(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE))
-	{
-		memcpy(info->magic, DEVICE_MAGIC, DEVICE_MAGIC_SIZE);
-		info->is_unlocked = 0;
-		info->is_tampered = 0;
-		info->charger_screen_enabled = 0;
-		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
-		info->bootmode = BOOTMODE_AUTO;
-		info->use_splash_partition = 0;
-
-		return 1;
-	}
-
-	if(info->is_unlocked !=0 && info->is_unlocked!=1)
-		info->is_unlocked = 0;
-	if(info->is_tampered !=0 && info->is_tampered!=1)
-		info->is_tampered = 0;
-	if(info->charger_screen_enabled !=0 && info->charger_screen_enabled!=1)
-		info->charger_screen_enabled = 0;
-	if(info->bootmode>=BOOTMODE_MAX)
-		info->bootmode = BOOTMODE_AUTO;
+	if(sysparam_get_ptr("is_unlocked", NULL, NULL))
+		sysparam_write_bool("is_unlocked", false);
+	if(sysparam_get_ptr("is_tampered", NULL, NULL))
+		sysparam_write_bool("is_tampered", false);
+	if(sysparam_get_ptr("charger_screen", NULL, NULL))
+		sysparam_write_bool("charger_screen", false);
+	if(sysparam_get_ptr("bootmode", NULL, NULL))
+		sysparam_write_bootmode("bootmode", BOOTMODE_AUTO);
 #if WITH_XIAOMI_DUALBOOT
-	if(!is_dualboot_supported() && info->bootmode==BOOTMODE_SECOND)
-		info->bootmode = BOOTMODE_NORMAL;
+	if(!is_dualboot_supported() && sysparam_read_bootmode("bootmode")==BOOTMODE_SECOND)
+	    sysparam_write_bootmode("bootmode", BOOTMODE_NORMAL);
 #endif
-	if(info->use_splash_partition !=0 && info->use_splash_partition!=1)
-		info->use_splash_partition = 0;
-	if(!isprint(info->display_panel[0]) && !info->display_panel[0]=='\0')
-		memset(info->display_panel, 0, MAX_PANEL_ID_LEN);
+	if(sysparam_get_ptr("splash_partition", NULL, NULL))
+		sysparam_write_bool("splash_partition", false);
+
+	if(sysparam_get_ptr("display_panel", NULL, NULL))
+		sysparm_write_str("display_panel", "");
+	else {
+		const char* display_panel = sysparm_read_str("display_panel");
+		if(!isprint(display_panel[0]) && !display_panel[0]=='\0')
+			sysparm_write_str("display_panel", display_panel);
+	}
 
 	return 1;
 }
 
-BUF_DMA_ALIGN(info_buf, BOOT_IMG_MAX_PAGE_SIZE);
-void write_device_info_mmc(device_info *dev)
+void read_device_info(void)
 {
-	struct device_info *info = (void*) info_buf;
-	unsigned long long ptn = 0;
-	unsigned long long size;
-	int index = INVALID_PTN;
-	uint32_t blocksize;
-	uint8_t lun = 0;
-
-#if BOOT_2NDSTAGE
-	index = partition_get_index("boot");
-#elif VERIFIED_BOOT
-	index = partition_get_index("devinfo");
-#else
-	index = partition_get_index("aboot");
-#endif
-
-	ptn = partition_get_offset(index);
-	if(ptn == 0)
-	{
-		return;
-	}
-
-	lun = partition_get_lun(index);
-	mmc_set_lun(lun);
-
-	size = partition_get_size(index);
-
-	memcpy(info, dev, sizeof(device_info));
-
-	blocksize = mmc_get_device_blocksize();
-
 #if VERIFIED_BOOT
-	if(mmc_write(ptn, blocksize, (void *)info_buf))
+	bdev_t *spdev = bio_open_by_label("devinfo");
 #else
-	if(mmc_write((ptn + size - blocksize), blocksize, (void *)info_buf))
+	bdev_t *spdev = bio_open_by_label(ABOOT_PARTITION);
 #endif
-	{
-		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
-		return;
-	}
-}
-
-void read_device_info_mmc(device_info *dev)
-{
-	struct device_info *info = (void*) info_buf;
-	unsigned long long ptn = 0;
-	unsigned long long size;
-	int index = INVALID_PTN;
-	uint32_t blocksize;
-
-#if BOOT_2NDSTAGE
-	index = partition_get_index("boot");
-#elif VERIFIED_BOOT
-	index = partition_get_index("devinfo");
-#else
-	index = partition_get_index("aboot");
-#endif
-
-	ptn = partition_get_offset(index);
-	if(ptn == 0)
-	{
+	if(!spdev) {
+		dprintf(CRITICAL, "aboot partition not found!\n");
 		return;
 	}
 
-	mmc_set_lun(partition_get_lun(index));
-
-	size = partition_get_size(index);
-
-	blocksize = mmc_get_device_blocksize();
-
-#if VERIFIED_BOOT
-	if(mmc_read(ptn, (void *)info_buf, blocksize))
-#else
-	if(mmc_read((ptn + size - blocksize), (void *)info_buf, blocksize))
-#endif
-	{
-		dprintf(CRITICAL, "ERROR: Cannot read device info\n");
-		return;
+	sysparam_scan(spdev, spdev->size-spdev->block_size, spdev->block_size);
+	if(validate_device_info()) {
+		sysparam_write();
 	}
 
-	if (validate_device_info(info))
-	{
-#if DEFAULT_UNLOCK
-		info->is_unlocked = 1;
-#else
-#endif
-		info->is_verified = 0;
-		write_device_info_mmc(info);
-	}
-	memcpy(dev, info, sizeof(device_info));
-}
-
-void write_device_info_flash(device_info *dev)
-{
-#if !BOOT_2NDSTAGE
-	struct device_info *info = (void *) info_buf;
-	struct ptentry *ptn;
-	struct ptable *ptable;
-
-	ptable = flash_get_ptable();
-	if (ptable == NULL)
-	{
-		dprintf(CRITICAL, "ERROR: Partition table not found\n");
-		return;
-	}
-
-	ptn = ptable_find(ptable, "devinfo");
-	if (ptn == NULL)
-	{
-		dprintf(CRITICAL, "ERROR: No boot partition found\n");
-			return;
-	}
-
-	memcpy(info, dev, sizeof(device_info));
-
-	if (flash_write(ptn, 0, (void *)info_buf, page_size))
-	{
-		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
-			return;
-	}
-#endif
-}
-
-void read_device_info_flash(device_info *dev)
-{
-#if BOOT_2NDSTAGE
-	fakeread_device_info(dev);
-#else
-	struct device_info *info = (void*) info_buf;
-	struct ptentry *ptn;
-	struct ptable *ptable;
-
-	ptable = flash_get_ptable();
-	if (ptable == NULL)
-	{
-		dprintf(CRITICAL, "ERROR: Partition table not found\n");
-		return;
-	}
-
-	ptn = ptable_find(ptable, "devinfo");
-	if (ptn == NULL)
-	{
-		dprintf(CRITICAL, "ERROR: No boot partition found\n");
-			return;
-	}
-
-	if (flash_read(ptn, 0, (void *)info_buf, page_size))
-	{
-		dprintf(CRITICAL, "ERROR: Cannot write device info\n");
-			return;
-	}
-
-	if (validate_device_info(info))
-	{
-		write_device_info_flash(info);
-	}
-	memcpy(dev, info, sizeof(device_info));
-#endif
-}
-
-void write_device_info(device_info *dev)
-{
-	if(target_is_emmc_boot())
-	{
-		write_device_info_mmc(dev);
-	}
-	else
-	{
-		write_device_info_flash(dev);
-	}
-}
-
-void read_device_info(device_info *dev)
-{
-	if(target_is_emmc_boot())
-	{
-		read_device_info_mmc(dev);
-	}
-	else
-	{
-		read_device_info_flash(dev);
-	}
+	sysparam_dump(true);
 }
 
 void reset_device_info(void)
 {
 	dprintf(ALWAYS, "reset_device_info called.");
-	device.is_tampered = 0;
-	write_device_info(&device);
+	sysparam_write_bool("is_tampered", false);
+	sysparam_write();
 }
 
 void set_device_root(void)
 {
 	dprintf(ALWAYS, "set_device_root called.");
-	device.is_tampered = 1;
-	write_device_info(&device);
+	sysparam_write_bool("is_tampered", true);
+	sysparam_write();
 }
 
 #if DEVICE_TREE
@@ -2009,7 +1823,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	uint8_t dtb_copied __UNUSED = 0;
 
 #if VERIFIED_BOOT
-	if(!device.is_unlocked)
+	if(!sysparam_read_bool("is_unlocked"))
 	{
 		fastboot_fail("unlock device to use this command");
 		return;
@@ -2047,7 +1861,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	image_actual = ADD_OF(image_actual, ramdisk_actual);
 	image_actual = ADD_OF(image_actual, dt_actual);
 
-	if (target_use_signed_kernel() && (!device.is_unlocked))
+	if (target_use_signed_kernel() && (!sysparam_read_bool("is_unlocked")))
 		image_actual = ADD_OF(image_actual, sig_actual);
 
 	/* sz should have atleast raw boot image */
@@ -2059,7 +1873,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 	/* Verify the boot image
 	 * device & page_size are initialized in aboot_init
 	 */
-	if (target_use_signed_kernel() && (!device.is_unlocked))
+	if (target_use_signed_kernel() && (!sysparam_read_bool("is_unlocked")))
 		/* Pass size excluding signature size, otherwise we would try to
 		 * access signature beyond its length
 		 */
@@ -2192,7 +2006,7 @@ void cmd_erase_mmc(const char *arg, void *data, unsigned sz)
 #if VERIFIED_BOOT
 	if(!strcmp(arg, KEYSTORE_PTN_NAME))
 	{
-		if(!device.is_unlocked)
+		if(!sysparam_read_bool("is_unlocked"))
 		{
 			fastboot_fail("unlock device to erase keystore");
 			return;
@@ -2278,7 +2092,7 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 #if VERIFIED_BOOT
 			if(!strcmp(pname, KEYSTORE_PTN_NAME))
 			{
-				if(!device.is_unlocked)
+				if(!sysparam_read_bool("is_unlocked"))
 				{
 					fastboot_fail("unlock device to flash keystore");
 					return;
@@ -2576,12 +2390,12 @@ void cmd_flash_mmc(const char *arg, void *data, unsigned sz)
 #endif /* SSD_ENABLE */
 
 #if VERIFIED_BOOT
-	if(!device.is_unlocked && !device.is_verified)
+	if(!sysparam_read_bool("is_unlocked") && !sysparam_read_bool("is_verified"))
 	{
 		fastboot_fail("device is locked. Cannot flash images");
 		return;
 	}
-	if(!device.is_unlocked && device.is_verified)
+	if(!sysparam_read_bool("is_unlocked") && sysparam_read_bool("is_verified"))
 	{
 		if(!boot_verify_flash_allowed(arg))
 		{
@@ -2687,53 +2501,53 @@ void cmd_reboot_recovery(const char *arg, void *data, unsigned sz)
 void cmd_oem_enable_charger_screen(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Enabling charger screen check\n");
-	device.charger_screen_enabled = 1;
-	write_device_info(&device);
+	sysparam_write_bool("charger_screen", true);
+	sysparam_write();
 	fastboot_okay("");
 }
 
 void cmd_oem_disable_charger_screen(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Disabling charger screen check\n");
-	device.charger_screen_enabled = 0;
-	write_device_info(&device);
+	sysparam_write_bool("charger_screen", false);
+	sysparam_write();
 	fastboot_okay("");
 }
 
 void cmd_oem_enable_use_splash_partition(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Enabling using splash partition\n");
-	device.use_splash_partition = 1;
-	write_device_info(&device);
+	sysparam_write_bool("splash_partition", true);
+	sysparam_write();
 	fastboot_okay("");
 }
 
 void cmd_oem_disable_use_splash_partition(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Disabling using splash partition\n");
-	device.use_splash_partition = 0;
-	write_device_info(&device);
+	sysparam_write_bool("splash_partition", false);
+	sysparam_write();
 	fastboot_okay("");
 }
 
 void cmd_oem_select_display_panel(const char *arg, void *data, unsigned size)
 {
 	dprintf(INFO, "Selecting display panel %s\n", arg);
+
 	if (arg)
-		strlcpy(device.display_panel, arg,
-			sizeof(device.display_panel));
-	write_device_info(&device);
+		sysparm_write_str("display_panel", arg);
+	sysparam_write();
 	fastboot_okay("");
 }
 
 void cmd_oem_unlock(const char *arg, void *data, unsigned sz)
 {
 	/* TODO: Wipe user data */
-	if(!device.is_unlocked || device.is_verified)
+	if(!sysparam_read_bool("is_unlocked") || sysparam_read_bool("is_verified"))
 	{
-		device.is_unlocked = 1;
-		device.is_verified = 0;
-		write_device_info(&device);
+		sysparam_write_bool("is_unlocked", true);
+		sysparam_write_bool("is_verified", false);
+		sysparam_write();
 	}
 	fastboot_okay("");
 }
@@ -2741,11 +2555,11 @@ void cmd_oem_unlock(const char *arg, void *data, unsigned sz)
 void cmd_oem_lock(const char *arg, void *data, unsigned sz)
 {
 	/* TODO: Wipe user data */
-	if(device.is_unlocked || device.is_verified)
+	if(sysparam_read_bool("is_unlocked") || sysparam_read_bool("is_verified"))
 	{
-		device.is_unlocked = 0;
-		device.is_verified = 0;
-		write_device_info(&device);
+		sysparam_write_bool("is_unlocked", false);
+		sysparam_write_bool("is_verified", false);
+		sysparam_write();
 	}
 	fastboot_okay("");
 }
@@ -2753,11 +2567,11 @@ void cmd_oem_lock(const char *arg, void *data, unsigned sz)
 void cmd_oem_verified(const char *arg, void *data, unsigned sz)
 {
 	/* TODO: Wipe user data */
-	if(device.is_unlocked || !device.is_verified)
+	if(sysparam_read_bool("is_unlocked") || !sysparam_read_bool("is_verified"))
 	{
-		device.is_unlocked = 0;
-		device.is_verified = 1;
-		write_device_info(&device);
+		sysparam_write_bool("is_unlocked", false);
+		sysparam_write_bool("is_verified", true);
+		sysparam_write();
 	}
 	fastboot_okay("");
 }
@@ -2765,15 +2579,15 @@ void cmd_oem_verified(const char *arg, void *data, unsigned sz)
 void cmd_oem_devinfo(const char *arg, void *data, unsigned sz)
 {
 	char response[128];
-	snprintf(response, sizeof(response), "\tDevice tampered: %s", (device.is_tampered ? "true" : "false"));
+	snprintf(response, sizeof(response), "\tDevice tampered: %s", (sysparam_read_bool("is_tampered") ? "true" : "false"));
 	fastboot_info(response);
-	snprintf(response, sizeof(response), "\tDevice unlocked: %s", (device.is_unlocked ? "true" : "false"));
+	snprintf(response, sizeof(response), "\tDevice unlocked: %s", (sysparam_read_bool("is_unlocked") ? "true" : "false"));
 	fastboot_info(response);
-	snprintf(response, sizeof(response), "\tCharger screen enabled: %s", (device.charger_screen_enabled ? "true" : "false"));
+	snprintf(response, sizeof(response), "\tCharger screen enabled: %s", (sysparam_read_bool("charger_screen") ? "true" : "false"));
 	fastboot_info(response);
-	snprintf(response, sizeof(response), "\tDisplay panel: %s", (device.display_panel));
+	snprintf(response, sizeof(response), "\tDisplay panel: %s", sysparm_read_str("display_panel"));
 	fastboot_info(response);
-	snprintf(response, sizeof(response), "\tUsing splash partition: %s", (device.use_splash_partition ? "true" : "false"));
+	snprintf(response, sizeof(response), "\tUsing splash partition: %s", (sysparam_read_bool("splash_partition") ? "true" : "false"));
 	fastboot_info(response);
 	fastboot_okay("");
 }
@@ -2990,7 +2804,7 @@ err:
 
 struct fbimage* fetch_image_from_partition(void)
 {
-	if (!device.use_splash_partition)
+	if (!sysparam_read_bool("splash_partition"))
 		return NULL;
 
 	if (target_is_emmc_boot()) {
@@ -3121,16 +2935,16 @@ void aboot_fastboot_register_commands(void)
 	fastboot_publish("max-download-size", (const char *) max_download_size);
 	/* Is the charger screen check enabled */
 	snprintf(charger_screen_enabled, MAX_RSP_SIZE, "%d",
-			device.charger_screen_enabled);
+			sysparam_read_bool("charger_screen"));
 	fastboot_publish("charger-screen-enabled",
 			(const char *) charger_screen_enabled);
 	snprintf(panel_display_mode, MAX_RSP_SIZE, "%s",
-			device.display_panel);
+			sysparm_read_str("display_panel"));
 	fastboot_publish("display-panel",
 			(const char *) panel_display_mode);
 
 	snprintf(use_splash_partition, MAX_RSP_SIZE, "%d",
-			device.use_splash_partition);
+			sysparam_read_bool("splash_partition"));
 	fastboot_publish("using-splash-partition",
 			(const char *) use_splash_partition);
 
@@ -3146,8 +2960,9 @@ void aboot_continue_boot(void) {
 
 	// allow to override the bootmode
 	if(bootmode==BOOTMODE_AUTO) {
-		dprintf(INFO, "Overwrite bootmode: %s->%s\n", strbootmode(bootmode), strbootmode(device.bootmode));
-		bootmode = device.bootmode;
+		enum bootmode tmp = sysparam_read_bootmode("bootmode");
+		dprintf(INFO, "Overwrite bootmode: %s->%s\n", strbootmode(bootmode), strbootmode(tmp));
+		bootmode = tmp;
 	}
 
 	dprintf(INFO, "Booting %s...\n", strbootmode(bootmode));
@@ -3166,13 +2981,13 @@ void aboot_continue_boot(void) {
 
 				if(target_use_signed_kernel())
 				{
-					if((device.is_unlocked) || (device.is_tampered))
+					if((sysparam_read_bool("is_unlocked")) || (sysparam_read_bool("is_tampered")))
 					{
 					#ifdef TZ_TAMPER_FUSE
 						set_tamper_fuse_cmd();
 					#endif
 					#if USE_PCOM_SECBOOT
-						set_tamper_flag(device.is_tampered);
+						set_tamper_flag(sysparam_read_bool("is_tampered"));
 					#endif
 					}
 				}
@@ -3182,8 +2997,8 @@ void aboot_continue_boot(void) {
 			{
 				recovery_init();
 			#if USE_PCOM_SECBOOT
-				if((device.is_unlocked) || (device.is_tampered))
-					set_tamper_flag(device.is_tampered);
+				if((sysparam_read_bool("is_unlocked")) || (sysparam_read_bool("is_tampered")))
+					set_tamper_flag(sysparam_read_bool("is_tampered"));
 			#endif
 					boot_linux_from_flash();
 				}
@@ -3270,12 +3085,12 @@ void aboot_init(const struct app_descriptor *app)
 
 	ASSERT((MEMBASE + MEMSIZE) > MEMBASE);
 
-	read_device_info(&device);
+	read_device_info();
 
 	/* Display splash screen if enabled */
 #if DISPLAY_SPLASH_SCREEN
 	dprintf(SPEW, "Display Init: Start\n");
-	target_display_init(device.display_panel);
+	target_display_init(sysparm_read_str("display_panel"));
 	dprintf(SPEW, "Display Init: Done\n");
 #endif
 
@@ -3287,11 +3102,8 @@ void aboot_init(const struct app_descriptor *app)
 	/* initialize uboot api */
 	api_init();
 
-
 	target_serialno((unsigned char *) sn_buf);
 	dprintf(SPEW,"serial number: %s\n",sn_buf);
-
-	memset(display_panel_buf, '\0', MAX_PANEL_BUF_SIZE);
 
 	/*
 	 * Check power off reason if user force reset,
