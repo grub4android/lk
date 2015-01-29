@@ -88,13 +88,13 @@ sysparam_define_type(bool, bool, uint8_t);
 sysparam_define_type(bootmode, enum bootmode, enum bootmode);
 sysparam_define_type(u64, uint64_t, uint64_t);
 
-static const char* sysparm_read_str(const char* name) {
+static const char* sysparam_read_str(const char* name) {
 	const char* ptr = NULL;
 	sysparam_get_ptr(name, (const void**)&ptr, NULL);
 	return ptr;
 }
 
-static status_t sysparm_write_str(const char* name, const char* val) {
+static status_t sysparam_write_str(const char* name, const char* val) {
 	if(!sysparam_get_ptr(name, NULL, NULL)) {
 		sysparam_remove(name);
 	}

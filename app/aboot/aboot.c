@@ -264,7 +264,7 @@ char *update_cmdline(const char * cmdline)
 	int have_target_boot_params = 0;
 	char *boot_dev_buf = NULL;
 
-	const char* __display_panel = sysparm_read_str("display_panel");
+	const char* __display_panel = sysparam_read_str("display_panel");
 	char* display_panel = __display_panel?strdup(__display_panel):NULL;
 
 	if (cmdline && cmdline[0]) {
@@ -1706,11 +1706,11 @@ static int validate_device_info(void)
 		sysparam_write_bool("splash_partition", false);
 
 	if(sysparam_get_ptr("display_panel", NULL, NULL))
-		sysparm_write_str("display_panel", "");
+		sysparam_write_str("display_panel", "");
 	else {
-		const char* display_panel = sysparm_read_str("display_panel");
+		const char* display_panel = sysparam_read_str("display_panel");
 		if(!isprint(display_panel[0]) && !display_panel[0]=='\0')
-			sysparm_write_str("display_panel", display_panel);
+			sysparam_write_str("display_panel", display_panel);
 	}
 
 	return 1;
@@ -2538,7 +2538,7 @@ void cmd_oem_select_display_panel(const char *arg, void *data, unsigned size)
 	dprintf(INFO, "Selecting display panel %s\n", arg);
 
 	if (arg)
-		sysparm_write_str("display_panel", arg);
+		sysparam_write_str("display_panel", arg);
 	sysparam_write();
 	fastboot_okay("");
 }
@@ -2588,7 +2588,7 @@ void cmd_oem_devinfo(const char *arg, void *data, unsigned sz)
 	fastboot_info(response);
 	snprintf(response, sizeof(response), "\tCharger screen enabled: %s", (sysparam_read_bool("charger_screen") ? "true" : "false"));
 	fastboot_info(response);
-	snprintf(response, sizeof(response), "\tDisplay panel: %s", sysparm_read_str("display_panel"));
+	snprintf(response, sizeof(response), "\tDisplay panel: %s", sysparam_read_str("display_panel"));
 	fastboot_info(response);
 	snprintf(response, sizeof(response), "\tUsing splash partition: %s", (sysparam_read_bool("splash_partition") ? "true" : "false"));
 	fastboot_info(response);
@@ -2942,7 +2942,7 @@ void aboot_fastboot_register_commands(void)
 	fastboot_publish("charger-screen-enabled",
 			(const char *) charger_screen_enabled);
 	snprintf(panel_display_mode, MAX_RSP_SIZE, "%s",
-			sysparm_read_str("display_panel"));
+			sysparam_read_str("display_panel"));
 	fastboot_publish("display-panel",
 			(const char *) panel_display_mode);
 
@@ -3098,7 +3098,7 @@ void aboot_init(const struct app_descriptor *app)
 	/* Display splash screen if enabled */
 #if DISPLAY_SPLASH_SCREEN
 	dprintf(SPEW, "Display Init: Start\n");
-	target_display_init(sysparm_read_str("display_panel"));
+	target_display_init(sysparam_read_str("display_panel"));
 	dprintf(SPEW, "Display Init: Done\n");
 #endif
 
