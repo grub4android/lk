@@ -18,6 +18,8 @@ struct original_atags_info {
 #if DEVICE_TREE
 	struct original_fdt_property* chosen_props;
 	uint32_t num_chosen_props;
+	void* fdt;
+	uint32_t fdt_size;
 #endif
 };
 

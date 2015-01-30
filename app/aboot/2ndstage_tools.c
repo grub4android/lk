@@ -494,10 +494,15 @@ int parse_original_devtree(void *fdt) {
 	info->variant_id = (dt_entry->variant_id);
 	info->soc_rev = (dt_entry->soc_rev);
 
+	// backup fdt
+	info->fdt = malloc(dtb_size);
+	memcpy(info->fdt, fdt, dtb_size);
+	info->fdt_size = dtb_size;
+
 	return 0;
 }
 
-static struct original_atags_info original_atags_info = {0,0,0,0,0,0};
+static struct original_atags_info original_atags_info = {0,0,0,0,0,0,0,0};
 static bool has_original_atags_info = 0;
 
 struct original_atags_info* board_get_original_atags_info(void) {

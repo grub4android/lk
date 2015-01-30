@@ -1947,8 +1947,13 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 			dtb = dev_tree_appended((void *)hdr->kernel_addr, hdr->kernel_size,
 						(void *)hdr->tags_addr);
 			if (!dtb) {
+#if BOOT_2NDSTAGE
+				dtb = board_get_original_atags_info()->fdt;
+				dprintf(INFO, "Using DTB from previous bootloader.\n");
+#else
 				fastboot_fail("dtb not found");
 				return;
+#endif
 			}
 		}
 	}
