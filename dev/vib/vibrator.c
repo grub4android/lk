@@ -43,13 +43,17 @@ static uint32_t vib_timeout;
 /* Function to turn on vibrator */
 void vib_turn_on()
 {
+#if !BOOT_2NDSTAGE
 	pm_vib_turn_on();
+#endif
 }
 
 /* Function to turn off vibrator */
 void vib_turn_off()
 {
+#if !BOOT_2NDSTAGE
 	pm_vib_turn_off();
+#endif
 }
 
 /* Function to turn off vibrator when the vib_timer is expired. */
@@ -68,17 +72,21 @@ static enum handler_return vib_timer_func(struct timer *v_timer, lk_time_t now, 
  */
 void vib_timed_turn_on(const uint32_t vibrate_time)
 {
+#if !BOOT_2NDSTAGE
 	vib_turn_on();
 	vib_timeout=0;
 	timer_initialize(&vib_timer);
 	timer_set_oneshot(&vib_timer, vibrate_time, vib_timer_func, NULL);
+#endif
 }
 
 /* Wait for vibrator timer expired */
 void wait_vib_timeout(void)
 {
+#if !BOOT_2NDSTAGE
 	while (!vib_timeout) {
 		/* every 50ms to check if the vibrator timer is timeout*/
 		thread_sleep(CHECK_VIB_TIMER_FREQUENCY);
 	}
+#endif
 }
