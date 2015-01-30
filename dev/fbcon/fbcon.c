@@ -289,8 +289,10 @@ void fbcon_putImage(struct fbimage *fbimg, bool flag)
 	if (bytes_per_bpp == 3)
 	{
 		if(flag) {
-			if (header->width == config->width && header->height == config->height)
+			if (header->width == config->width && header->height == config->height) {
+				fbcon_flush();
 				return;
+			}
 			else {
 				logo_base = (unsigned char *)config->base + LOGO_IMG_OFFSET;
 				if (header->width > config->width) {
