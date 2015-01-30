@@ -2649,34 +2649,141 @@ int splash_screen_check_header(struct fbimage *logo)
 	return 0;
 }
 
-struct fbimage* fetch_image_from_partition(void)
-{
-	if (!sysparam_read_bool("splash_partition"))
-		return NULL;
+#define MLOGO_HDR_MAGIC "MotoLogo"
+#define MLOGO_IMAGE_HDR_MAGIC "MotoRun"
+struct mlogo_hdr {
+	char magic[9];
+	uint32_t unknown;
+} __attribute__ ((__packed__));
 
-	struct fbcon_config *fb_display = NULL;
+struct mlogo_index {
+	char name[24];
+	uint32_t offset;
+	uint32_t size;
+} __attribute__ ((__packed__));
+
+struct mlogo_image_hdr {
+	char magic[8];
+	uint16_t width;
+	uint16_t height;
+} __attribute__ ((__packed__));
+
+uint16_t swap_uint16( uint16_t val ) {
+    return (val<<8) | (val>>8);
+}
+
+#define HI_NIBBLE(b) (((b) >> 4) & 0x0F)
+#define LO_NIBBLE(b) ((b) & 0x0F)
+
+struct fbimage* fetch_image_moto_logo(bdev_t* dev, struct mlogo_hdr* logohdr)
+{
+	struct mlogo_image_hdr imghdr;
+	struct fbcon_config *fb_display = fbcon_display();
 	struct fbimage *logo = NULL;
+
+	// check file magic
+	if (memcmp(logohdr->magic, MLOGO_HDR_MAGIC, 8)) {
+		dprintf(CRITICAL, "ERROR: invalid file magic\n");
+		goto err;
+	}
+
+	// iterate over index table
+	struct mlogo_index* logoidx = (void*)&logohdr[1];
+	while((uint32_t)logoidx<((uint32_t)logohdr)+dev->block_size) {
+		// END
+		if(logoidx->name[0]==0xFF) break;
+
+		// check name
+		if(strcmp(logoidx->name, "logo_unlocked")) goto next;
+
+		// read image header
+		if (bio_read(dev, &imghdr, logoidx->offset, sizeof(imghdr))!=(ssize_t)sizeof(imghdr)) {
+			dprintf(CRITICAL, "ERROR: Cannot read image header\n");
+			goto err;
+		}
+
+		// check image header magic
+		if (memcmp(imghdr.magic, MLOGO_IMAGE_HDR_MAGIC, 7)) {
+			dprintf(CRITICAL, "ERROR: invalid image magic\n");
+			goto err;
+		}
+
+		// allocate logo
+		logo = malloc(sizeof(struct fbimage));
+		logo->header.width = swap_uint16(imghdr.width);
+		logo->header.height = swap_uint16(imghdr.height);
+
+		// get framebuffer
+		uint8_t *base = (uint8_t *) fb_display->base;
+		if (logo->header.width != fb_display->width || logo->header.height != fb_display->height)
+				base += LOGO_IMG_OFFSET;
+
+		// read logo data
+		uint8_t* data = malloc(logoidx->size);
+		if (bio_read(dev, data, logoidx->offset + sizeof(imghdr), logoidx->size)!=(ssize_t)logoidx->size) {
+			dprintf(CRITICAL, "ERROR: Cannot read image data\n");
+			goto err;
+		}
+
+		// convert
+		uint8_t* pdata = data;
+		uint8_t* pfb = base;
+		uint32_t i;
+		while(pdata<data+logoidx->size) {
+			int type = HI_NIBBLE(pdata[0]);
+			uint32_t num = LO_NIBBLE(pdata[0])*0x100 + pdata[1];
+			pdata+=2;
+
+			if(type==8) {
+				for(i=0; i<num; i++) {
+					*pfb++ = pdata[0];
+					*pfb++ = pdata[1];
+					*pfb++ = pdata[2];
+				}
+				pdata+=3;
+			}
+
+			else {
+				for(i=0; i<num; i++) {
+					*pfb++ = *pdata++;
+					*pfb++ = *pdata++;
+					*pfb++ = *pdata++;
+				}
+			}
+		}
+
+		// cleanup
+		free(data);
+		logo->image = base;
+		break;
+
+	next:
+		logoidx = (void*)&logoidx[1];
+	}
+
+	return logo;
+
+err:
+	if(logo)
+		free(logo);
+	return NULL;
+}
+
+struct fbimage* fetch_image_qcom_splash(bdev_t* dev, void *hdr)
+{
+	struct fbcon_config *fb_display = NULL;
 	uint32_t blocksize;
 	uint32_t readsize;
 	uint32_t ptn_size;
 
-	bdev_t* dev = bio_open_by_label(SPLASH_PARTITION_NAME);
-	if(!dev) {
-		dprintf(CRITICAL, "ERROR: splash Partition invalid\n");
-		return NULL;
-	}
+	// copy hdr
+	struct fbimage* logo = malloc(sizeof(struct fbimage));
+	memcpy(logo, hdr, sizeof(*logo));
+
 
 	ptn_size = dev->size;
 	blocksize = dev->block_size;
 	readsize = ROUNDUP(sizeof(logo->header), blocksize);
-
-	logo = (struct fbimage *)memalign(CACHE_LINE, ROUNDUP(readsize, CACHE_LINE));
-	ASSERT(logo);
-
-	if (bio_read(dev, (uint32_t *) logo, 0, readsize)!=(ssize_t)readsize) {
-		dprintf(CRITICAL, "ERROR: Cannot read splash image header\n");
-		goto err;
-	}
 
 	if (splash_screen_check_header(logo)) {
 		dprintf(CRITICAL, "ERROR: Splash image header invalid\n");
@@ -2703,6 +2810,44 @@ struct fbimage* fetch_image_from_partition(void)
 			goto err;
 		}
 
+		logo->image = base;
+	}
+
+	return logo;
+
+err:
+	if(logo)
+		free(logo);
+	return NULL;
+}
+
+struct fbimage* fetch_image_from_partition(void)
+{
+	struct fbimage* logo = NULL;
+
+	if (!sysparam_read_bool("splash_partition"))
+		return NULL;
+
+	bdev_t* dev = bio_open_by_label(SPLASH_PARTITION_NAME);
+	if(!dev) {
+		dprintf(CRITICAL, "ERROR: splash Partition invalid\n");
+		return NULL;
+	}
+
+	void *header = malloc(dev->block_size);
+	if (bio_read_block(dev, header, 0, 1)!=(ssize_t)dev->block_size) {
+		dprintf(CRITICAL, "ERROR: Cannot read splash image header\n");
+		goto out;
+	}
+
+	logo = fetch_image_qcom_splash(dev, header);
+	if(logo) goto out;
+
+	logo = fetch_image_moto_logo(dev, header);
+	if(logo) goto out;
+
+out:
+	if(logo) {
 #if DISPLAY_USE_BGR
 		unsigned i;
 		for(i=0; i<(logo->header.width*fb_display->height); i++) {
@@ -2718,20 +2863,12 @@ struct fbimage* fetch_image_from_partition(void)
 			color[2] = r;
 		}
 #endif
-
-		logo->image = base;
 	}
 
-	bio_close(dev);
-
-	return logo;
-
-err:
 	if(dev)
 		bio_close(dev);
-	if(logo)
-		free(logo);
-	return NULL;
+
+	return logo;
 }
 
 /* Get the size from partiton name */
