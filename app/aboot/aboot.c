@@ -2640,8 +2640,6 @@ void cmd_preflash(const char *arg, void *data, unsigned sz)
 	fastboot_okay("");
 }
 
-struct fbimage* splash_screen_flash(void);
-
 int splash_screen_check_header(struct fbimage *logo)
 {
 	if (memcmp(logo->header.magic, LOGO_IMG_MAGIC, 8))
@@ -2651,109 +2649,31 @@ int splash_screen_check_header(struct fbimage *logo)
 	return 0;
 }
 
-struct fbimage* splash_screen_flash(void)
+struct fbimage* fetch_image_from_partition(void)
 {
-	struct ptentry *ptn;
-	struct ptable *ptable;
-	struct fbcon_config *fb_display = NULL;
-	struct fbimage *logo = NULL;
+	if (!sysparam_read_bool("splash_partition"))
+		return NULL;
 
-
-	logo = (struct fbimage *) malloc(ROUNDUP(page_size, sizeof(struct fbimage)));
-	ASSERT(logo);
-
-	ptable = flash_get_ptable();
-	if (ptable == NULL) {
-	dprintf(CRITICAL, "ERROR: Partition table not found\n");
-	goto err;
-	}
-	ptn = ptable_find(ptable, SPLASH_PARTITION_NAME);
-	if (ptn == NULL) {
-		dprintf(CRITICAL, "ERROR: splash Partition not found\n");
-		goto err;
-	}
-
-	if (flash_read(ptn, 0,(unsigned int *) logo, sizeof(logo->header))) {
-		dprintf(CRITICAL, "ERROR: Cannot read boot image header\n");
-		goto err;
-	}
-
-	if (splash_screen_check_header(logo)) {
-		dprintf(CRITICAL, "ERROR: Boot image header invalid\n");
-		goto err;
-	}
-
-	fb_display = fbcon_display();
-	if (fb_display) {
-		uint8_t *base = (uint8_t *) fb_display->base;
-		if (logo->header.width != fb_display->width || logo->header.height != fb_display->height) {
-				base += LOGO_IMG_OFFSET;
-		}
-
-		if (flash_read(ptn + sizeof(logo->header), 0,
-			base,
-			((((logo->header.width * logo->header.height * fb_display->bpp/8) + 511) >> 9) << 9))) {
-			fbcon_clear();
-			dprintf(CRITICAL, "ERROR: Cannot read splash image from partition\n");
-			goto err;
-		}
-
-#if DISPLAY_USE_BGR
-		unsigned i;
-		for(i=0; i<(logo->header.width*fb_display->height); i++) {
-			int r,g,b;
-			char* color = (char*) base + i*3;
-
-			r = color[0];
-			g = color[1];
-			b = color[2];
-
-			color[0] = b;
-			color[1] = g;
-			color[2] = r;
-		}
-#endif
-
-		logo->image = base;
-	}
-
-	return logo;
-
-err:
-	free(logo);
-	return NULL;
-}
-
-struct fbimage* splash_screen_mmc(void)
-{
-	int index = INVALID_PTN;
-	unsigned long long ptn = 0;
 	struct fbcon_config *fb_display = NULL;
 	struct fbimage *logo = NULL;
 	uint32_t blocksize;
 	uint32_t readsize;
 	uint32_t ptn_size;
 
-	index = partition_get_index(SPLASH_PARTITION_NAME);
-	if (index == 0) {
-		dprintf(CRITICAL, "ERROR: splash Partition table not found\n");
-		return NULL;
-	}
-
-	ptn = partition_get_offset(index);
-	if (ptn == 0) {
+	bdev_t* dev = bio_open_by_label(SPLASH_PARTITION_NAME);
+	if(!dev) {
 		dprintf(CRITICAL, "ERROR: splash Partition invalid\n");
 		return NULL;
 	}
 
-	ptn_size = partition_get_size(index);
-	blocksize = mmc_get_device_blocksize();
+	ptn_size = dev->size;
+	blocksize = dev->block_size;
 	readsize = ROUNDUP(sizeof(logo->header), blocksize);
 
 	logo = (struct fbimage *)memalign(CACHE_LINE, ROUNDUP(readsize, CACHE_LINE));
 	ASSERT(logo);
 
-	if (mmc_read(ptn, (uint32_t *) logo, readsize)) {
+	if (bio_read(dev, (uint32_t *) logo, 0, readsize)!=(ssize_t)readsize) {
 		dprintf(CRITICAL, "ERROR: Cannot read splash image header\n");
 		goto err;
 	}
@@ -2777,7 +2697,7 @@ struct fbimage* splash_screen_mmc(void)
 			goto err;
 		}
 
-		if (mmc_read(ptn + hdrsz,(uint32_t *)base, readsize)) {
+		if (bio_read(dev,(uint32_t *)base, hdrsz, readsize)!=(ssize_t)readsize) {
 			fbcon_clear();
 			dprintf(CRITICAL, "ERROR: Cannot read splash image from partition\n");
 			goto err;
@@ -2802,24 +2722,16 @@ struct fbimage* splash_screen_mmc(void)
 		logo->image = base;
 	}
 
+	bio_close(dev);
+
 	return logo;
 
 err:
-	free(logo);
+	if(dev)
+		bio_close(dev);
+	if(logo)
+		free(logo);
 	return NULL;
-}
-
-
-struct fbimage* fetch_image_from_partition(void)
-{
-	if (!sysparam_read_bool("splash_partition"))
-		return NULL;
-
-	if (target_is_emmc_boot()) {
-		return splash_screen_mmc();
-	} else {
-		return splash_screen_flash();
-	}
 }
 
 /* Get the size from partiton name */
