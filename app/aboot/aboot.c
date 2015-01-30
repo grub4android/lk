@@ -2735,10 +2735,10 @@ struct fbimage* fetch_image_moto_logo(bdev_t* dev, struct mlogo_hdr* logohdr)
 			pdata+=2;
 
 			if(type==8) {
-				for(i=0; i<num; i++) {
-					*pfb++ = pdata[0];
-					*pfb++ = pdata[1];
-					*pfb++ = pdata[2];
+				memset(pfb, *pdata, (num-1)*3);
+				for(i=0; i<num; i++, pfb+=3) {
+					pfb[1] = pdata[1];
+					pfb[2] = pdata[2];
 				}
 				pdata+=3;
 			}
