@@ -62,7 +62,7 @@ static void menu_format_chargerscreen(char** buf) {
 
 static void menu_exec_splash(void) {
 	sysparam_write_bool("splash_partition", !sysparam_read_bool("splash_partition"));
-	printf("ret=%d\n", sysparam_write());
+	sysparam_write();
 }
 static void menu_format_splash(char** buf) {
 	*buf = calloc(100, 1);
