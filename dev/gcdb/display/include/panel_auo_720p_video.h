@@ -106,14 +106,14 @@ static char auo_720p_video_on_cmd7[] = {
 
 
 static struct mipi_dsi_cmd auo_720p_video_on_command[] = {
-{ 0x4, auo_720p_video_on_cmd0, 0x78, 0 },
-{ 0x4, auo_720p_video_on_cmd1, 0, 0 },
-{ 0xC, auo_720p_video_on_cmd2, 0, 0 },
-{ 0xC, auo_720p_video_on_cmd3, 0, 0 },
-{ 0xC, auo_720p_video_on_cmd4, 0, 0 },
-{ 0x20, auo_720p_video_on_cmd5, 0, 0 },
-{ 0x4, auo_720p_video_on_cmd6, 0, 0 },
-{ 0x4, auo_720p_video_on_cmd7, 0x14, 0 },
+{ 0x4, auo_720p_video_on_cmd0, 0x78 },
+{ 0x4, auo_720p_video_on_cmd1, 0 },
+{ 0xC, auo_720p_video_on_cmd2, 0 },
+{ 0xC, auo_720p_video_on_cmd3, 0 },
+{ 0xC, auo_720p_video_on_cmd4, 0 },
+{ 0x20, auo_720p_video_on_cmd5, 0 },
+{ 0x4, auo_720p_video_on_cmd6, 0 },
+{ 0x4, auo_720p_video_on_cmd7, 0x14 },
 };
 #define AUO_720P_VIDEO_ON_COMMAND 8
 

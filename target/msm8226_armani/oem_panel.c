@@ -111,9 +111,12 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 			= &auo_720p_video_panel_reset_seq;
 		panelstruct->backlightinfo = &auo_720p_video_backlight;
-		pinfo->mipi.panel_cmds     = auo_720p_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.panel_on_cmds     = auo_720p_video_on_command;
+		pinfo->mipi.num_of_panel_on_cmds
 			= AUO_720P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds     = auo_720p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= AUO_720P_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			auo_720p_video_timings, TIMING_SIZE);
 		break;
@@ -130,16 +133,21 @@ static int init_panel_data(struct panel_struct *panelstruct,
 		panelstruct->panelresetseq
 			= &sharp_720p_video_panel_reset_seq;
 		panelstruct->backlightinfo = &sharp_720p_video_backlight;
-		pinfo->mipi.panel_cmds     = sharp_720p_video_on_command;
-		pinfo->mipi.num_of_panel_cmds
+		pinfo->mipi.panel_on_cmds     = sharp_720p_video_on_command;
+		pinfo->mipi.num_of_panel_on_cmds
 			= SHARP_720P_VIDEO_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds     = sharp_720p_video_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= SHARP_720P_VIDEO_OFF_COMMAND;
 		memcpy(phy_db->timing,
 			sharp_720p_video_timings, TIMING_SIZE);
 		break;
         case UNKNOWN_PANEL:
                 memset(panelstruct, 0, sizeof(struct panel_struct));
-                memset(pinfo->mipi.panel_cmds, 0, sizeof(struct mipi_dsi_cmd));
-                pinfo->mipi.num_of_panel_cmds = 0;
+                memset(pinfo->mipi.panel_on_cmds, 0, sizeof(struct mipi_dsi_cmd));
+                pinfo->mipi.num_of_panel_on_cmds = 0;
+                memset(pinfo->mipi.panel_off_cmds, 0, sizeof(struct mipi_dsi_cmd));
+                pinfo->mipi.num_of_panel_off_cmds = 0;
                 memset(phy_db->timing, 0, TIMING_SIZE);
                 pinfo->mipi.signature = 0;
 		pan_type = PANEL_TYPE_UNKNOWN;

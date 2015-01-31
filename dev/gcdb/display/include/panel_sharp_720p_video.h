@@ -107,15 +107,15 @@ static char sharp_720p_video_on_cmd8[] = {
 
 
 static struct mipi_dsi_cmd sharp_720p_video_on_command[] = {
-{ 0x4, sharp_720p_video_on_cmd0, 0, 0 },
-{ 0xC, sharp_720p_video_on_cmd1, 0, 0 },
-{ 0x4, sharp_720p_video_on_cmd2, 0, 0 },
-{ 0x4, sharp_720p_video_on_cmd3, 0, 0 },
-{ 0x4, sharp_720p_video_on_cmd4, 0, 0 },
-{ 0x4, sharp_720p_video_on_cmd5, 0, 0 },
-{ 0x4, sharp_720p_video_on_cmd6, 0, 0 },
-{ 0x4, sharp_720p_video_on_cmd7, 0x14, 0 },
-{ 0x4, sharp_720p_video_on_cmd8, 0x64, 0 },
+{ 0x4, sharp_720p_video_on_cmd0, 0 },
+{ 0xC, sharp_720p_video_on_cmd1, 0 },
+{ 0x4, sharp_720p_video_on_cmd2, 0 },
+{ 0x4, sharp_720p_video_on_cmd3, 0 },
+{ 0x4, sharp_720p_video_on_cmd4, 0 },
+{ 0x4, sharp_720p_video_on_cmd5, 0 },
+{ 0x4, sharp_720p_video_on_cmd6, 0 },
+{ 0x4, sharp_720p_video_on_cmd7, 0x14 },
+{ 0x4, sharp_720p_video_on_cmd8, 0x64 },
 };
 #define SHARP_720P_VIDEO_ON_COMMAND 9
 
