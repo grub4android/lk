@@ -68,8 +68,6 @@ static uint32_t ticks_per_sec = 0;
 mmu_section_t mmu_section_table[] = {
 /*  Physical addr,    Virtual addr,    Size (in MB),    Flags */
 	{MEMBASE, MEMBASE, (MEMSIZE / MB), LK_MEMORY},
-	{BASE_ADDR, BASE_ADDR, 44, KERNEL_MEMORY},
-	{SCRATCH_ADDR, SCRATCH_ADDR, 768, SCRATCH_MEMORY},
 	{MSM_IOMAP_BASE, MSM_IOMAP_BASE, MSM_IOMAP_SIZE, IOMAP_MEMORY},
 	{MSM_IMEM_BASE, MSM_IMEM_BASE, 1, IMEM_MEMORY},
 };
@@ -100,19 +98,11 @@ void platform_uninit(void)
 void platform_init_mmu_mappings(void)
 {
 	uint32_t i;
-	uint32_t sections;
 	uint32_t table_size = ARRAY_SIZE(mmu_section_table);
 
 	for (i = 0; i < table_size; i++) {
-		sections = mmu_section_table[i].num_of_sections;
-
-		while (sections--) {
-			arm_mmu_map_section(mmu_section_table[i].paddress +
-					    sections * MB,
-					    mmu_section_table[i].vaddress +
-					    sections * MB,
-					    mmu_section_table[i].flags);
-		}
+		platform_mmu_map_area(mmu_section_table[i].paddress, mmu_section_table[i].vaddress,
+			mmu_section_table[i].num_of_sections, mmu_section_table[i].flags);
 	}
 }
 

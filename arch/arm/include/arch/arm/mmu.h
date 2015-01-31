@@ -171,6 +171,8 @@ void arm_mmu_init(void);
 
 void arm_mmu_map_section(addr_t paddr, addr_t vaddr, uint flags);
 void arm_mmu_unmap_section(addr_t vaddr);
+void platform_mmu_map_area(addr_t paddress, addr_t vaddress, uint32_t num_of_sections, uint32_t flags);
+void arm_mmu_map_smem_table(void);
 
 #if WITH_MMU_RELOC
 static inline void validate_kvaddr(void *ptr)

@@ -27,6 +27,8 @@
 #include <arch/arm.h>
 #include <arch/arm/mmu.h>
 #include <platform.h>
+#include <smem.h>
+#include <stdlib.h>
 
 #if ARM_WITH_MMU
 
@@ -64,21 +66,46 @@ void arm_mmu_map_section(addr_t paddr, addr_t vaddr, uint flags)
 	arm_invalidate_tlb();
 }
 
+void platform_mmu_map_area(addr_t paddress, addr_t vaddress, uint32_t num_of_sections, uint32_t flags)
+{
+	uint32_t sections = num_of_sections;
+
+	while (sections--) {
+		arm_mmu_map_section(paddress + sections * MB,
+				    vaddress + sections * MB,
+				    flags);
+	}
+}
+
+void arm_mmu_map_smem_table(void) {
+	struct smem_ram_ptable ram_ptable;
+	uint8_t i = 0;
+
+	if (smem_ram_ptable_init(&ram_ptable))
+	{
+		for (i = 0; i < ram_ptable.len; i++)
+		{
+			if (ram_ptable.parts[i].category == SDRAM &&
+				(ram_ptable.parts[i].type == SYS_MEMORY))
+			{
+				uint32_t flags = MMU_MEMORY_TYPE_NORMAL_WRITE_THROUGH | MMU_MEMORY_AP_READ_WRITE | MMU_MEMORY_XN;
+				platform_mmu_map_area(ram_ptable.parts[i].start, ram_ptable.parts[i].start,
+					MAX(ram_ptable.parts[i].size/MB, 1), flags);
+			}
+		}
+	} else {
+		dprintf(CRITICAL, "ERROR: Unable to read RAM partition\n");
+		ASSERT(0);
+	}
+}
+
 static void arm_mmu_map_grub_region(void)
 {
 #ifdef GRUB_LOADING_ADDRESS
 	uint32_t sections = 32;
-	addr_t paddress = GRUB_LOADING_ADDRESS;
-	addr_t vaddress = paddress;
 	uint32_t flags = MMU_MEMORY_TYPE_NORMAL_WRITE_THROUGH | MMU_MEMORY_AP_READ_WRITE;
 
-	while (sections--) {
-		arm_mmu_map_section(paddress +
-				    sections * MB,
-				    vaddress +
-				    sections * MB,
-				    flags);
-	}
+	platform_mmu_map_area(GRUB_LOADING_ADDRESS, GRUB_LOADING_ADDRESS, sections, flags);
 #endif
 }
 
@@ -113,6 +140,7 @@ void arm_mmu_init(void)
 		}
 	}
 
+	arm_mmu_map_smem_table();
 	platform_init_mmu_mappings();
 	arm_mmu_map_grub_region();
 
