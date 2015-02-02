@@ -2112,6 +2112,13 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 				}
 			}
 #endif
+
+			bool is_grub = false;
+			if (!strcmp(pname, "grub")) {
+				pname = ABOOT_PARTITION;
+				is_grub = true;
+			}
+
 			index = partition_get_index(pname);
 			ptn = partition_get_offset(index);
 			if(ptn == 0) {
@@ -2137,6 +2144,12 @@ void cmd_flash_mmc_img(const char *arg, void *data, unsigned sz)
 			}
 
 			size = partition_get_size(index);
+
+			if (is_grub) {
+				ptn+=GRUB_PARTITION_OFFSET;
+				size-=GRUB_PARTITION_OFFSET;
+			}
+
 			if (ROUND_TO_PAGE(sz,511) > size) {
 				fastboot_fail("size too large");
 				return;

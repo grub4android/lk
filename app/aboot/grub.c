@@ -58,7 +58,7 @@ static int grub_load_from_mmc(void) {
 	}
 
 	// read core.img
-	off_t off = 0x100000;
+	off_t off = GRUB_PARTITION_OFFSET;
 	void* entry = (void*)GRUB_LOADING_ADDRESS;
 	if(dev->read(dev, entry, off, dev->size-off)<=0) {
 		dprintf(CRITICAL, "BIO read error\n");
