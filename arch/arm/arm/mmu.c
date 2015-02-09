@@ -101,11 +101,11 @@ void arm_mmu_map_smem_table(void) {
 
 static void arm_mmu_map_grub_region(void)
 {
-#ifdef GRUB_LOADING_ADDRESS
+#if defined(GRUB_LOADING_ADDRESS) && defined(GRUB_LOADING_ADDRESS_VIRTUAL)
 	uint32_t sections = 32;
 	uint32_t flags = MMU_MEMORY_TYPE_NORMAL_WRITE_THROUGH | MMU_MEMORY_AP_READ_WRITE;
 
-	platform_mmu_map_area(GRUB_LOADING_ADDRESS, GRUB_LOADING_ADDRESS, sections, flags);
+	platform_mmu_map_area(GRUB_LOADING_ADDRESS, GRUB_LOADING_ADDRESS_VIRTUAL, sections, flags);
 #endif
 }
 

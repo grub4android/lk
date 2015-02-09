@@ -59,7 +59,7 @@ static int grub_load_from_mmc(void) {
 
 	// read core.img
 	off_t off = GRUB_PARTITION_OFFSET;
-	void* entry = (void*)GRUB_LOADING_ADDRESS;
+	void* entry = (void*)GRUB_LOADING_ADDRESS_VIRTUAL;
 	if(dev->read(dev, entry, off, dev->size-off)<=0) {
 		dprintf(CRITICAL, "BIO read error\n");
 		return ERR_IO;
@@ -84,8 +84,11 @@ static int grub_sideload_handler(void *data)
 	void* local_kernel_addr = data + hdr->page_size;
 	void* local_ramdisk_addr = local_kernel_addr + kernel_size;
 
-	// Load ramdisk & kernel
-	memmove((void*) hdr->kernel_addr, local_kernel_addr, hdr->kernel_size);
+	// translate ramdisk_addr to phys
+	hdr->ramdisk_addr = hdr->ramdisk_addr-GRUB_LOADING_ADDRESS_VIRTUAL+GRUB_LOADING_ADDRESS;
+
+	// Load kernel & ramdisk (to phys locations)
+	memmove((void*) hdr->kernel_addr-GRUB_LOADING_ADDRESS_VIRTUAL+GRUB_LOADING_ADDRESS, local_kernel_addr, hdr->kernel_size);
 	memmove((void*) hdr->ramdisk_addr, local_ramdisk_addr, hdr->ramdisk_size);
 
 	// use ramdisk
@@ -143,7 +146,7 @@ int grub_load_from_sideload(void* data) {
 
 int grub_boot(void)
 {
-	void (*entry)(unsigned, unsigned, unsigned*) = (void*)GRUB_LOADING_ADDRESS;
+	void (*entry)(unsigned, unsigned, unsigned*) = (void*)GRUB_LOADING_ADDRESS_VIRTUAL;
 
 	// load grub into RAM
 #ifdef GRUB_BOOT_PARTITION
