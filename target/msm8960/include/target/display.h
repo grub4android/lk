@@ -76,4 +76,7 @@ static const uint32_t panel_physical_ctrl[] = {
 #define MIPI_VSYNC_BACK_PORCH_LINES  2
 #define MIPI_VSYNC_FRONT_PORCH_LINES 7
 
+uint32_t oem_panel_max_auto_detect_panels(void);
+void target_force_cont_splash_disable(uint8_t override);
+
 #endif

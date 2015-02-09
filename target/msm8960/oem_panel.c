@@ -29,10 +29,12 @@
 
 #include <debug.h>
 #include <err.h>
+#include <string.h>
 #include <smem.h>
 #include <msm_panel.h>
 #include <board.h>
 #include <mipi_dsi.h>
+#include <target.h>
 #include <endian.h>
 
 #include "include/panel.h"
@@ -92,8 +94,10 @@ static int init_panel_data(struct panel_struct *panelstruct,
 	switch (panel_id) {
 	case UNKNOWN_PANEL:
 		memset(panelstruct, 0, sizeof(struct panel_struct));
-		memset(pinfo->mipi.panel_cmds, 0, sizeof(struct mipi_dsi_cmd));
-		pinfo->mipi.num_of_panel_cmds = 0;
+		memset(pinfo->mipi.panel_on_cmds, 0, sizeof(struct mipi_dsi_cmd));
+		pinfo->mipi.num_of_panel_on_cmds = 0;
+		memset(pinfo->mipi.panel_off_cmds, 0, sizeof(struct mipi_dsi_cmd));
+		pinfo->mipi.num_of_panel_off_cmds = 0;
 		memset(phy_db->timing, 0, TIMING_SIZE);
 		pinfo->mipi.signature = 0;
 		dprintf(CRITICAL, "Unknown Panel");

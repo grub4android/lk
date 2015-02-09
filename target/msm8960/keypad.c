@@ -35,6 +35,7 @@
 #include <dev/gpio_keypad.h>
 #include <dev/pm8921.h>
 #include <platform/gpio.h>
+#include <platform/msm8960.h>
 #include <sys/types.h>
 #include <board.h>
 #include <smem.h>

@@ -31,6 +31,7 @@
  */
 
 #include <debug.h>
+#include <printf.h>
 #include <lib/ptable.h>
 #include <smem.h>
 #include <platform/iomap.h>
@@ -49,10 +50,12 @@
 #include <uart_dm.h>
 #include <crypto_hash.h>
 #include <board.h>
+#include <platform/msm_shared/timer.h>
 #include <target/board.h>
 #include <assert.h>
 #include <arch/defines.h>
 
+extern void apq8064_keypad_init(void);
 extern void msm8960_keypad_init(void);
 extern void msm8930_keypad_init(void);
 extern void panel_backlight_on(void);

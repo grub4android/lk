@@ -28,13 +28,20 @@
  */
 #include <debug.h>
 #include <err.h>
+#include <string.h>
 #include <msm_panel.h>
 #include <mipi_dsi.h>
 #include <dev/pm8921.h>
 #include <board.h>
+#include <platform/gpio.h>
+#include <platform/iomap.h>
+#include <platform/clock.h>
+#include <platform/msm8960.h>
 #include <mdp4.h>
 #include <target/display.h>
+#include <target.h>
 #include <target/board.h>
+#include <gcdb_display.h>
 
 #include "include/panel.h"
 #include "include/display_resource.h"
