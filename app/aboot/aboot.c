@@ -809,7 +809,7 @@ enum bootmode get_dualboot_mode(void)
 		if (dualboot_msg->command[11] == '1')
 			rc = BOOTMODE_SECOND;
 	} else
-		dprintf(CRITICAL, "WARNING: dual_boot_message not set\n");
+		dprintf(SPEW, "WARNING: dual_boot_message not set\n");
 
 out:
 	return rc;
