@@ -2490,10 +2490,22 @@ void cmd_flash_nand(const char *arg, void *data, unsigned sz)
 
 void cmd_flash(const char *arg, void *data, unsigned sz)
 {
-	if(target_is_emmc_boot())
-		cmd_flash_mmc(arg, data, sz);
-	else
-		cmd_flash_nand(arg, data, sz);
+	// split name by '+' for flashing the same image to multiple partitions
+	char* str = strdup(arg);
+	char* pch = strtok(str, "+");
+	while(pch) {
+		// flash part1
+		if(target_is_emmc_boot())
+			cmd_flash_mmc(pch, data, sz);
+		else
+			cmd_flash_nand(pch, data, sz);
+
+		// next
+		pch = strtok(NULL, "+");
+	}
+
+	// cleanup
+	free(str);
 }
 
 void cmd_continue(const char *arg, void *data, unsigned sz)
