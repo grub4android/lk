@@ -42,6 +42,9 @@
 #define BOARD_SOC_VERSION2     0x20000
 #define MAX_PMIC_DEVICES       SMEM_MAX_PMIC_DEVICES
 
+#define SOCINFO_VERSION_MAJOR(ver) ((ver & 0xffff0000) >> 16)
+#define SOCINFO_VERSION_MINOR(ver) (ver & 0x0000ffff)
+
 struct board_pmic_data {
 	uint32_t pmic_type;
 	uint32_t pmic_version;
@@ -106,6 +109,8 @@ uint32_t board_hardware_subtype(void);
 uint32_t board_get_ddr_subtype(void);
 uint32_t board_hlos_subtype(void);
 uint32_t board_pmic_target(uint8_t num_ent);
+uint32_t board_pmic_type(uint8_t num_ent);
+uint32_t board_pmic_version(uint8_t num_ent);
 uint32_t board_chip_serial(void);
 
 /* DDR Subtype Macros

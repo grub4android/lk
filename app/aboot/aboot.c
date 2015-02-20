@@ -221,6 +221,12 @@ char panel_display_mode[MAX_RSP_SIZE];
 char use_splash_partition[MAX_RSP_SIZE];
 char screen_resolution[MAX_RSP_SIZE];
 
+static char machtype_buf[16] = {0};
+static char soc_id_buf[16] = {0};
+static char soc_version_buf[16] = {0};
+static char pmic_model_buf[16] = "unknown";
+static char pmic_die_version_buf[16] = "unknown";
+
 extern int emmc_recovery_init(void);
 
 #if NO_KEYPAD_DRIVER
@@ -3030,6 +3036,11 @@ void aboot_fastboot_register_commands(void)
 	fastboot_publish("product",  TARGET);
 	fastboot_publish("kernel",   "lk");
 	fastboot_publish("serialno", sn_buf);
+	fastboot_publish("machtype", machtype_buf);
+	fastboot_publish("soc-id", soc_id_buf);
+	fastboot_publish("soc-version", soc_version_buf);
+	fastboot_publish("pmic-model", pmic_model_buf);
+	fastboot_publish("pmic-die-version", pmic_die_version_buf);
 
 	/*
 	 * partition info is supported only for emmc partitions
@@ -3186,6 +3197,7 @@ static void bootcount_aboot_inc(void) {
 void aboot_init(const struct app_descriptor *app)
 {
 	unsigned reboot_mode = 0;
+	uint32_t ret;
 
 	/* Setup page size information for nv storage */
 	if (target_is_emmc_boot())
@@ -3218,8 +3230,26 @@ void aboot_init(const struct app_descriptor *app)
 	/* initialize uboot api */
 	api_init();
 
+	// serial number
 	target_serialno((unsigned char *) sn_buf);
 	dprintf(SPEW,"serial number: %s\n",sn_buf);
+	// mach type
+	sprintf(machtype_buf, "%04x", board_target_id());
+	dprintf(SPEW, "mach type: %s, 0x%x\n", machtype_buf, board_target_id());
+	// soc id
+	ret = board_platform_id();
+	sprintf(soc_id_buf, "%d", ret);
+	dprintf(SPEW, "soc id: %s, 0x%x\n", soc_id_buf, ret);
+	// soc version
+	ret = board_soc_version();
+	sprintf(soc_version_buf, "%u.%u", SOCINFO_VERSION_MAJOR(ret), SOCINFO_VERSION_MINOR(ret));
+	dprintf(SPEW, "soc version: %s, 0x%x\n", soc_version_buf, ret);
+	// pmic type
+	ret = board_pmic_type(0);
+	if (ret) sprintf(pmic_model_buf, "%d", ret);
+	// pmic version
+	ret = board_pmic_version(0);
+	if (ret) sprintf(pmic_die_version_buf, "%d", ret);
 
 	/*
 	 * Check power off reason if user force reset,

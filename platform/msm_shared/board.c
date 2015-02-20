@@ -76,8 +76,8 @@ static void platform_detect(void)
 	 * Upper two bytes: major info
 	 * Lower two byets: minor info
 	 */
-	format_major = (format & 0xffff0000) >> 16;
-	format_minor = format & 0x0000ffff;
+	format_major = SOCINFO_VERSION_MAJOR(format);
+	format_minor = SOCINFO_VERSION_MINOR(format);
 
 	if (format_major == 0x0)
 	{
@@ -317,6 +317,22 @@ uint32_t board_pmic_target(uint8_t num_ent)
 {
 	if (num_ent < SMEM_MAX_PMIC_DEVICES) {
 		return board.pmic_info[num_ent].pmic_target;
+	}
+	return 0;
+}
+
+uint32_t board_pmic_type(uint8_t num_ent)
+{
+	if (num_ent < SMEM_MAX_PMIC_DEVICES) {
+		return board.pmic_info[num_ent].pmic_type;
+	}
+	return 0;
+}
+
+uint32_t board_pmic_version(uint8_t num_ent)
+{
+	if (num_ent < SMEM_MAX_PMIC_DEVICES) {
+		return board.pmic_info[num_ent].pmic_version;
 	}
 	return 0;
 }
