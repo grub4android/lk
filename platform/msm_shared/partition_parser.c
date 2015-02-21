@@ -689,13 +689,6 @@ static unsigned int write_gpt(uint32_t size, uint8_t *gptImage, uint32_t block_s
 	patch_gpt(gptImage, device_density, partition_entry_array_size,
 		  max_partition_count, partition_entry_size, block_size);
 
-	/* Erasing the eMMC card before writing */
-	ret = mmc_erase_card(0x00000000, device_density);
-	if (ret) {
-		dprintf(CRITICAL, "Failed to erase the eMMC card\n");
-		goto end;
-	}
-
 	/* Writing protective MBR */
 	ret = mmc_write(0, block_size, (unsigned int *)gptImage);
 	if (ret) {
