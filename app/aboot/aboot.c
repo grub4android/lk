@@ -3046,7 +3046,7 @@ void aboot_fastboot_register_commands(void)
 
 	/* publish variables and their values */
 	fastboot_publish("product",  TARGET);
-	fastboot_publish("kernel",   "lk");
+	fastboot_publish("kernel",   "g4a");
 	fastboot_publish("serialno", sn_buf);
 	fastboot_publish("machtype", machtype_buf);
 	fastboot_publish("soc-id", soc_id_buf);
