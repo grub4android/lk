@@ -262,7 +262,9 @@ void fbcon_putImage(struct fbimage *fbimg, bool flag)
     unsigned bytes_per_bpp;
     unsigned image_base;
     unsigned width, pitch, height;
+#if DISPLAY_TYPE_MIPI
     unsigned char *logo_base;
+#endif
     struct logo_img_header *header;
 
 
@@ -279,7 +281,9 @@ void fbcon_putImage(struct fbimage *fbimg, bool flag)
 	header = &fbimg->header;
 	width = pitch = header->width;
 	height = header->height;
+#if DISPLAY_TYPE_MIPI
 	logo_base = (unsigned char *)fbimg->image;
+#endif
 
 	total_x = config->width;
 	total_y = config->height;
