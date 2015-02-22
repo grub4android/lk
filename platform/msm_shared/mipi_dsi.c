@@ -631,8 +631,10 @@ int mipi_dsi_panel_initialize(struct mipi_dsi_panel_config *pinfo)
 static int aries_display_initialized = 0;
 void trigger_mdp_dsi(void)
 {
+#if !BOOT_2NDSTAGE
 	if(!aries_display_initialized)
 		return;
+#endif
 
 	dsb();
 	mdp_start_dma();
