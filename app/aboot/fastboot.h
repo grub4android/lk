@@ -54,6 +54,7 @@ void fastboot_fail(const char *reason);
 void fastboot_info(const char *reason);
 void fastboot_write(void *data, unsigned len);
 void fastboot_send_data(void *data, unsigned len);
+int fastboot_send_data_cb(off_t (*read)(void*pdata, void*buf, off_t offset, off_t len), void* pdata, off_t len);
 
 
 #endif

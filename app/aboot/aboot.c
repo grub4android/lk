@@ -2666,6 +2666,33 @@ void cmd_oem_screenshot(const char *arg, void *unused, unsigned sz)
 	fastboot_okay("");
 }
 
+static off_t fastboot_dump_partition_callback(void* pdata, void* buf, off_t offset, off_t len) {
+	bdev_t* dev = (bdev_t*)pdata;
+
+	ssize_t rc = bio_read(dev, buf, offset, len);
+	if (rc!=len) {
+		return -1;
+	}
+
+	return len;
+}
+
+void cmd_oem_dump_partition(const char *arg, void *unused, unsigned sz)
+{
+	bdev_t* dev = bio_open_by_label(arg+1);
+	if(!dev) {
+		fastboot_fail("invalid partition");
+		return;
+	}
+
+	if(fastboot_send_data_cb(&fastboot_dump_partition_callback, dev, dev->size)) {
+		dprintf(CRITICAL, "Error sending Data\n");
+		fastboot_fail("unknown error");
+	} else fastboot_okay("");
+
+	bio_close(dev);
+}
+
 void cmd_preflash(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
@@ -3030,6 +3057,7 @@ void aboot_fastboot_register_commands(void)
 		{"oem lk_log", cmd_oem_lk_log},
 	#endif
 		{"oem screenshot", cmd_oem_screenshot},
+		{"oem dump-partition", cmd_oem_dump_partition},
 		{"preflash", cmd_preflash},
 		{"oem enable-charger-screen", cmd_oem_enable_charger_screen},
 		{"oem disable-charger-screen", cmd_oem_disable_charger_screen},
