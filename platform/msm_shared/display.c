@@ -58,7 +58,9 @@ static int msm_fb_alloc(struct fbcon_config *fb)
 int msm_display_config(void)
 {
 	int ret = NO_ERROR;
+#if DISPLAY_TYPE_MDSS || DISPLAY_TYPE_MIPI
 	int mdp_rev;
+#endif
 	struct msm_panel_info *pinfo;
 
 	if (!panel)
@@ -144,14 +146,18 @@ int msm_display_config(void)
 	if (pinfo->config)
 		ret = pinfo->config((void *)pinfo);
 
+#if DISPLAY_TYPE_MDSS || DISPLAY_TYPE_MIPI
 msm_display_config_out:
+#endif
 	return ret;
 }
 
 int msm_display_on(void)
 {
 	int ret = NO_ERROR;
+#if DISPLAY_TYPE_MDSS || DISPLAY_TYPE_MIPI
 	int mdp_rev;
+#endif
 	struct msm_panel_info *pinfo;
 
 	if (!panel)
