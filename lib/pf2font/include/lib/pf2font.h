@@ -6,6 +6,7 @@
 int pf2font_init(char *font_data, unsigned long font_len);
 void pf2font_set_color(uint8_t r, uint8_t g, uint8_t b);
 int pf2font_puts(uint32_t x, uint32_t y, const char *str);
+int pf2font_putns(uint32_t x, uint32_t y, const char *str, int32_t len);
 int pf2font_printf(uint32_t x, uint32_t y, const char *fmt, ...);
 int pf2font_get_fontheight(void);
 int pf2font_get_strwidth(const char* fmt, ...);

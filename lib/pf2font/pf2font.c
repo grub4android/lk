@@ -318,7 +318,7 @@ void pf2font_set_color(uint8_t r, uint8_t g, uint8_t b)
 	color_b = b;
 }
 
-static int pf2font_puts_internal(uint32_t x, uint32_t y, const char *str, int print)
+static int pf2font_puts_internal(uint32_t x, uint32_t y, const char *__str, int print, int32_t len)
 {
 	uint32_t dx = x;
 	int written = 0, rc=0;
@@ -326,7 +326,12 @@ static int pf2font_puts_internal(uint32_t x, uint32_t y, const char *str, int pr
 	if (!font)
 		return -1;
 
-	while (*str != 0) {
+	const char *str = __str;
+	while (true) {
+		if(len>=0) {
+			if((str-__str)>=len) break;
+		} else if(*str==0) break;
+
 		char c = *str++;
 
 		// ESC
@@ -395,8 +400,13 @@ static int pf2font_puts_internal(uint32_t x, uint32_t y, const char *str, int pr
 }
 
 int pf2font_puts(uint32_t x, uint32_t y, const char *str) {
-	return pf2font_puts_internal(x, y, str, 1);
+	return pf2font_puts_internal(x, y, str, 1, -1);
 }
+
+int pf2font_putns(uint32_t x, uint32_t y, const char *str, int32_t len) {
+	return pf2font_puts_internal(x, y, str, 1, len);
+}
+
 
 int pf2font_printf(uint32_t x, uint32_t y, const char *fmt, ...)
 {
@@ -434,7 +444,7 @@ int pf2font_get_strwidth(const char* fmt, ...) {
 
 	if(!err) return -1;
 
-	return pf2font_puts_internal(0, 0, buf, 0);
+	return pf2font_puts_internal(0, 0, buf, 0, -1);
 }
 
 int pf2font_get_cwidth(char c)
