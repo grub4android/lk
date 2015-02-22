@@ -92,6 +92,8 @@ static void fbcon_drawglyph(uint16_t *pixels, uint16_t paint, unsigned stride,
 
 void fbcon_flush(void)
 {
+	if(!config) return;
+
 	if (config->update_start)
 		config->update_start();
 	if (config->update_done)
@@ -120,6 +122,7 @@ static void fbcon_scroll_up(void)
 /* TODO: take stride into account */
 void fbcon_clear(void)
 {
+	if(!config) return;
 	unsigned count = config->width * config->height;
 	memset(config->base, BGCOLOR, count * ((config->bpp) / 8));
 }
