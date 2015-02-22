@@ -55,7 +55,11 @@ static void menu_execute_entry(void (*fn)(void)) {
 	thread_resume(thr);
 }
 
-static char logbuf[2048][2048];
+// logbuf pointer and size
+static char** logbuf = NULL;
+static unsigned logbuf_rows = 0;
+static unsigned logbuf_cols = 0;
+// logbuf position
 unsigned logbuf_row = 0;
 unsigned logbuf_col = 0;
 unsigned logbuf_posx = 0;
@@ -67,6 +71,7 @@ void menu_putc(char c) {
 	static int in_putc = 0;
 
 	if(in_putc) return;
+	if(!logbuf) return;
 
 	// lock
 	if(is_initialized && !in_critical_section())
@@ -85,10 +90,10 @@ void menu_putc(char c) {
 	}
 
 	// scroll down
-	while(logbuf_row>ARRAY_SIZE(logbuf)-1) {
+	while(logbuf_row>logbuf_rows-1) {
 		unsigned i;
-		for(i=1; i<ARRAY_SIZE(logbuf); i++) {
-			memcpy(logbuf[i-1], logbuf[i], ARRAY_SIZE(logbuf[0]));
+		for(i=1; i<logbuf_rows; i++) {
+			memcpy(logbuf[i-1], logbuf[i], logbuf_cols);
 		}
 		logbuf_row--;
 	}
@@ -108,7 +113,7 @@ void menu_putc(char c) {
 	else if(in_expr && c=='m') in_expr = 0;
 
 	// line break
-	if(logbuf_col==ARRAY_SIZE(logbuf[logbuf_row]) || c=='\n') {
+	if(logbuf_col==logbuf_cols || c=='\n') {
 		logbuf_row++;
 		logbuf_col = 0;
 		logbuf_posx = 0;
@@ -291,7 +296,7 @@ static void menu_renderer(int keycode) {
 	int log_size = log_bottom-log_top;
 	int start = (logbuf_row-log_size);
 	for(i=(start>=0?start:0); i<=logbuf_row; i++) {
-		pf2font_printf(0, fh*y++, logbuf[i]);
+		pf2font_putns(0, fh*y++, logbuf[i], i==logbuf_row?(int32_t)logbuf_col:-1);
 	}
 	mutex_release(&logbuf_mutex);
 
@@ -304,6 +309,16 @@ static void menu_init(const struct app_descriptor *app)
 	dprintf(INFO, "Init menu.\n");
 	pf2font_init((char*)lkfont_pf2, lkfont_pf2_len);
 	mutex_init(&logbuf_mutex);
+
+	struct fbcon_config* config = fbcon_display();
+	logbuf_cols = config->width / pf2font_get_cwidth('!');
+	logbuf_rows = config->height / pf2font_get_fontheight();
+
+	unsigned i;
+	logbuf = malloc(sizeof(char*)*logbuf_rows);
+	for(i=0; i<logbuf_rows; i++)
+		logbuf[i] = malloc(sizeof(char)*logbuf_cols);
+
 	is_initialized = true;
 
 	menu_stack = calloc(sizeof(struct menu_stack_entry), 1);
