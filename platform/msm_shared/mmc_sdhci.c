@@ -1737,6 +1737,9 @@ static ssize_t mmc_sdhci_bdev_read_block(struct bdev *_bdev, void *buf, bnum_t b
 	uint32_t read_size = SDHCI_ADMA_MAX_TRANS_SZ;
 	uint32_t data_len = count * block_size;
 	uint64_t data_addr = (uint64_t)((uint64_t)block * block_size);
+
+	if(buf>=(void*)GRUB_LOADING_ADDRESS_VIRTUAL && buf<=(void*)GRUB_LOADING_ADDRESS_VIRTUAL+32*1024*1024)
+		buf = buf-GRUB_LOADING_ADDRESS_VIRTUAL+GRUB_LOADING_ADDRESS;
 	uint8_t *sptr = (uint8_t *)buf;
 
 	while (data_len > read_size) {
@@ -1767,6 +1770,9 @@ static ssize_t mmc_sdhci_bdev_write_block(struct bdev *_bdev, const void *buf, b
 	uint32_t write_size = SDHCI_ADMA_MAX_TRANS_SZ;
 	uint32_t data_len = count * block_size;
 	uint64_t data_addr = (uint64_t)((uint64_t)block * block_size);
+
+	if(buf>=(void*)GRUB_LOADING_ADDRESS_VIRTUAL && buf<=(void*)GRUB_LOADING_ADDRESS_VIRTUAL+32*1024*1024)
+		buf = buf-GRUB_LOADING_ADDRESS_VIRTUAL+GRUB_LOADING_ADDRESS;
 	uint8_t *sptr = (uint8_t *)buf;
 
 	while (data_len > write_size) {
