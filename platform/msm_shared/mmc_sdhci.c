@@ -1846,7 +1846,7 @@ struct mmc_device *mmc_init(struct mmc_config_data *data)
 #if WITH_LIB_BIO
 	char name[20];
 	mmc_sdhci_bdev_t *bdev = malloc(sizeof(mmc_sdhci_bdev_t));
-	snprintf(name, sizeof(name), "hd%d", data->slot);
+	snprintf(name, sizeof(name), "hd%d", data->slot-1);
 
 	/* set up the base device */
 	bio_initialize_bdev(&bdev->dev, name, dev->card.block_size, dev->card.capacity / dev->card.block_size);
