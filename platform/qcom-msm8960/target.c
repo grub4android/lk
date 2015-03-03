@@ -35,7 +35,6 @@
 #include <err.h>
 #include <debug.h>
 #include <dev/interrupt/arm_gic.h>
-#include <dev/timer/arm_qcom_timer.h>
 #include <dev/uart.h>
 #include <lk/init.h>
 #include <kernel/vm.h>
@@ -47,6 +46,7 @@
 #include <platform/board.h>
 #include <platform/uart_dm.h>
 #include <platform/baseband.h>
+#include <platform/qcom_timer.h>
 #include <platform/interrupts.h>
 #include "platform_p.h"
 

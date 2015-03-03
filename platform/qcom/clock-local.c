@@ -33,10 +33,10 @@
 #include <err.h>
 #include <limits.h>
 #include <bits.h>
-#include <platform/clock-common.h>
-#include <platform/clock-local.h>
 #include <platform/timer.h>
-#include <dev/timer/arm_qcom_timer.h>
+#include <platform/qcom_timer.h>
+#include <platform/clock-local.h>
+#include <platform/clock-common.h>
 
 /*
  * When enabling/disabling a clock, check the halt bit up to this number

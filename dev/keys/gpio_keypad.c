@@ -31,8 +31,9 @@
  * SUCH DAMAGE.
  */
 
-#include <assert.h>
+#include <reg.h>
 #include <bits.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dev/keys.h>
@@ -41,12 +42,11 @@
 #include <dev/ssbi.h>
 #include <kernel/event.h>
 #include <kernel/timer.h>
-#include <reg.h>
+#include <platform.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>
 #include <platform/qcom.h>
-#include <platform.h>
-#include <dev/timer/arm_qcom_timer.h>
+#include <platform/qcom_timer.h>
 
 #define LINUX_MACHTYPE_8660_QT      3298
 

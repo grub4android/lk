@@ -29,9 +29,9 @@
 
 #include <debug.h>
 #include <assert.h>
+#include <platform/smem.h>
 #include <platform/qcom.h>
 #include <platform/board.h>
-#include <platform/smem.h>
 #include <platform/baseband.h>
 #include <platform/boot_device.h>
 

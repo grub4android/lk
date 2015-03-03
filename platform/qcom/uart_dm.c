@@ -30,18 +30,18 @@
 #include <stdlib.h>
 #include <debug.h>
 #include <assert.h>
-#include <kernel/thread.h>
 #include <reg.h>
 #include <sys/types.h>
 #include <arch/arm.h>
-#include <platform/iomap.h>
+#include <kernel/thread.h>
 #include <platform/irqs.h>
-#include <platform/interrupts.h>
-#include <platform/clock.h>
 #include <platform/gpio.h>
 #include <platform/gsbi.h>
+#include <platform/iomap.h>
+#include <platform/clock.h>
 #include <platform/uart_dm.h>
-#include <dev/timer/arm_qcom_timer.h>
+#include <platform/interrupts.h>
+#include <platform/qcom_timer.h>
 
 static int uart_init_flag = 0;
 

@@ -32,16 +32,16 @@
 #include <err.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <bits.h>
+#include <sys/types.h>
+#include <arch/arm.h>
+#include <platform/iomap.h>
+#include <platform/timer.h>
 #include <platform/clock.h>
 #include <platform/clock_pll.h>
+#include <platform/qcom_timer.h>
 #include <platform/clock-local.h>
-#include <bits.h>
-#include <platform/iomap.h>
 #include <platform/clock-common.h>
-#include <platform/timer.h>
-#include <sys/types.h>
-#include <dev/timer/arm_qcom_timer.h>
-#include <arch/arm.h>
 
 static int xo_clk_enable(struct clk *clk)
 {

@@ -24,9 +24,9 @@
  */
 
 #include <compiler.h>
+#include <kernel/vm.h>
 #include <platform/qcom.h>
 #include <platform/iomap.h>
-#include <kernel/vm.h>
 
 void platform_init_mmu_mappings(void)
 {

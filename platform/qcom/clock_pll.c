@@ -33,9 +33,9 @@
 #include <bits.h>
 #include <limits.h>
 #include <platform/timer.h>
-#include <platform/clock-common.h>
 #include <platform/clock_pll.h>
-#include <dev/timer/arm_qcom_timer.h>
+#include <platform/qcom_timer.h>
+#include <platform/clock-common.h>
 
 /*
  * pll_vote_clk functions

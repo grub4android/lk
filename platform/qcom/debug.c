@@ -23,11 +23,10 @@
 #include <stdarg.h>
 #include <reg.h>
 #include <stdio.h>
-#include <kernel/thread.h>
 #include <dev/uart.h>
+#include <kernel/thread.h>
 #include <platform/debug.h>
 #include <target/debugconfig.h>
-#include <reg.h>
 
 /* DEBUG_UART must be defined to 0 or 1 */
 #if defined(DEBUG_UART) && DEBUG_UART == 0

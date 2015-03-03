@@ -1,6 +1,5 @@
 TARGET := qcom-msm8960
 QCOM_ENABLE_UART := 1
-QCOM_MMU_IDENTITY_MAP := 1
 
 MODULES += \
 	app/tests \

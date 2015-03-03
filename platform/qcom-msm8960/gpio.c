@@ -30,13 +30,13 @@
 #include <reg.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <platform/iomap.h>
+#include <sys/types.h>
+#include <platform/smem.h>
 #include <platform/gpio.h>
 #include <platform/gsbi.h>
+#include <platform/iomap.h>
 #include <platform/board.h>
-#include <platform/smem.h>
 #include <dev/pmic/pm8921.h>
-#include <sys/types.h>
 #include "platform_p.h"
 
 void gpio_tlmm_config(uint32_t gpio, uint8_t func,

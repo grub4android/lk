@@ -11,6 +11,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/start.S \
 	$(LOCAL_DIR)/platform.c \
 	$(LOCAL_DIR)/debug.c \
+	$(LOCAL_DIR)/timer.c \
 	$(LOCAL_DIR)/clock.c \
 	$(LOCAL_DIR)/clock-local.c \
 	$(LOCAL_DIR)/clock_pll.c \
@@ -21,8 +22,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/mmc.c
 
 MODULE_DEPS += \
-	dev/interrupt/arm_gic \
-	dev/timer/arm_qcom
+	dev/interrupt/arm_gic
 
 ifeq ($(QCOM_ENABLE_UART),1)
 GLOBAL_DEFINES += QCOM_ENABLE_UART

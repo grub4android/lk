@@ -34,12 +34,11 @@
 #include <debug.h>
 #include <reg.h>
 #include <sys/types.h>
-
-#include <platform/timer.h>
+#include <kernel/thread.h>
 #include <platform/irqs.h>
 #include <platform/iomap.h>
+#include <platform/timer.h>
 #include <platform/interrupts.h>
-#include <kernel/thread.h>
 
 #define GPT_ENABLE_CLR_ON_MATCH_EN        2
 #define GPT_ENABLE_EN                     1

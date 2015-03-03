@@ -34,24 +34,24 @@
 #include <reg.h>
 #include <err.h>
 #include <debug.h>
-#include <dev/interrupt/arm_gic.h>
-#include <dev/timer/arm_qcom_timer.h>
-#include <dev/pmic/pm8921.h>
-#include <platform/timer.h>
+#include <lk/init.h>
+#include <kernel/vm.h>
 #include <dev/ssbi.h>
 #include <dev/uart.h>
 #include <dev/keys.h>
-#include <lk/init.h>
-#include <kernel/vm.h>
+#include <dev/pmic/pm8921.h>
+#include <dev/interrupt/arm_gic.h>
 #include <platform.h>
 #include <platform/gic.h>
 #include <platform/smem.h>
 #include <platform/qcom.h>
 #include <platform/iomap.h>
 #include <platform/board.h>
+#include <platform/timer.h>
 #include <platform/uart_dm.h>
 #include <platform/baseband.h>
 #include <platform/interrupts.h>
+#include <platform/qcom_timer.h>
 #include "platform_p.h"
 
 static unsigned mmc_sdc_base[] =

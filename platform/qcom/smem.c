@@ -32,8 +32,8 @@
 #include <reg.h>
 #include <sys/types.h>
 #include <platform/qcom.h>
-#include <platform/iomap.h>
 #include <platform/smem.h>
+#include <platform/iomap.h>
 
 static struct smem *smem;
 

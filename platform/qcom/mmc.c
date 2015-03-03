@@ -31,12 +31,12 @@
 #include <debug.h>
 #include <reg.h>
 #include <bits.h>
+#include <platform/mmc.h>
 #include <platform/qcom.h>
 #include <platform/iomap.h>
 #include <platform/timer.h>
-#include <platform/mmc.h>
 #include <platform/clock.h>
-#include <dev/timer/arm_qcom_timer.h>
+#include <platform/qcom_timer.h>
 
 #if MMC_BOOT_ADM
 #include "adm.h"

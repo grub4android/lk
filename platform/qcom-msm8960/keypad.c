@@ -30,14 +30,14 @@
 #include <string.h>
 #include <debug.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <dev/keys.h>
 #include <dev/ssbi.h>
 #include <dev/gpio_keypad.h>
 #include <dev/pmic/pm8921.h>
 #include <platform/gpio.h>
-#include <sys/types.h>
-#include <platform/board.h>
 #include <platform/smem.h>
+#include <platform/board.h>
 #include "platform_p.h"
 
 #define BITS_IN_ELEMENT(x) (sizeof(x) * 8)

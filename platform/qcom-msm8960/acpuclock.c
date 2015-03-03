@@ -30,13 +30,13 @@
 #include <printf.h>
 #include <reg.h>
 #include <assert.h>
-#include <platform/iomap.h>
-#include <platform/clock-common.h>
-#include <platform/gsbi.h>
 #include <platform/mmc.h>
+#include <platform/smem.h>
+#include <platform/gsbi.h>
 #include <platform/clock.h>
 #include <platform/board.h>
-#include <platform/smem.h>
+#include <platform/iomap.h>
+#include <platform/clock-common.h>
 
 /* Set rate and enable the clock */
 static void clock_config(uint32_t ns, uint32_t md, uint32_t ns_addr, uint32_t md_addr)
