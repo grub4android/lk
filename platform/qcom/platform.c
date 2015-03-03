@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2008-2014 Travis Geiselbrecht
+ * Copyright (c) 2008 Travis Geiselbrecht
+ *
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,38 +22,33 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __STDLIB_H
-#define __STDLIB_H
 
-#include <sys/types.h>
-#include <stddef.h>
-#include <malloc.h>
-#include <endian.h>
-#include <rand.h>
-#include <arch/defines.h>
+#include <compiler.h>
+#include <platform/qcom.h>
+#include <platform/iomap.h>
+#include <kernel/vm.h>
 
-int atoi(const char *num);
-unsigned int atoui(const char *num);
-long atol(const char *num);
-unsigned long atoul(const char *num);
-unsigned long long atoull(const char *num);
+void platform_init_mmu_mappings(void)
+{
+}
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+__WEAK uint32_t platform_get_smem_base_addr(void)
+{
+	return (uint32_t)MSM_SHARED_BASE;
+}
 
-#define ROUNDUP(a, b) (((a) + ((b)-1)) & ~((b)-1))
-#define ROUNDDOWN(a, b) ((a) & ~((b)-1))
+__WEAK int boot_device_mask(int val)
+{
+	return ((val & 0x3E) >> 1);
+}
 
-#define ALIGN(a, b) ROUNDUP(a, b)
-#define IS_ALIGNED(a, b) (!((a) & ((b)-1)))
+__WEAK uint32_t platform_detect_panel(void)
+{
+	return 0;
+}
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
-/* allocate a buffer on the stack aligned and padded to the cpu's cache line size */
-#define STACKBUF_DMA_ALIGN(var, size) \
-    uint8_t __##var[(size) + CACHE_LINE]; uint8_t *var = (uint8_t *)(ROUNDUP((addr_t)__##var, CACHE_LINE))
-
-void qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *));
-
-#endif
+__WEAK uint32_t platform_get_boot_dev(void)
+{
+	return 0;
+}
 

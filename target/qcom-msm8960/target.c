@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2008-2014 Travis Geiselbrecht
+ * Copyright (c) 2014 Travis Geiselbrecht
+ * Copyright (c) 2014 Chris Anderson
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,38 +21,12 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __STDLIB_H
-#define __STDLIB_H
 
-#include <sys/types.h>
-#include <stddef.h>
-#include <malloc.h>
-#include <endian.h>
-#include <rand.h>
-#include <arch/defines.h>
+#include <platform/qcom.h>
 
-int atoi(const char *num);
-unsigned int atoui(const char *num);
-long atol(const char *num);
-unsigned long atoul(const char *num);
-unsigned long long atoull(const char *num);
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
-#define ROUNDUP(a, b) (((a) + ((b)-1)) & ~((b)-1))
-#define ROUNDDOWN(a, b) ((a) & ~((b)-1))
-
-#define ALIGN(a, b) ROUNDUP(a, b)
-#define IS_ALIGNED(a, b) (!((a) & ((b)-1)))
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
-/* allocate a buffer on the stack aligned and padded to the cpu's cache line size */
-#define STACKBUF_DMA_ALIGN(var, size) \
-    uint8_t __##var[(size) + CACHE_LINE]; uint8_t *var = (uint8_t *)(ROUNDUP((addr_t)__##var, CACHE_LINE))
-
-void qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *));
-
+void target_early_init(void)
+{
+#ifdef QCOM_ENABLE_UART
+	platform_uart_init_auto();
 #endif
-
+}

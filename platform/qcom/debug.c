@@ -20,38 +20,42 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __STDLIB_H
-#define __STDLIB_H
+#include <stdarg.h>
+#include <reg.h>
+#include <stdio.h>
+#include <kernel/thread.h>
+#include <dev/uart.h>
+#include <platform/debug.h>
+#include <target/debugconfig.h>
+#include <reg.h>
 
-#include <sys/types.h>
-#include <stddef.h>
-#include <malloc.h>
-#include <endian.h>
-#include <rand.h>
-#include <arch/defines.h>
-
-int atoi(const char *num);
-unsigned int atoui(const char *num);
-long atol(const char *num);
-unsigned long atoul(const char *num);
-unsigned long long atoull(const char *num);
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
-#define ROUNDUP(a, b) (((a) + ((b)-1)) & ~((b)-1))
-#define ROUNDDOWN(a, b) ((a) & ~((b)-1))
-
-#define ALIGN(a, b) ROUNDUP(a, b)
-#define IS_ALIGNED(a, b) (!((a) & ((b)-1)))
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
-/* allocate a buffer on the stack aligned and padded to the cpu's cache line size */
-#define STACKBUF_DMA_ALIGN(var, size) \
-    uint8_t __##var[(size) + CACHE_LINE]; uint8_t *var = (uint8_t *)(ROUNDUP((addr_t)__##var, CACHE_LINE))
-
-void qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *));
-
+/* DEBUG_UART must be defined to 0 or 1 */
+#if defined(DEBUG_UART) && DEBUG_UART == 0
+#define DEBUG_UART_BASE UART0_BASE
+#elif defined(DEBUG_UART) && DEBUG_UART == 1
+#define DEBUG_UART_BASE UART1_BASE
+#else
+#error define DEBUG_UART to something valid
 #endif
+
+void platform_dputc(char c)
+{
+#ifdef QCOM_ENABLE_UART
+    if (c == '\n')
+        uart_putc(DEBUG_UART, '\r');
+    uart_putc(DEBUG_UART, c);
+#endif
+}
+
+int platform_dgetc(char *c, bool wait)
+{
+#ifdef QCOM_ENABLE_UART
+    int ret = uart_getc(DEBUG_UART, wait);
+    if (ret == -1)
+        return -1;
+    *c = ret;
+#endif
+
+    return 0;
+}
 
