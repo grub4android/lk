@@ -120,6 +120,10 @@ __mmu_start:
 	cmp		r6, #4096
 	bne		0b
 
+#if WITH_MMU_CALLBACK
+	bl platform_mmu_callback
+#endif
+
 	/* load the address of the mmu_initial_mappings table and start processing */
 	ldr		r5, =mmu_initial_mappings
 	add		r5, r12
