@@ -5,6 +5,7 @@ MODULES += \
 	app/tests \
 	app/stringtests \
 	app/shell \
+	app/fastboot \
 	lib/aes \
 	lib/aes/test \
 	lib/bytes \

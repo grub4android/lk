@@ -5,6 +5,7 @@ MODULE := $(LOCAL_DIR)
 ARCH := arm
 ARM_CPU := cortex-a8
 QCOM_MMU_IDENTITY_MAP := 1
+QCOM_ENABLE_EMMC := 1
 
 GLOBAL_INCLUDES += \
 	$(LOCAL_DIR)/include

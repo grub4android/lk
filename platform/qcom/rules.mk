@@ -19,7 +19,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/smem.c \
 	$(LOCAL_DIR)/smem_ptable.c \
 	$(LOCAL_DIR)/qcom_ptable.c \
-	$(LOCAL_DIR)/mmc.c
+	$(LOCAL_DIR)/hsusb.c
 
 MODULE_DEPS += \
 	dev/interrupt/arm_gic
@@ -28,6 +28,12 @@ ifeq ($(QCOM_ENABLE_UART),1)
 GLOBAL_DEFINES += QCOM_ENABLE_UART
 MODULE_SRCS += \
 	$(LOCAL_DIR)/uart_dm.c
+endif
+
+ifeq ($(QCOM_ENABLE_EMMC),1)
+GLOBAL_DEFINES += QCOM_ENABLE_EMMC
+MODULE_SRCS += \
+	$(LOCAL_DIR)/mmc.c
 endif
 
 ifeq ($(QCOM_MMU_IDENTITY_MAP),1)

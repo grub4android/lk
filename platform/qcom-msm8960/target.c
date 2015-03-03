@@ -34,13 +34,15 @@
 #include <reg.h>
 #include <err.h>
 #include <debug.h>
-#include <dev/interrupt/arm_gic.h>
 #include <dev/uart.h>
+#include <dev/pmic/pm8921.h>
+#include <dev/interrupt/arm_gic.h>
 #include <lk/init.h>
 #include <kernel/vm.h>
 #include <platform.h>
 #include <platform/gic.h>
 #include <platform/smem.h>
+#include <platform/gpio.h>
 #include <platform/qcom.h>
 #include <platform/iomap.h>
 #include <platform/board.h>
@@ -285,4 +287,29 @@ unsigned board_machtype(void)
 unsigned target_baseband(void)
 {
 	return board_baseband();
+}
+
+static void apq8064_ext_3p3V_enable(void)
+{
+	/* Configure GPIO for output */
+	gpio_tlmm_config(77, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA, GPIO_ENABLE);
+
+	/* Output High */
+	gpio_set(77, 2);
+}
+
+/* Do any target specific intialization needed before entering fastboot mode */
+void target_fastboot_init(void)
+{
+	/* Set the BOOT_DONE flag in PM8921 */
+	pm8921_boot_done();
+}
+
+/* Do target specific usb initialization */
+void target_usb_init(void)
+{
+	if(board_target_id() == LINUX_MACHTYPE_8064_LIQUID)
+	{
+		apq8064_ext_3p3V_enable();
+	}
 }

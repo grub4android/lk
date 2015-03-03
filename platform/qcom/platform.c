@@ -23,6 +23,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <printf.h>
 #include <compiler.h>
 #include <kernel/vm.h>
 #include <platform/qcom.h>
@@ -50,5 +51,34 @@ __WEAK uint32_t platform_detect_panel(void)
 __WEAK uint32_t platform_get_boot_dev(void)
 {
 	return 0;
+}
+
+/* Default target specific initialization before using USB */
+__WEAK void target_usb_init(void)
+{
+}
+
+/* Default target specific usb shutdown */
+__WEAK void target_usb_stop(void)
+{
+}
+
+__WEAK void target_fastboot_init(void)
+{
+}
+
+__WEAK void target_serialno(unsigned char *buf)
+{
+#ifdef QCOM_ENABLE_EMMC
+	snprintf((char *)buf, 13, "%x", mmc_get_psn());
+#else
+	snprintf((char *)buf, 13, "%s", PROJECT);
+#endif
+}
+
+/* default usb controller to be used. */
+__WEAK const char* target_usb_controller(void)
+{
+	return "ci";
 }
 

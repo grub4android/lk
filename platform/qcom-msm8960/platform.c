@@ -54,9 +54,6 @@
 #include <platform/qcom_timer.h>
 #include "platform_p.h"
 
-static unsigned mmc_sdc_base[] =
-    { MSM_SDC1_BASE, MSM_SDC2_BASE, MSM_SDC3_BASE, MSM_SDC4_BASE };
-
 static pmm_arena_t arena = {
     .name = "sdram",
     .base = MEMBASE,
@@ -130,6 +127,9 @@ void platform_init(void)
 		dprintf(CRITICAL,"Keyboard is not supported for platform: %d\n",platform_id);
 	};
 
+#ifdef QCOM_ENABLE_EMMC
+	unsigned mmc_sdc_base[] = { MSM_SDC1_BASE, MSM_SDC2_BASE, MSM_SDC3_BASE, MSM_SDC4_BASE };
+
 	/* Trying Slot 1 first */
 	slot = 1;
 	base_addr = mmc_sdc_base[slot - 1];
@@ -142,6 +142,7 @@ void platform_init(void)
 			ASSERT(0);
 		}
 	}
+#endif
 }
 
 void platform_quiesce(void)

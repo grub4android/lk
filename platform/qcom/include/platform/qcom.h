@@ -32,3 +32,9 @@ uint32_t platform_detect_panel(void);
 uint32_t platform_get_smem_base_addr(void);
 
 int boot_device_mask(int val);
+
+void target_usb_init(void);
+void target_usb_stop(void);
+void target_fastboot_init(void);
+void target_serialno(unsigned char *buf);
+const char* target_usb_controller(void);
