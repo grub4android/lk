@@ -53,8 +53,9 @@ int platform_dgetc(char *c, bool wait)
     if (ret == -1)
         return -1;
     *c = ret;
+    return 0;
 #endif
 
-    return 0;
+    return -1;
 }
 
