@@ -297,6 +297,18 @@ bdev_t *bio_open(const char *name)
 	return bdev;
 }
 
+bdev_t *bio_open_first_dev(void)
+{
+	bdev_t *bdev = NULL;
+
+	mutex_acquire(&bdevs->lock);
+	bdev = list_peek_tail_type(&bdevs->list, bdev_t, node);
+	if(bdev) bdev_inc_ref(bdev);
+	mutex_release(&bdevs->lock);
+
+	return bdev;
+}
+
 void bio_close(bdev_t *dev)
 {
 	DEBUG_ASSERT(dev);
