@@ -36,7 +36,7 @@ __BEGIN_CDECLS
 
 /* debug levels */
 #define CRITICAL 0
-#define ALWAYS 0
+#define ALWAYS -1
 #define INFO 1
 #define SPEW 2
 
@@ -45,6 +45,17 @@ __BEGIN_CDECLS
 typedef void (*debug_catcher_t)(char c);
 void debug_catcher_add(debug_catcher_t c);
 void debug_catcher_remove(debug_catcher_t c);
+
+#define COLOR_RED "\e[31m"
+#define COLOR_YELLOW "\e[33m"
+#define COLOR_RESET "\e[0m"
+#define COLOR_CYAN "\e[36m"
+
+#define LOG_COLOR_SET(level) { \
+	if((level)==CRITICAL) _dputs(COLOR_RED); \
+	else if((level)==INFO) _dputs(COLOR_CYAN); \
+	else if((level)==SPEW) _dputs(COLOR_YELLOW); \
+}
 
 /* input/output */
 void _dputc(char c);
@@ -72,8 +83,9 @@ static inline void hexdump8(const void *ptr, size_t len) { }
 
 #define dputc(level, str) do { if ((level) <= LK_DEBUGLEVEL) { _dputc(str); } } while (0)
 #define dputs(level, str) do { if ((level) <= LK_DEBUGLEVEL) { _dputs(str); } } while (0)
-#define dprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { _dprintf(x); } } while (0)
-#define dvprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { _dvprintf(x); } } while (0)
+#define dprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { LOG_COLOR_SET(level); _dprintf(x); _dputs(COLOR_RESET); } } while (0)
+#define dvprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { LOG_COLOR_SET(level); _dvprintf(x); _dputs(COLOR_RESET); } } while (0)
+
 
 /* systemwide halts */
 void _panic(void *caller, const char *fmt, ...) __PRINTFLIKE(2, 3) __NO_RETURN;
