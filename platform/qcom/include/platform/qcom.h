@@ -28,6 +28,7 @@
 #include QCOM_ADDITIONAL_INCLUDE
 #endif
 
+void platform_qcom_init_pmm(void);
 uint32_t platform_detect_panel(void);
 uint32_t platform_get_smem_base_addr(void);
 

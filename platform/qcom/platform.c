@@ -24,6 +24,7 @@
  */
 
 #include <printf.h>
+#include <string.h>
 #include <compiler.h>
 #include <kernel/vm.h>
 #include <platform/qcom.h>
@@ -40,6 +41,46 @@
 __WEAK __attribute__((section(".data"))) struct mmu_initial_mapping mmu_initial_mappings_static[] = {
 	{ 0 },
 };
+
+static pmm_arena_t arenas[4];
+static pmm_arena_t arena_lk = {
+    .name = "sdram",
+    .base = MEMBASE,
+    .size = MEMSIZE,
+    .flags = PMM_ARENA_FLAG_KMAP,
+};
+
+void platform_qcom_init_pmm(void) {
+	int i = 0;
+	struct mmu_initial_mapping *map = mmu_initial_mappings;
+
+	while (map->size>0 && i<4) {
+		if (map->phys==map->virt && map->name && !strcmp(map->name, "memory")) {
+			pmm_arena_t* arena = &arenas[i++];
+			memset(arena, 0, sizeof(*arena));
+
+			arena->name = "sdram";
+			arena->base = map->phys;
+			arena->size = map->size;
+			arena->flags = PMM_ARENA_FLAG_KMAP;
+
+			// skip firt page to prevent null pointer
+			if(!arena->base) {
+				arena->base+=PAGE_SIZE;
+				arena->size-=PAGE_SIZE;
+			}
+
+			pmm_add_arena(arena);
+		}
+
+		map++;
+	}
+
+	// use LK map only in case we couldn't find any suitable map
+	if(!i) {
+	    pmm_add_arena(&arena_lk);
+	}
+}
 
 void platform_init_mmu_mappings(void)
 {

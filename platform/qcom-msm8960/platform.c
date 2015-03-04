@@ -54,13 +54,6 @@
 #include <platform/qcom_timer.h>
 #include "platform_p.h"
 
-static pmm_arena_t arena = {
-    .name = "sdram",
-    .base = MEMBASE,
-    .size = MEMSIZE,
-    .flags = PMM_ARENA_FLAG_KMAP,
-};
-
 void platform_early_init(void)
 {
     msm_clocks_init();
@@ -72,8 +65,7 @@ void platform_early_init(void)
 
     board_init();
 
-    /* add the main memory arena */
-    pmm_add_arena(&arena);
+    platform_qcom_init_pmm();
 }
 
 void platform_init(void)

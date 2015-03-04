@@ -38,6 +38,7 @@
 #include <kernel/vm.h>
 #include <dev/interrupt/arm_gic.h>
 #include <platform/mmc.h>
+#include <platform/qcom.h>
 #include <platform/spmi.h>
 #include <platform/irqs.h>
 #include <platform/board.h>
@@ -71,13 +72,6 @@ struct mmu_initial_mapping mmu_initial_mappings_static[] = {
 	{ 0 },
 };
 
-static pmm_arena_t arena = {
-    .name = "sdram",
-    .base = MEMBASE,
-    .size = MEMSIZE,
-    .flags = PMM_ARENA_FLAG_KMAP,
-};
-
 void platform_early_init(void)
 {
     board_init();
@@ -89,8 +83,7 @@ void platform_early_init(void)
 
     qtimer_init();
 
-    /* add the main memory arena */
-    pmm_add_arena(&arena);
+    platform_qcom_init_pmm();
 }
 
 #ifdef QCOM_ENABLE_EMMC
