@@ -54,7 +54,7 @@ static char *debug_buffer;
 static bool echo = true;
 
 /* command processor state */
-static mutex_t *command_lock;
+static mutex_t *command_lock = NULL;
 int lastresult;
 static bool abort_script;
 
@@ -100,6 +100,9 @@ STATIC_COMMAND_END(help);
 
 int console_init(void)
 {
+	if(command_lock && command_lock->magic==MUTEX_MAGIC)
+		return 0;
+
 	LTRACE_ENTRY;
 
 	command_lock = calloc(sizeof(mutex_t), 1);
@@ -542,6 +545,29 @@ static void convert_args(int argc, cmd_args *argv)
 	}
 }
 
+status_t console_run_command(const char* line) {
+	cmd_args args[MAX_NUM_ARGS];
+	char outbuf[1024];
+	const char* continuebuffer = NULL;
+
+	// parse command
+	int argc = tokenize_command(line, &continuebuffer, outbuf, sizeof(outbuf), args, MAX_NUM_ARGS);
+	if (argc < 0) {
+		return ERR_INVALID_ARGS;
+	}
+	convert_args(argc, args);
+
+	// get command
+	const cmd *command = match_command(args[0].str);
+	if(!command) return ERR_NOT_FOUND;
+
+	// run command
+	mutex_acquire(command_lock);
+	int rc = command->cmd_callback(argc, args);
+	mutex_release(command_lock);
+
+	return rc;
+}
 
 static status_t command_loop(int (*get_line)(const char **, void *), void *get_line_cookie, bool showprompt, bool locked)
 {
