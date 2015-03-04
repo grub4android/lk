@@ -114,7 +114,7 @@ FUNCTION(platform_mmu_callback)
 	// full identity map
 	mov r0, #0
 	mov r1, #0
-	mov r2, #4294967295
+	ldr r2, =KERNEL_ASPACE_BASE
 	ldr r3, =MMU_INITIAL_MAPPING_FLAG_DEVICE
 	ldr r4, =arm_qcom_mmu_name_identity
 	bl arm_qcom_mmu_table_add
