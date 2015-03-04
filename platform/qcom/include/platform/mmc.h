@@ -29,9 +29,6 @@
 #ifndef __MMC_H__
 #define __MMC_H__
 
-#ifdef QCOM_ENABLE_SDHCI
-#include "mmc_sdhci.h"
-#else
 #ifndef MMC_SLOT
 #define MMC_SLOT            0
 #endif
@@ -636,5 +633,4 @@ uint8_t card_supports_hs200_mode(void);
 uint64_t mmc_get_device_capacity(void);
 void mmc_put_card_to_sleep(void);
 uint32_t mmc_get_device_blocksize(void);
-#endif
 #endif

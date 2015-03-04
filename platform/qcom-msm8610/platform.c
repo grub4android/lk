@@ -37,7 +37,6 @@
 #include <string.h>
 #include <kernel/vm.h>
 #include <dev/interrupt/arm_gic.h>
-#include <platform/mmc.h>
 #include <platform/qcom.h>
 #include <platform/spmi.h>
 #include <platform/irqs.h>

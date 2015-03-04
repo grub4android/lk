@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <sys/types.h>
-#include <platform/mmc.h>
 #include <platform/qcom.h>
 #include <platform/irqs.h>
 #include <platform/iomap.h>
