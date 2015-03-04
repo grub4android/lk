@@ -35,7 +35,7 @@
 
 /* debug levels */
 #define CRITICAL 0
-#define ALWAYS 0
+#define ALWAYS -1
 #define INFO 1
 #define SPEW 2
 
@@ -48,6 +48,17 @@ struct __print_callback {
 __BEGIN_CDECLS
 
 #if !DISABLE_DEBUG_OUTPUT
+
+#define COLOR_RED "\e[31m"
+#define COLOR_YELLOW "\e[33m"
+#define COLOR_RESET "\e[0m"
+#define COLOR_CYAN "\e[36m"
+
+#define LOG_COLOR_SET(level) { \
+	if((level)==CRITICAL) _dputs(COLOR_RED); \
+	else if((level)==INFO) _dputs(COLOR_CYAN); \
+	else if((level)==SPEW) _dputs(COLOR_YELLOW); \
+}
 
 /* input/output */
 void _dputc(char c);
@@ -81,9 +92,10 @@ void unregister_print_callback(print_callback_t *cb);
 
 #define dputc(level, str) do { if ((level) <= LK_DEBUGLEVEL) { _dputc(str); } } while (0)
 #define dputs(level, str) do { if ((level) <= LK_DEBUGLEVEL) { _dputs(str); } } while (0)
-#define dwrite(level, ptr, len) do { if ((level) <= LK_DEBUGLEVEL) { _dwrite(ptr, len); } } while(0)
-#define dprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { _dprintf(x); } } while (0)
-#define dvprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { _dvprintf(x); } } while (0)
+#define dwrite(level, ptr, len) do { if ((level) <= LK_DEBUGLEVEL) { LOG_COLOR_SET(level);  _dwrite(ptr, len); _dputs(COLOR_RESET); } } while(0)
+#define dprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { LOG_COLOR_SET(level); _dprintf(x); _dputs(COLOR_RESET); } } while (0)
+#define dvprintf(level, x...) do { if ((level) <= LK_DEBUGLEVEL) { LOG_COLOR_SET(level); _dvprintf(x); _dputs(COLOR_RESET); } } while (0)
+
 
 /* systemwide halts */
 void _panic(void *caller, const char *fmt, ...) __PRINTFLIKE(2, 3) __NO_RETURN;
