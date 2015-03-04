@@ -538,7 +538,6 @@ static void fastboot_notify(struct udc_gadget *gadget, unsigned event)
 
 int fastboot_start(void *base, unsigned size)
 {
-	char sn_buf[13];
 	thread_t *thr;
 	dprintf(INFO, "fastboot_init()\n");
 
@@ -549,9 +548,8 @@ int fastboot_start(void *base, unsigned size)
 	target_fastboot_init();
 
 	/* setup serialno */
-	target_serialno((unsigned char *) sn_buf);
-	dprintf(SPEW,"serial number: %s\n",sn_buf);
-	surf_udc_device.serialno = sn_buf;
+	surf_udc_device.serialno = target_serialno();
+	dprintf(SPEW,"serial number: %s\n", surf_udc_device.serialno);
 
 	if(!strcmp(target_usb_controller(), "dwc"))
 	{

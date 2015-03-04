@@ -36,5 +36,5 @@ int boot_device_mask(int val);
 void target_usb_init(void);
 void target_usb_stop(void);
 void target_fastboot_init(void);
-void target_serialno(unsigned char *buf);
+const char* target_serialno(void);
 const char* target_usb_controller(void);

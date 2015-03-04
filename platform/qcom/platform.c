@@ -67,13 +67,18 @@ __WEAK void target_fastboot_init(void)
 {
 }
 
-__WEAK void target_serialno(unsigned char *buf)
+__WEAK const char* target_serialno(void)
 {
-#ifdef QCOM_ENABLE_EMMC
-	snprintf((char *)buf, 13, "%x", mmc_get_psn());
-#else
-	snprintf((char *)buf, 13, "%s", PROJECT);
+	const char* ret = NULL;
+#if WITH_LIB_BIO
+	bdev_t* dev = bio_open_first_dev();
+	if(dev && dev->serial)
+		ret = dev->serial;
+	else
 #endif
+	ret = PROJECT;
+
+	return ret;
 }
 
 /* default usb controller to be used. */
