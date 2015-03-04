@@ -37,6 +37,7 @@ typedef struct bdev {
 	size_t block_size;
 	size_t block_shift;
 	bnum_t block_count;
+	char *serial;
 
 	/* function pointers */
 	ssize_t (*read)(struct bdev *, void *buf, off_t offset, size_t len);
