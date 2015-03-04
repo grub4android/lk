@@ -93,6 +93,7 @@ int console_run_script(const char *string);
 int console_run_script_locked(const char *string); // special case from inside a command
 console_cmd console_get_command_handler(const char *command);
 void console_abort_script(void);
+status_t console_run_command(const char* line);
 
 extern int lastresult;
 
