@@ -29,6 +29,18 @@
 #include <platform/qcom.h>
 #include <platform/iomap.h>
 
+#ifdef QCOM_ENABLE_SDHCI
+#include <platform/sdhci_msm.h>
+#endif
+
+#if WITH_LIB_BIO
+#include <lib/bio.h>
+#endif
+
+__WEAK __attribute__((section(".data"))) struct mmu_initial_mapping mmu_initial_mappings_static[] = {
+	{ 0 },
+};
+
 void platform_init_mmu_mappings(void)
 {
 }
@@ -87,3 +99,15 @@ __WEAK const char* target_usb_controller(void)
 	return "ci";
 }
 
+#ifdef QCOM_ENABLE_SDHCI
+__WEAK void clock_config_cdc(uint32_t slot)
+{
+
+}
+
+/* Default CFG delay value */
+__WEAK uint32_t target_ddr_cfg_val(void)
+{
+	return DDR_CONFIG_VAL;
+}
+#endif

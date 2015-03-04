@@ -131,6 +131,33 @@ FUNCTION(platform_mmu_callback)
 	ldr r4, =arm_qcom_mmu_name_memory
 	bl arm_qcom_mmu_table_add
 
+	// copy static table entries
+
+	// get phys table address
+	bl arm_qcom_get_phys_offset
+	ldr r12, =mmu_initial_mappings_static
+	add r12, r0
+
+0:
+	ldr r0, [ r12, #0  ] // phys
+	ldr r1, [ r12, #4  ] // virt
+	ldr r2, [ r12, #8  ] // size
+	ldr r3, [ r12, #12 ] // flags
+	ldr r4, [ r12, #16 ] // name
+
+	// last entry
+	cmp r2, #0
+	beq platform_mmu_callback_exit
+
+	// add entry
+	bl arm_qcom_mmu_table_add
+
+	// next
+	add r12, #20
+	b 0b
+
+
+platform_mmu_callback_exit:
 	pop		{ r1-r12, lr }
 	bx		lr
 

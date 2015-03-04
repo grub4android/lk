@@ -31,10 +31,6 @@
 #ifndef _MSM7200_USB_H_
 #define _MSM7200_USB_H_
 
-#ifndef MSM_USB_BASE
-#define MSM_USB_BASE 0xA0800000
-#endif
-
 #define USB_ID               (MSM_USB_BASE + 0x0000)
 #define USB_HWGENERAL        (MSM_USB_BASE + 0x0004)
 #define USB_HWHOST           (MSM_USB_BASE + 0x0008)
@@ -180,5 +176,7 @@ struct ept_queue_item {
 
 #define ULPI_MISC_A_VBUSVLDEXTSEL    (1 << 1)
 #define ULPI_MISC_A_VBUSVLDEXT       (1 << 0)
+
+void ulpi_write(unsigned val, unsigned reg);
 
 #endif

@@ -22,24 +22,5 @@
  */
 #pragma once
 
-#include <stdint.h>
+#define DEBUG_UART 0
 
-#ifdef QCOM_ADDITIONAL_INCLUDE
-#include QCOM_ADDITIONAL_INCLUDE
-#endif
-
-uint32_t platform_detect_panel(void);
-uint32_t platform_get_smem_base_addr(void);
-
-int boot_device_mask(int val);
-
-void target_usb_init(void);
-void target_usb_stop(void);
-void target_fastboot_init(void);
-const char* target_serialno(void);
-const char* target_usb_controller(void);
-
-#ifdef QCOM_ENABLE_SDHCI
-void clock_config_cdc(uint32_t interface);
-uint32_t target_ddr_cfg_val(void);
-#endif

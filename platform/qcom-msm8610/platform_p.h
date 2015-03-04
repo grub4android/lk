@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Travis Geiselbrecht
+ * Copyright (c) 2012 Travis Geiselbrecht
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,26 +20,9 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#pragma once
+#ifndef __PLATFORM_P_H
+#define __PLATFORM_P_H
 
-#include <stdint.h>
 
-#ifdef QCOM_ADDITIONAL_INCLUDE
-#include QCOM_ADDITIONAL_INCLUDE
 #endif
 
-uint32_t platform_detect_panel(void);
-uint32_t platform_get_smem_base_addr(void);
-
-int boot_device_mask(int val);
-
-void target_usb_init(void);
-void target_usb_stop(void);
-void target_fastboot_init(void);
-const char* target_serialno(void);
-const char* target_usb_controller(void);
-
-#ifdef QCOM_ENABLE_SDHCI
-void clock_config_cdc(uint32_t interface);
-uint32_t target_ddr_cfg_val(void);
-#endif
