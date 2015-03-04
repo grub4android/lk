@@ -32,6 +32,8 @@
 #include <platform.h>
 #include <platform/debug.h>
 #include <kernel/thread.h>
+#include <kernel/mutex.h>
+#include <lk/init.h>
 
 void spin(uint32_t usecs)
 {
@@ -97,6 +99,34 @@ FILE __stdio_FILEs[3] = {
 #undef DEFINE_STDIO_DESC
 
 #if !DISABLE_DEBUG_OUTPUT
+static debug_catcher_t debug_catcher = NULL;
+static mutex_t debug_catcher_mutex;
+
+static void libdebug_init(uint level) {
+	mutex_init(&debug_catcher_mutex);
+}
+
+void debug_catcher_add(debug_catcher_t c) {
+	mutex_acquire(&debug_catcher_mutex);
+	debug_catcher = c;
+}
+
+void debug_catcher_remove(debug_catcher_t c) {
+	if(get_current_thread() != debug_catcher_mutex.holder || debug_catcher!=c) {
+		PANIC_UNIMPLEMENTED;
+	}
+
+	debug_catcher = NULL;
+	mutex_release(&debug_catcher_mutex);
+}
+
+void _dputc(char c) {
+
+	if(debug_catcher)
+		debug_catcher(c);
+	else
+		platform_dputc(c);
+}
 
 int _dputs(const char *str)
 {
@@ -191,6 +221,8 @@ void hexdump8(const void *ptr, size_t len)
 		address += 16;
 	}
 }
+
+LK_INIT_HOOK(libdebug, &libdebug_init, LK_INIT_LEVEL_EARLIEST);
 
 #endif // !DISABLE_DEBUG_OUTPUT
 

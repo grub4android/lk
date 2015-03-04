@@ -42,8 +42,12 @@ __BEGIN_CDECLS
 
 #if !DISABLE_DEBUG_OUTPUT
 
+typedef void (*debug_catcher_t)(char c);
+void debug_catcher_add(debug_catcher_t c);
+void debug_catcher_remove(debug_catcher_t c);
+
 /* input/output */
-#define _dputc(c) platform_dputc(c)
+void _dputc(char c);
 int _dputs(const char *str);
 int _dprintf(const char *fmt, ...) __PRINTFLIKE(1, 2);
 int _dvprintf(const char *fmt, va_list ap);
