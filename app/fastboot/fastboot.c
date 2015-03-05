@@ -432,6 +432,22 @@ void fastboot_info(const char *reason)
 	usb_if.usb_write(response, strlen((const char *)response));
 }
 
+void fastboot_code(const char *code, const char *reason)
+{
+	STACKBUF_DMA_ALIGN(__response, MAX_RSP_SIZE);
+	char* response = (char*)__response;
+
+	if (fastboot_state != STATE_COMMAND)
+		return;
+
+	if (reason == 0)
+		reason = "";
+
+	snprintf(response, MAX_RSP_SIZE, "%s%s", code, reason);
+
+	usb_if.usb_write(response, strlen(response));
+}
+
 void fastboot_fail(const char *reason)
 {
 	fastboot_ack("FAIL", reason);
@@ -440,6 +456,40 @@ void fastboot_fail(const char *reason)
 void fastboot_okay(const char *info)
 {
 	fastboot_ack("OKAY", info);
+}
+
+int fastboot_send_data_cb(off_t (*read)(void*pdata, void*buf, off_t offset, off_t len), void* pdata, off_t len)
+{
+	STACKBUF_DMA_ALIGN(__response, MAX_RSP_SIZE);
+	char* response = (char*)__response;
+
+	if (fastboot_state != STATE_COMMAND)
+		return -1;
+
+	if (!read)
+		return -1;
+
+	// exit command mode
+	fastboot_code("OKAY", "");
+
+	// send header
+	snprintf(response, MAX_RSP_SIZE, "DATA%016x", (uint32_t)len);
+	usb_if.usb_write(response, 20);
+
+	const unsigned bufsize = download_max;
+	void* buf = download_base;
+	off_t left = len;
+	while(left>0) {
+		// read data into buffer
+		off_t rc = read(pdata, buf, len-left, MIN(bufsize, left));
+		if(rc<0) return -1;
+		left-=rc;
+
+		// send data
+		usb_if.usb_write(buf, rc);
+	}
+
+	return 0;
 }
 
 static void cmd_getvar(const char *arg, void *data, unsigned sz)

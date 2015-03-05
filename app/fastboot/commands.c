@@ -41,8 +41,15 @@
 #include <kernel/event.h>
 #include <kernel/thread.h>
 #include <app/fastboot.h>
-#include <lib/console.h>
 #include <lk/init.h>
+
+#if WITH_LIB_CONSOLE
+#include <lib/console.h>
+#endif
+
+#if WITH_LIB_BIO
+#include <lib/bio.h>
+#endif
 
 #if WITH_LIB_CONSOLE
 static char fastboot_catcher_buf[MAX_RSP_SIZE];
@@ -59,7 +66,7 @@ static void fastboot_debug_catcher(char c) {
 	}
 }
 
-void cmd_lkshell(const char *arg, void *data, unsigned sz) {
+static void cmd_lkshell(const char *arg, void *data, unsigned sz) {
 	fastboot_catcher_len = 0;
 	debug_catcher_add(&fastboot_debug_catcher);
 	int rc = console_run_command(arg);
@@ -73,9 +80,43 @@ void cmd_lkshell(const char *arg, void *data, unsigned sz) {
 }
 #endif
 
+#if WITH_LIB_BIO
+static off_t fastboot_dump_partition_callback(void* pdata, void* buf, off_t offset, off_t len) {
+	bdev_t* dev = (bdev_t*)pdata;
+
+	ssize_t rc = bio_read(dev, buf, offset, len);
+	if (rc!=len) {
+		return -1;
+	}
+
+	return len;
+}
+
+static void cmd_oem_dump_partition(const char *arg, void *unused, unsigned sz)
+{
+	bdev_t* dev = bio_open_by_label(arg+1);
+	if(!dev) {
+		fastboot_fail("invalid partition");
+		return;
+	}
+
+	if(fastboot_send_data_cb(&fastboot_dump_partition_callback, dev, dev->size)) {
+		dprintf(CRITICAL, "Error sending Data\n");
+		fastboot_fail("unknown error");
+	} else fastboot_okay("");
+
+	bio_close(dev);
+}
+#endif
+
 static void fastboot_commands_init(uint level)
 {
+#if WITH_LIB_CONSOLE
 	fastboot_register_desc("oem lkshell", "Run commands in the LK shell", cmd_lkshell);
+#endif
+#if WITH_LIB_BIO
+	fastboot_register_desc("oem dump-partition", "download partition data", cmd_oem_dump_partition);
+#endif
 }
 
 LK_INIT_HOOK(virtio, &fastboot_commands_init, LK_INIT_LEVEL_THREADING);
