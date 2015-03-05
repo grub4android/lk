@@ -44,6 +44,8 @@ void fastboot_stop(void);
  */
 void fastboot_register(const char *prefix,
 		       void (*handle)(const char *arg, void *data, unsigned size));
+void fastboot_register_desc(const char *prefix, const char* description,
+		       void (*handle)(const char *arg, void *data, unsigned sz));
 
 /* publish a variable readable by the built-in getvar command */
 void fastboot_publish(const char *name, const char *value);

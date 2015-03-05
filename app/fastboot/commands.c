@@ -75,7 +75,7 @@ void cmd_lkshell(const char *arg, void *data, unsigned sz) {
 
 static void fastboot_commands_init(uint level)
 {
-	fastboot_register("oem lkshell", cmd_lkshell);
+	fastboot_register_desc("oem lkshell", "Run commands in the LK shell", cmd_lkshell);
 }
 
 LK_INIT_HOOK(virtio, &fastboot_commands_init, LK_INIT_LEVEL_THREADING);

@@ -123,6 +123,7 @@ struct fastboot_cmd {
 	struct fastboot_cmd *next;
 	const char *prefix;
 	unsigned prefix_len;
+	const char *description;
 	void (*handle)(const char *arg, void *data, unsigned sz);
 };
 
@@ -134,7 +135,7 @@ struct fastboot_var {
 
 static struct fastboot_cmd *cmdlist;
 
-void fastboot_register(const char *prefix,
+void fastboot_register_desc(const char *prefix, const char* description,
 		       void (*handle)(const char *arg, void *data, unsigned sz))
 {
 	struct fastboot_cmd *cmd;
@@ -142,10 +143,17 @@ void fastboot_register(const char *prefix,
 	if (cmd) {
 		cmd->prefix = prefix;
 		cmd->prefix_len = strlen(prefix);
+		cmd->description = description;
 		cmd->handle = handle;
 		cmd->next = cmdlist;
 		cmdlist = cmd;
 	}
+}
+
+void fastboot_register(const char *prefix,
+		       void (*handle)(const char *arg, void *data, unsigned sz))
+{
+	fastboot_register_desc(prefix, NULL, handle);
 }
 
 static struct fastboot_var *varlist;
@@ -437,13 +445,46 @@ void fastboot_okay(const char *info)
 static void cmd_getvar(const char *arg, void *data, unsigned sz)
 {
 	struct fastboot_var *var;
+	bool all = false;
+	char response[128];
+
+	all = !strcmp("all", arg);
 
 	for (var = varlist; var; var = var->next) {
-		if (!strcmp(var->name, arg)) {
+		if (all) {
+			snprintf(response, sizeof(response), "\t%s: [%s]", var->name, var->value);
+			fastboot_info(response);
+		}
+		else if (!strcmp(var->name, arg)) {
 			fastboot_okay(var->value);
 			return;
 		}
 	}
+	fastboot_okay("");
+}
+
+static void cmd_help(const char *arg, void *data, unsigned sz)
+{
+	struct fastboot_cmd *cmd;
+	char response[128];
+
+	// print commands
+	fastboot_info("commands:");
+	for (cmd = cmdlist; cmd; cmd = cmd->next) {
+		char buf[cmd->prefix_len+1];
+
+		if(strncmp(cmd->prefix, "oem ", 4))
+			continue;
+
+		if (!memcpy(buf, cmd->prefix, cmd->prefix_len))
+			continue;
+
+		buf[cmd->prefix_len] = '\0';
+
+		snprintf(response, sizeof(response), "\t%-16s%s%s", buf+4, cmd->description?": ":"", cmd->description?:"");
+		fastboot_info(response);
+	}
+
 	fastboot_okay("");
 }
 
@@ -511,8 +552,9 @@ again:
 			goto again;
 		}
 
-		fastboot_fail("unknown command");
-
+		fastboot_info("unknown command");
+		fastboot_info("See 'fastboot oem help'");
+		fastboot_fail("");
 	}
 	fastboot_state = STATE_OFFLINE;
 	dprintf(INFO,"fastboot: oops!\n");
@@ -612,6 +654,7 @@ int fastboot_start(void *base, unsigned size)
 	if (usb_if.udc_register_gadget(&fastboot_gadget))
 		goto fail_udc_register;
 
+	fastboot_register_desc("oem help", "print this list", cmd_help);
 	fastboot_register("getvar:", cmd_getvar);
 	fastboot_register("download:", cmd_download);
 	fastboot_publish("version", "0.5");
