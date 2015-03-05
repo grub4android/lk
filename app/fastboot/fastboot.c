@@ -43,7 +43,6 @@
 #include <platform/qcom.h>
 #include <app/fastboot.h>
 #include <lib/console.h>
-#include "fastboot_p.h"
 
 #ifdef USB30_SUPPORT
 #include <usb30_udc.h>
@@ -615,7 +614,6 @@ int fastboot_start(void *base, unsigned size)
 
 	fastboot_register("getvar:", cmd_getvar);
 	fastboot_register("download:", cmd_download);
-	fastboot_register("oem lkshell", cmd_lkshell);
 	fastboot_publish("version", "0.5");
 
 #if WITH_LIB_CONSOLE

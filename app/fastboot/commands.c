@@ -42,6 +42,7 @@
 #include <kernel/thread.h>
 #include <app/fastboot.h>
 #include <lib/console.h>
+#include <lk/init.h>
 
 #if WITH_LIB_CONSOLE
 static char fastboot_catcher_buf[MAX_RSP_SIZE];
@@ -71,3 +72,10 @@ void cmd_lkshell(const char *arg, void *data, unsigned sz) {
 	else fastboot_okay("");
 }
 #endif
+
+static void fastboot_commands_init(uint level)
+{
+	fastboot_register("oem lkshell", cmd_lkshell);
+}
+
+LK_INIT_HOOK(virtio, &fastboot_commands_init, LK_INIT_LEVEL_THREADING);
