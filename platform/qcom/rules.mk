@@ -17,7 +17,8 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/smem.c \
 	$(LOCAL_DIR)/smem_ptable.c \
 	$(LOCAL_DIR)/qcom_ptable.c \
-	$(LOCAL_DIR)/hsusb.c
+	$(LOCAL_DIR)/hsusb.c \
+	$(LOCAL_DIR)/scm.c
 
 MODULE_DEPS += \
 	dev/interrupt/arm_gic

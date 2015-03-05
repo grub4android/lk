@@ -36,7 +36,9 @@
 #include <debug.h>
 #include <string.h>
 #include <kernel/vm.h>
+#include <dev/pmic/pm8x41.h>
 #include <dev/interrupt/arm_gic.h>
+#include <platform/scm.h>
 #include <platform/qcom.h>
 #include <platform/spmi.h>
 #include <platform/irqs.h>
@@ -189,4 +191,35 @@ void platform_quiesce(void)
 #endif
 
 	qtimer_uninit();
+}
+
+/* Configure PMIC and Drop PS_HOLD for shutdown */
+void shutdown_device(void)
+{
+	/* Configure PMIC for shutdown */
+	pm8x41_reset_configure(PON_PSHOLD_SHUTDOWN);
+
+	/* Drop PS_HOLD for MSM */
+	writel(0x00, MPM2_MPM_PS_HOLD);
+
+	mdelay(5000);
+}
+
+void reboot_device(unsigned reboot_reason)
+{
+	int ret = 0;
+
+	writel(reboot_reason, RESTART_REASON_ADDR);
+
+	/* Configure PMIC for warm reset */
+	pm8x41_reset_configure(PON_PSHOLD_WARM_RESET);
+
+	ret = scm_halt_pmic_arbiter();
+	if(ret)
+		dprintf(CRITICAL, "Failed to halt pmic arbiter: %d\n", ret);
+
+	/* Drop PS_HOLD for MSM */
+	writel(0x00, MPM2_MPM_PS_HOLD);
+
+	mdelay(5000);
 }

@@ -33,6 +33,8 @@ uint32_t platform_detect_panel(void);
 uint32_t platform_get_smem_base_addr(void);
 
 int boot_device_mask(int val);
+void shutdown_device(void);
+void reboot_device(unsigned reboot_reason);
 
 void target_usb_init(void);
 void target_usb_stop(void);

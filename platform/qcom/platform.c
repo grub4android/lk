@@ -106,6 +106,14 @@ __WEAK uint32_t platform_get_boot_dev(void)
 	return 0;
 }
 
+__WEAK void shutdown_device(void)
+{
+}
+
+__WEAK void reboot_device(unsigned reboot_reason)
+{
+}
+
 /* Default target specific initialization before using USB */
 __WEAK void target_usb_init(void)
 {

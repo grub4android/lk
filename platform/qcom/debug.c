@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <dev/uart.h>
 #include <kernel/thread.h>
+#include <platform.h>
+#include <platform/qcom.h>
 #include <platform/debug.h>
 #include <target/debugconfig.h>
 
@@ -36,6 +38,12 @@
 #else
 #error define DEBUG_UART to something valid
 #endif
+
+#define REBOOT_MODE_BOOTLOADER 0x77665500
+#define REBOOT_MODE_NORMAL     0x77665501
+#define REBOOT_MODE_RECOVERY   0x77665502
+#define REBOOT_MODE_ALARM      0x77665503
+#define REBOOT_MODE_PANIC      0x6d630100
 
 void platform_dputc(char c)
 {
@@ -59,3 +67,31 @@ int platform_dgetc(char *c, bool wait)
     return -1;
 }
 
+void platform_halt(platform_halt_action suggested_action,
+                          platform_halt_reason reason)
+{
+    switch (suggested_action) {
+        default:
+        case HALT_ACTION_SHUTDOWN:
+        case HALT_ACTION_HALT:
+            printf("HALT: shutdown device... (reason = %d)\n", reason);
+            shutdown_device();
+            printf("SHUTDOWN FAILED - spinning forever...\n");
+            enter_critical_section();
+            for(;;);
+            break;
+        case HALT_ACTION_REBOOT:
+            printf("REBOOT\n");
+            if(reason==HALT_REASON_SW_BOOTLOADER)
+                reboot_device(REBOOT_MODE_BOOTLOADER);
+            else if(reason==HALT_REASON_SW_RECOVERY)
+                reboot_device(REBOOT_MODE_RECOVERY);
+            else
+                reboot_device(REBOOT_MODE_NORMAL);
+
+            printf("REBOOT FAILED - spinning forever...\n");
+            enter_critical_section();
+            for(;;);
+            break;
+    }
+}

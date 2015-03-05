@@ -176,3 +176,31 @@ uint8_t platform_pmic_type(uint32_t pmic_type)
 
 	return ret;
 }
+
+void shutdown_device(void)
+{
+	pm8921_config_reset_pwr_off(0);
+
+	/* Actually reset the chip */
+	writel(0, MSM_PSHOLD_CTL_SU);
+	mdelay(5000);
+}
+
+void reboot_device(unsigned reboot_reason)
+{
+	writel(reboot_reason, RESTART_REASON_ADDR);
+
+	/* Actually reset the chip */
+	pm8921_config_reset_pwr_off(1);
+	writel(0, MSM_PSHOLD_CTL_SU);
+	mdelay(10000);
+
+	dprintf(CRITICAL, "PSHOLD failed, trying watchdog reset\n");
+	writel(1, MSM_WDT0_RST);
+	writel(0, MSM_WDT0_EN);
+	writel(0x31F3, MSM_WDT0_BT);
+	writel(3, MSM_WDT0_EN);
+	DMB;
+	writel(3, MSM_TCSR_BASE + TCSR_WDOG_CFG);
+	mdelay(10000);
+}

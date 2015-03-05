@@ -66,7 +66,7 @@ static void fastboot_debug_catcher(char c) {
 	}
 }
 
-static void cmd_lkshell(const char *arg, void *data, unsigned sz) {
+static void cmd_oem_lkshell(const char *arg, void *data, unsigned sz) {
 	fastboot_catcher_len = 0;
 	debug_catcher_add(&fastboot_debug_catcher);
 	int rc = console_run_command(arg);
@@ -109,14 +109,36 @@ static void cmd_oem_dump_partition(const char *arg, void *unused, unsigned sz)
 }
 #endif
 
+static void cmd_reboot(const char *arg, void *data, unsigned sz)
+{
+	fastboot_okay("");
+	platform_halt(HALT_ACTION_REBOOT, HALT_REASON_SW_RESET);
+}
+
+static void cmd_reboot_bootloader(const char *arg, void *data, unsigned sz)
+{
+	fastboot_okay("");
+	platform_halt(HALT_ACTION_REBOOT, HALT_REASON_SW_BOOTLOADER);
+}
+
+static void cmd_oem_reboot_recovery(const char *arg, void *data, unsigned sz)
+{
+	fastboot_okay("");
+	platform_halt(HALT_ACTION_REBOOT, HALT_REASON_SW_RECOVERY);
+}
+
 static void fastboot_commands_init(uint level)
 {
 #if WITH_LIB_CONSOLE
-	fastboot_register_desc("oem lkshell", "Run commands in the LK shell", cmd_lkshell);
+	fastboot_register_desc("oem lkshell", "Run commands in the LK shell", cmd_oem_lkshell);
 #endif
 #if WITH_LIB_BIO
 	fastboot_register_desc("oem dump-partition", "download partition data", cmd_oem_dump_partition);
 #endif
+
+	fastboot_register("reboot", cmd_reboot);
+	fastboot_register("reboot-bootloader", cmd_reboot_bootloader);
+	fastboot_register_desc("oem reboot-recovery", "Reboot to recovery mode", cmd_oem_reboot_recovery);
 }
 
 LK_INIT_HOOK(virtio, &fastboot_commands_init, LK_INIT_LEVEL_THREADING);

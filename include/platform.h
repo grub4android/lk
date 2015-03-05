@@ -43,7 +43,8 @@ typedef enum {
     HALT_REASON_SW_RESET,       // Generic Software Initiated Reboot
     HALT_REASON_SW_WATCHDOG,    // Reboot triggered by a SW watchdog timer
     HALT_REASON_SW_PANIC,       // Reboot triggered by a SW panic or ASSERT
-    HALT_REASON_SW_UPDATE,      // SW triggered reboot in order to begin firmware update
+    HALT_REASON_SW_BOOTLOADER,  // Reboot to bootloader mode
+    HALT_REASON_SW_RECOVERY,    // Reboot to recovery mode
 } platform_halt_reason;
 
 lk_time_t current_time(void);
