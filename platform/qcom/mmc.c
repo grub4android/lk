@@ -34,6 +34,7 @@
 #include <bits.h>
 #include <assert.h>
 #include <printf.h>
+#include <kernel/mutex.h>
 #include <platform/mmc.h>
 #include <platform/qcom.h>
 #include <platform/iomap.h>
@@ -153,6 +154,7 @@ int mmc_clock_set_rate(unsigned id, unsigned rate);
 
 struct mmc_host mmc_host;
 struct mmc_card mmc_card;
+static mutex_t mmc_mutex;
 
 static unsigned int mmc_wp(unsigned int addr, unsigned int size,
 			   unsigned char set_clear_wp);
@@ -1950,6 +1952,8 @@ unsigned int mmc_boot_init(struct mmc_host *host)
 	/* Wait for the MMC_BOOT_MCI_POWER write to go through. */
 	mmc_mclk_reg_wr_delay();
 
+	mutex_init(&mmc_mutex);
+
 	return mmc_ret;
 }
 
@@ -2492,6 +2496,8 @@ mmc_write(unsigned long long data_addr, unsigned int data_len, unsigned int *in)
 	unsigned offset = 0;
 	unsigned int *sptr = in;
 
+	mutex_acquire(&mmc_mutex);
+
 	if (data_len % 512)
 		data_len = ROUND_TO_PAGE(data_len, 511);
 
@@ -2500,7 +2506,7 @@ mmc_write(unsigned long long data_addr, unsigned int data_len, unsigned int *in)
 					     data_addr + offset, write_size,
 					     sptr);
 		if (val) {
-			return val;
+			goto ret;
 		}
 
 		sptr += (write_size / sizeof(unsigned));
@@ -2512,6 +2518,9 @@ mmc_write(unsigned long long data_addr, unsigned int data_len, unsigned int *in)
 					     data_addr + offset, data_len,
 					     sptr);
 	}
+
+ret:
+	mutex_release(&mmc_mutex);
 	return val;
 }
 
@@ -2526,6 +2535,8 @@ mmc_read(unsigned long long data_addr, unsigned int *out, unsigned int data_len)
 	unsigned int data_limit = mmc_card.rd_block_len * 0xffff;
 	unsigned int this_len;
 
+	mutex_acquire(&mmc_mutex);
+
 	do {
 		this_len = (data_len > data_limit) ? data_limit : data_len;
 
@@ -2534,13 +2545,15 @@ mmc_read(unsigned long long data_addr, unsigned int *out, unsigned int data_len)
 				    this_len, out);
 
 		if (val != MMC_BOOT_E_SUCCESS)
-			return val;
+			goto ret;
 
 		data_len -= this_len;
 		data_addr += this_len;
 		out += (this_len / sizeof(*out));
 	} while (data_len > 0);
 
+ret:
+	mutex_release(&mmc_mutex);
 	return val;
 }
 

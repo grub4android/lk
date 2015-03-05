@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <kernel/vm.h>
+#include <kernel/mutex.h>
 #include <platform.h>
 #include <platform/qcom.h>
 #include <platform/clock.h>
@@ -51,6 +52,8 @@
 #if WITH_LIB_PARTITION
 #include <lib/partition.h>
 #endif
+
+static mutex_t mmc_mutex;
 
 /* data access time unit in ns */
 static const uint32_t taac_unit[] =
@@ -1133,6 +1136,8 @@ static uint8_t mmc_host_init(struct mmc_device *dev)
 	/* Setup initial freq to 400KHz */
 	mmc_ret = sdhci_clk_supply(host, SDHCI_CLK_400KHZ);
 
+	mutex_init(&mmc_mutex);
+
 	return mmc_ret;
 }
 
@@ -1937,6 +1942,8 @@ uint32_t mmc_sdhci_read(struct mmc_device *dev, void *dest,
 	struct mmc_command cmd;
 	struct mmc_card *card = &dev->card;
 
+	mutex_acquire(&mmc_mutex);
+
 	memset((struct mmc_command *)&cmd, 0, sizeof(struct mmc_command));
 
 	/* CMD17/18 Format:
@@ -1983,6 +1990,7 @@ uint32_t mmc_sdhci_read(struct mmc_device *dev, void *dest,
 	/* For multi block read failures send stop command */
 	if (mmc_ret && num_blocks > 1)
 	{
+		mutex_release(&mmc_mutex);
 		return mmc_stop_command(dev);
 	}
 
@@ -1990,6 +1998,7 @@ uint32_t mmc_sdhci_read(struct mmc_device *dev, void *dest,
 	 * Response contains 32 bit Card status.
 	 * Parse the errors & provide relevant information
 	 */
+	mutex_release(&mmc_mutex);
 	return mmc_parse_response(cmd.resp[0]);
 }
 
@@ -2005,6 +2014,8 @@ uint32_t mmc_sdhci_write(struct mmc_device *dev, void *src,
 	uint32_t mmc_ret = 0;
 	struct mmc_command cmd;
 	struct mmc_card *card = &dev->card;
+
+	mutex_acquire(&mmc_mutex);
 
 	memset((struct mmc_command *)&cmd, 0, sizeof(struct mmc_command));
 
@@ -2052,6 +2063,7 @@ uint32_t mmc_sdhci_write(struct mmc_device *dev, void *src,
 	/* For multi block write failures send stop command */
 	if (mmc_ret && num_blocks > 1)
 	{
+		mutex_release(&mmc_mutex);
 		return mmc_stop_command(dev);
 	}
 
@@ -2059,6 +2071,7 @@ uint32_t mmc_sdhci_write(struct mmc_device *dev, void *src,
 	 * Response contains 32 bit Card status.
 	 * Parse the errors & provide relevant information
 	 */
+	mutex_release(&mmc_mutex);
 	return mmc_parse_response(cmd.resp[0]);
 }
 
