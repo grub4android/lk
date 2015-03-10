@@ -54,6 +54,23 @@
 #include <platform/qcom_timer.h>
 #include "platform_p.h"
 
+
+struct mmu_initial_mapping mmu_initial_mappings_static[] = {
+    { .phys = MSM_IOMAP_BASE_PHYS,
+      .virt = MSM_IOMAP_BASE,
+      .size = MSM_IOMAP_SIZE,
+      .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
+      .name = "iomap"},
+
+    { .phys = MSM_IMEM_BASE_PHYS,
+      .virt = MSM_IMEM_BASE,
+      .size = MB,
+      .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
+      .name = "imem"},
+
+	{ 0 },
+};
+
 void platform_early_init(void)
 {
     msm_clocks_init();

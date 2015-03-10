@@ -32,17 +32,19 @@
 #ifndef _PLATFORM_MSM8610_IOMAP_H_
 #define _PLATFORM_MSM8610_IOMAP_H_
 
-#define MSM_IOMAP_BASE              0xF9000000
-#define MSM_IOMAP_END               0xFEFFFFFF
+#define MSM_IOMAP_BASE_PHYS              0xF9000000
+#define MSM_IOMAP_BASE                   KERNEL_ASPACE_BASE
+#define MSM_IOMAP_SIZE                   0x07000000
+#define MSM_IOMAP_P2V(x)    ((x)+(MSM_IOMAP_BASE-MSM_IOMAP_BASE_PHYS))
 
 #define SDRAM_START_ADDR            0x00000000
 
 #define MSM_SHARED_BASE             0x0D900000
 
-#define APPS_SS_BASE                0xF9000000
+#define APPS_SS_BASE                MSM_IOMAP_P2V(0xF9000000)
 
-#define SYSTEM_IMEM_BASE            0xFE800000
-#define MSM_SHARED_IMEM_BASE        0xFE805000
+#define SYSTEM_IMEM_BASE            MSM_IOMAP_P2V(0xFE800000)
+#define MSM_SHARED_IMEM_BASE        MSM_IOMAP_P2V(0xFE805000)
 #define RESTART_REASON_ADDR         (MSM_SHARED_IMEM_BASE + 0x65C)
 #define DLOAD_MODE_ADDR             (MSM_SHARED_IMEM_BASE + 0x0)
 #define EMERGENCY_DLOAD_MODE_ADDR   (MSM_SHARED_IMEM_BASE + 0xFE0)
@@ -57,7 +59,7 @@
 #define APPS_APCS_F0_QTMR_V1_BASE   (APPS_SS_BASE + 0x00021000)
 #define QTMR_BASE                   APPS_APCS_F0_QTMR_V1_BASE
 
-#define PERIPH_SS_BASE              0xF9800000
+#define PERIPH_SS_BASE              MSM_IOMAP_P2V(0xF9800000)
 
 #define MSM_SDC1_BAM_BASE           (PERIPH_SS_BASE + 0x00004000)
 #define MSM_SDC1_BASE               (PERIPH_SS_BASE + 0x00024000)
@@ -76,28 +78,28 @@
 #define BLSP1_UART5_BASE            (PERIPH_SS_BASE + 0x00122000)
 #define MSM_USB_BASE                (PERIPH_SS_BASE + 0x00255000)
 
-#define CLK_CTL_BASE                0xFC400000
+#define CLK_CTL_BASE                MSM_IOMAP_P2V(0xFC400000)
 
 #define GCC_WDOG_DEBUG              (CLK_CTL_BASE +  0x00001780)
 
 #define USB_HS_BCR                  (CLK_CTL_BASE + 0x480)
 #define USB_BOOT_CLOCK_CTL          (CLK_CTL_BASE + 0x1A00)
 
-#define SPMI_BASE                   0xFC4C0000
+#define SPMI_BASE                   MSM_IOMAP_P2V(0xFC4C0000)
 #define SPMI_GENI_BASE              (SPMI_BASE + 0xA000)
 #define SPMI_PIC_BASE               (SPMI_BASE + 0xB000)
 
-#define MSM_CE1_BAM_BASE            0xFD404000
-#define MSM_CE1_BASE                0xFD41A000
+#define MSM_CE1_BAM_BASE            MSM_IOMAP_P2V(0xFD404000)
+#define MSM_CE1_BASE                MSM_IOMAP_P2V(0xFD41A000)
 
-#define TLMM_BASE_ADDR              0xFD510000
+#define TLMM_BASE_ADDR              MSM_IOMAP_P2V(0xFD510000)
 #define GPIO_CONFIG_ADDR(x)         (TLMM_BASE_ADDR + 0x1000 + (x)*0x10)
 #define GPIO_IN_OUT_ADDR(x)         (TLMM_BASE_ADDR + 0x1004 + (x)*0x10)
 
-#define MSM_MMSS_CLK_CTL_BASE       0xFD8C0000
+#define MSM_MMSS_CLK_CTL_BASE       MSM_IOMAP_P2V(0xFD8C0000)
 
 /* DSI */
-#define MIPI_DSI_BASE               0xFDD00000
+#define MIPI_DSI_BASE               MSM_IOMAP_P2V(0xFDD00000)
 #define MIPI_DSI0_BASE              MIPI_DSI_BASE
 #define MIPI_DSI1_BASE              MIPI_DSI_BASE
 #define DSI0_PHY_BASE               MIPI_DSI_BASE
@@ -136,7 +138,7 @@
 #define DSIPHY_PLL_READY            REG_DSI(0x280)
 
 /* MDP */
-#define MDP_BASE                    0xFD900000
+#define MDP_BASE                    MSM_IOMAP_P2V(0xFD900000)
 #define REG_MDP(off)                (MDP_BASE + (off))
 
 #define MDP_DMA_P_CONFIG            REG_MDP(0x90000)
@@ -205,8 +207,8 @@
 #define VIDEO_MODE_CTRL             0x00C
 #define HS_TIMER_CTRL               0x0B8
 
-#define MPM2_MPM_CTRL_BASE          0xFC4A1000
-#define MPM2_MPM_PS_HOLD            0xFC4AB000
+#define MPM2_MPM_CTRL_BASE          MSM_IOMAP_P2V(0xFC4A1000)
+#define MPM2_MPM_PS_HOLD            MSM_IOMAP_P2V(0xFC4AB000)
 
 /* GPLL */
 #define GPLL0_MODE                  CLK_CTL_BASE

@@ -327,6 +327,8 @@ msm_boot_uart_dm_write(uint32_t base, char *data, unsigned int num_of_chars)
 void uart_dm_init(uint8_t id, uint32_t gsbi_base, uint32_t uart_dm_base)
 {
 	static uint8_t port = 0;
+	uart_dm_base = MSM_IOMAP_P2V(uart_dm_base);
+	gsbi_base = MSM_IOMAP_P2V(gsbi_base);
 
 	/* Configure the uart clock */
 	clock_config_uart_dm(id);

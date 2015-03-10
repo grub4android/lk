@@ -218,7 +218,7 @@ static int usb30_usb_read(void *_buf, unsigned len)
 	{
 		xfer = (len > MAX_USBSS_BULK_SIZE) ? MAX_USBSS_BULK_SIZE : len;
 
-		req.buf      = (void*) kvaddr_to_paddr(buf);
+		req.buf      = buf;
 		req.length   = xfer;
 		req.complete = req_complete;
 
@@ -284,7 +284,7 @@ static int usb30_usb_write(void *buf, unsigned len)
 	/* flush buffer to main memory before giving to udc */
 	arch_clean_invalidate_cache_range((addr_t) buf, len);
 
-	req.buf      = (void*) kvaddr_to_paddr(buf);
+	req.buf      = buf;
 	req.length   = len;
 	req.complete = req_complete;
 
@@ -325,7 +325,7 @@ static int hsusb_usb_read(void *_buf, unsigned len)
 
 	while (len > 0) {
 		xfer = (len > MAX_USBFS_BULK_SIZE) ? MAX_USBFS_BULK_SIZE : len;
-		req->buf = (unsigned char *)kvaddr_to_paddr(buf);
+		req->buf = buf;
 		req->length = xfer;
 		req->complete = req_complete;
 		r = udc_request_queue(out, req);
@@ -371,7 +371,7 @@ static int hsusb_usb_write(void *buf, unsigned len)
 
 	while (len > 0) {
 		xfer = (len > MAX_USBFS_BULK_SIZE) ? MAX_USBFS_BULK_SIZE : len;
-		req->buf = (unsigned char *)kvaddr_to_paddr(_buf);
+		req->buf = _buf;
 		req->length = xfer;
 		req->complete = req_complete;
 		r = udc_request_queue(in, req);

@@ -108,28 +108,26 @@ FUNCTION(arm_qcom_mmu_table_add)
 	bx lr
 
 FUNCTION(platform_mmu_callback)
+
+	// temporary stack
+	ldr r5, =abort_stack_top
+	add r5, r12
+	mov sp, r5
+
 	push	{ r1-r12, lr }
 
 #ifdef QCOM_MMU_IDENTITY_MAP
-	// full identity map
-	mov r0, #0
-	mov r1, #0
-	ldr r2, =KERNEL_ASPACE_BASE
-	ldr r3, =MMU_INITIAL_MAPPING_FLAG_DEVICE
-	ldr r4, =arm_qcom_mmu_name_identity
+	// identity map
+	ldr r0, =(MEMBASE+KERNEL_LOAD_OFFSET)
+	ldr r1, =(MEMBASE+KERNEL_LOAD_OFFSET)
+	ldr r2, =(16*1024*1024)
+	ldr r3, =MMU_INITIAL_MAPPING_TEMPORARY
+	ldr r4, =0
 	bl arm_qcom_mmu_table_add
 #endif
 
 	// SMEM
 	bl arm_qcom_mmu_table_add_smem
-
-	// LK memory
-	ldr r0, =MEMBASE
-	ldr r1, =KERNEL_BASE
-	ldr r2, =MEMSIZE
-	ldr r3, =MMU_INITIAL_MAPPING_FLAG_DEVICE
-	ldr r4, =arm_qcom_mmu_name_memory
-	bl arm_qcom_mmu_table_add
 
 	// copy static table entries
 
@@ -182,6 +180,9 @@ FUNCTION(arm_smem_ptable_load_v0)
 	cmp r11, #0
 	bne smem_v0_exit_err
 
+	// r11 = start of virtual address space
+	ldr r11, =KERNEL_BASE
+
 	// r10 = len
 	ldr r10, [r12, #16]
 	// r9 = loop_count
@@ -203,29 +204,57 @@ FUNCTION(arm_smem_ptable_load_v0)
 	cmp r5, #1 // SYS_MEMORY
 	bne smem_v0_loop_skip
 
-	// check category
-	ldr r5, [r6, #28]
-	cmp r5, #0xE // SDRAM
-	ldr r4, =arm_qcom_mmu_name_memory // name
-	beq smem_v0_loop_add
-
-	// check category
-	ldr r5, [r6, #28]
-	cmp r5, #5 // IMEM
-	mov r4, #0 // name = NULL
-	bne smem_v0_loop_skip
-
-	// add entry
-smem_v0_loop_add:
-	// size
+	// size (aligned up)
 	ldr r0, [r6, #20]
 	mov r1, #0x100000 // 1MB
 	bl arm_qcom_align
 	mov r2, r0
 
-	ldr r0, [r6, #16] // addr->phys
+	// addr (aligned down)
+	ldr r0, [r6, #16]
+	lsr r0, #20
+	lsl r0, #20
+
+	// category==SDRAM
+	ldr r5, [r6, #28]
+	cmp r5, #0xE // SDRAM
+	bne smem_v0_loop_try_imem
+	ldr r4, =arm_qcom_mmu_name_memory // name
+	ldr r3, =MMU_INITIAL_MAPPING_FLAG_DEVICE // flags
+	mov r1, r11 // virt
+	add r11, r2 // increase virt
+	b smem_v0_loop_add
+
+smem_v0_loop_try_imem:
+#ifdef QCOM_MMU_SMEM_IMEM
+	// category==IMEM
+	ldr r5, [r6, #28]
+	cmp r5, #5 // IMEM
+	bne smem_v0_loop_try_iram
+
+	ldr r4, =arm_qcom_mmu_name_imem // name
+	ldr r3, =MMU_INITIAL_MAPPING_FLAG_DEVICE // flags
 	mov r1, r0 // virt
-	mov r3, #MMU_INITIAL_MAPPING_FLAG_DEVICE // flags
+	b smem_v0_loop_add
+#endif
+
+smem_v0_loop_try_iram:
+#ifdef QCOM_MMU_SMEM_IRAM
+	// category==IRAM
+	ldr r5, [r6, #28]
+	cmp r5, #4 // IRAM
+	bne smem_v0_loop_skip
+
+	ldr r4, =arm_qcom_mmu_name_iram // name
+	ldr r3, =MMU_INITIAL_MAPPING_FLAG_DEVICE // flags
+	mov r1, r0 // virt
+	b smem_v0_loop_add
+#else
+	b smem_v0_loop_skip
+#endif
+
+	// add entry
+smem_v0_loop_add:
 	bl arm_qcom_mmu_table_add
 
 smem_v0_loop_skip:
@@ -300,9 +329,23 @@ DATA(arm_qcom_mmu_name_memory)
 	.ascii "memory\0"
 DATA(arm_qcom_mmu_name_identity)
 	.ascii "identity\0"
+DATA(arm_qcom_mmu_name_imem)
+	.ascii "imem\0"
+DATA(arm_qcom_mmu_name_iram)
+	.ascii "iram\0"
 
 .align 2
 DATA(mmu_initial_mappings)
 	.rept 10*20
 	.word 0
 	.endr
+
+.align 3
+	/* the abort stack is for unrecoverable errors.
+	 * also note the initial working stack is set to here.
+	 * when the threading system starts up it'll switch to a new
+	 * dynamically allocated stack, so we don't need it for very long
+	 */
+LOCAL_DATA(abort_stack)
+	.skip 4096
+LOCAL_DATA(abort_stack_top)

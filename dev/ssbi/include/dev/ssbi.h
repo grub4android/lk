@@ -33,6 +33,8 @@
 #ifndef __DEV_SSBI_H
 #define __DEV_SSBI_H
 
+#include <platform/iomap.h>
+
 //Macros for SSBI Qwerty keypad for 7x30
 
 /* SSBI 2.0 controller registers */
@@ -89,8 +91,8 @@
 
 
 /* PMIC Arbiter 1: SSBI2 Configuration Micro ARM registers */
-#define PA1_SSBI2_CMD                   0x00500000
-#define PA1_SSBI2_RD_STATUS             0x00500004
+#define PA1_SSBI2_CMD                   MSM_IOMAP_P2V(0x00500000)
+#define PA1_SSBI2_RD_STATUS             MSM_IOMAP_P2V(0x00500004)
 
 #define PA1_SSBI2_REG_ADDR_SHIFT        8
 #define PA1_SSBI2_CMD_RDWRN_SHIFT       24
@@ -103,8 +105,8 @@
 #define PA1_SSBI2_CMD_WRITE             0
 
 /* PMIC Arbiter 2: SSBI2 Configuration Micro ARM registers */
-#define PA2_SSBI2_CMD                   0x00C00000
-#define PA2_SSBI2_RD_STATUS             0x00C00004
+#define PA2_SSBI2_CMD                   MSM_IOMAP_P2V(0x00C00000)
+#define PA2_SSBI2_RD_STATUS             MSM_IOMAP_P2V(0x00C00004)
 
 #define PA2_SSBI2_REG_ADDR_SHIFT        8
 #define PA2_SSBI2_CMD_RDWRN_SHIFT       24

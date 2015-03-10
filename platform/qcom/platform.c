@@ -27,6 +27,7 @@
 #include <string.h>
 #include <compiler.h>
 #include <kernel/vm.h>
+#include <arch/arm/mmu.h>
 #include <platform/qcom.h>
 #include <platform/iomap.h>
 
@@ -55,7 +56,7 @@ void platform_qcom_init_pmm(void) {
 	struct mmu_initial_mapping *map = mmu_initial_mappings;
 
 	while (map->size>0 && i<4) {
-		if (map->phys==map->virt && map->name && !strcmp(map->name, "memory")) {
+		if (map->name && !strcmp(map->name, "memory")) {
 			pmm_arena_t* arena = &arenas[i++];
 			memset(arena, 0, sizeof(*arena));
 
@@ -64,13 +65,8 @@ void platform_qcom_init_pmm(void) {
 			arena->size = map->size;
 			arena->flags = PMM_ARENA_FLAG_KMAP;
 
-			// skip firt page to prevent null pointer
-			if(!arena->base) {
-				arena->base+=PAGE_SIZE;
-				arena->size-=PAGE_SIZE;
-			}
-
 			pmm_add_arena(arena);
+			i++;
 		}
 
 		map++;
@@ -80,6 +76,11 @@ void platform_qcom_init_pmm(void) {
 	if(!i) {
 	    pmm_add_arena(&arena_lk);
 	}
+
+	// reserve SMEM area
+	struct list_node list;
+	list_initialize(&list);
+	pmm_alloc_range(kvaddr_to_paddr(platform_get_smem_base_addr()), 2*MB/PAGE_SIZE, &list);
 }
 
 void platform_init_mmu_mappings(void)
@@ -88,7 +89,7 @@ void platform_init_mmu_mappings(void)
 
 __WEAK uint32_t platform_get_smem_base_addr(void)
 {
-	return (uint32_t)MSM_SHARED_BASE;
+	return (uint32_t)paddr_to_kvaddr(MSM_SHARED_BASE);
 }
 
 __WEAK int boot_device_mask(int val)

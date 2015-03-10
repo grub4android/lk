@@ -60,15 +60,11 @@
 #endif
 
 struct mmu_initial_mapping mmu_initial_mappings_static[] = {
-    { .phys = MSM_IOMAP_BASE,
+    { .phys = MSM_IOMAP_BASE_PHYS,
       .virt = MSM_IOMAP_BASE,
-      .size = ALIGN(MSM_IOMAP_END - MSM_IOMAP_BASE, MB),
-      .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE},
-
-    { .phys = SYSTEM_IMEM_BASE,
-      .virt = SYSTEM_IMEM_BASE,
-      .size = MB,
-      .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE},
+      .size = MSM_IOMAP_SIZE,
+      .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
+      .name = "iomap"},
 
 	{ 0 },
 };

@@ -46,9 +46,9 @@
 #include <platform/timer.h>
 #include <platform/hsusb.h>
 #include <platform/interrupts.h>
+#include <pow2.h>
 
 #define MAX_TD_XFER_SIZE  (16 * 1024)
-
 
 /* common code - factor out into a shared file */
 
@@ -276,7 +276,7 @@ int udc_request_queue(struct udc_endpoint *ept, struct udc_request *_req)
 	unsigned xfer = 0;
 	struct ept_queue_item *item, *curr_item;
 	struct usb_request *req = (struct usb_request *)_req;
-	unsigned phys = (unsigned)req->req.buf;
+	unsigned phys = (unsigned)kvaddr_to_paddr(req->req.buf);
 	unsigned len = req->req.length;
 	unsigned int count = 0;
 
@@ -351,7 +351,7 @@ int udc_request_queue(struct udc_endpoint *ept, struct udc_request *_req)
 					  sizeof(struct ept_queue_head));
 	arch_clean_invalidate_cache_range((addr_t) ept->req,
 					  sizeof(struct usb_request));
-	arch_clean_invalidate_cache_range((addr_t) paddr_to_kvaddr((paddr_t)req->req.buf),
+	arch_clean_invalidate_cache_range((addr_t)req->req.buf,
 					  req->req.length);
 
 	item = req->item;
@@ -361,7 +361,7 @@ int udc_request_queue(struct udc_endpoint *ept, struct udc_request *_req)
 		if (curr_item->next == TERMINATE)
 			item = NULL;
 		else
-			item =  (struct ept_queue_item *)curr_item->next;
+			item =  (struct ept_queue_item *)paddr_to_kvaddr(curr_item->next);
 		arch_clean_invalidate_cache_range((addr_t) curr_item,
 					  sizeof(struct ept_queue_item));
 	}
@@ -387,13 +387,13 @@ static void handle_ept_complete(struct udc_endpoint *ept)
 
 	if(ept->req)
 	{
-		req = (struct usb_request *)paddr_to_kvaddr((paddr_t)ept->req);
+		req = (struct usb_request *)ept->req;
 		arch_invalidate_cache_range((addr_t) ept->req,
 						sizeof(struct usb_request));
 	}
 
 	if (req) {
-		item = (struct ept_queue_item *)paddr_to_kvaddr((paddr_t)req->item);
+		item = (struct ept_queue_item *)req->item;
 		/* total transfer length for transacation */
 		total_len = req->req.length;
 		ept->req = 0;
@@ -527,7 +527,6 @@ static void setup_tx(void *buf, unsigned len)
 {
 	DBG("setup_tx %p %d\n", buf, len);
 	memcpy(ep0req->buf, buf, len);
-	ep0req->buf = (void *)kvaddr_to_paddr(ep0req->buf);
 	ep0req->complete = ep0in_complete;
 	ep0req->length = len;
 	udc_request_queue(ep0in, ep0req);
@@ -695,7 +694,9 @@ int udc_init(struct udc_device *dev)
 	/* Bus access related config. */
 	writel(0x08, USB_AHB_MODE);
 
-	epts = memalign(lcm(4096, CACHE_LINE), ROUNDUP(4096, CACHE_LINE));
+	size_t epts_sz = lcm(4096, CACHE_LINE);
+	if (vmm_alloc_contiguous(vmm_get_kernel_aspace(), "hsusb_epts", epts_sz, (void**)&epts, epts_sz, 0, ARCH_MMU_FLAG_UNCACHED_DEVICE) < 0)
+		return -1;
 	ASSERT(epts);
 
 	dprintf(INFO, "USB init ept @ %p\n", epts);
