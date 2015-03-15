@@ -30,6 +30,7 @@
 #include <arch/arm/mmu.h>
 #include <platform/qcom.h>
 #include <platform/iomap.h>
+#include <platform/smem.h>
 
 #ifdef QCOM_ENABLE_SDHCI
 #include <platform/sdhci_msm.h>
@@ -39,48 +40,34 @@
 #include <lib/bio.h>
 #endif
 
-__WEAK __attribute__((section(".data"))) struct mmu_initial_mapping mmu_initial_mappings_static[] = {
-	{ 0 },
-};
-
 static pmm_arena_t arenas[4];
-static pmm_arena_t arena_lk = {
-    .name = "sdram",
-    .base = MEMBASE,
-    .size = MEMSIZE,
-    .flags = PMM_ARENA_FLAG_KMAP,
-};
 
 void platform_qcom_init_pmm(void) {
-	int i = 0;
-	struct mmu_initial_mapping *map = mmu_initial_mappings;
+	struct smem_ram_ptable ram_ptable;
+	uint32_t i, j = 0;
 
-	while (map->size>0 && i<4) {
-		if (map->name && !strcmp(map->name, "memory")) {
-			pmm_arena_t* arena = &arenas[i++];
+	/* Make sure RAM partition table is initialized */
+	ASSERT(smem_ram_ptable_init(&ram_ptable));
+
+	/* Calculating the size of the mem_info_ptr */
+	for (i = 0 ; i < ram_ptable.len; i++) {
+		if(ram_ptable.parts[i].category==SDRAM && ram_ptable.parts[i].type==SYS_MEMORY) {
+			pmm_arena_t* arena = &arenas[j++];
 			memset(arena, 0, sizeof(*arena));
 
 			arena->name = "sdram";
-			arena->base = map->phys;
-			arena->size = map->size;
+			arena->base = ram_ptable.parts[i].start;
+			arena->size = ram_ptable.parts[i].size;
 			arena->flags = PMM_ARENA_FLAG_KMAP;
 
 			pmm_add_arena(arena);
-			i++;
 		}
-
-		map++;
-	}
-
-	// use LK map only in case we couldn't find any suitable map
-	if(!i) {
-	    pmm_add_arena(&arena_lk);
 	}
 
 	// reserve SMEM area
 	struct list_node list;
 	list_initialize(&list);
-	pmm_alloc_range(kvaddr_to_paddr(platform_get_smem_base_addr()), 2*MB/PAGE_SIZE, &list);
+	pmm_alloc_range(kvaddr_to_paddr((void*)platform_get_smem_base_addr()), 2*MB/PAGE_SIZE, &list);
 }
 
 void platform_init_mmu_mappings(void)

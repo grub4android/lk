@@ -54,8 +54,13 @@
 #include <platform/qcom_timer.h>
 #include "platform_p.h"
 
+struct mmu_initial_mapping mmu_initial_mappings[] = {
+    { .phys = MEMBASE,
+      .virt = KERNEL_BASE,
+      .size = KERNEL_LOAD_OFFSET+MEMSIZE,
+      .flags = 0,
+      .name = "kernel"},
 
-struct mmu_initial_mapping mmu_initial_mappings_static[] = {
     { .phys = MSM_IOMAP_BASE_PHYS,
       .virt = MSM_IOMAP_BASE,
       .size = MSM_IOMAP_SIZE,

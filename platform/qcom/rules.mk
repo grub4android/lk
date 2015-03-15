@@ -2,13 +2,10 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 
 MODULE := $(LOCAL_DIR)
 
-GLOBAL_DEFINES += WITH_MMU_CALLBACK=1
-
 GLOBAL_INCLUDES += \
 	$(LOCAL_DIR)/include
 
 MODULE_SRCS += \
-	$(LOCAL_DIR)/start.S \
 	$(LOCAL_DIR)/platform.c \
 	$(LOCAL_DIR)/debug.c \
 	$(LOCAL_DIR)/clock.c \
