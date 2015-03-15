@@ -273,7 +273,7 @@ void timer_init(void)
 
 #if !PLATFORM_HAS_DYNAMIC_TIMER
 	/* register for a periodic timer tick */
-	platform_set_periodic_timer(timer_tick, NULL, 10); /* 10ms */
+	platform_set_periodic_timer(timer_tick, NULL, 1); /* 1ms */
 #endif
 }
 
