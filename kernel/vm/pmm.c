@@ -336,6 +336,33 @@ retry:
     return 0;
 }
 
+uint64_t pmm_get_free_space(void)
+{
+    uint64_t free_space = 0;
+    pmm_arena_t *arena;
+    list_for_every_entry(&arena_list, arena, pmm_arena_t, node) {
+        ssize_t last = -1;
+        for (size_t i = 0; i < arena->size / PAGE_SIZE; i++) {
+            if (page_is_free(&arena->page_array[i])) {
+                if (last == -1) {
+                    last = i;
+                }
+            } else {
+                if (last != -1) {
+                    free_space+=((arena->base + i * PAGE_SIZE)-(arena->base + last * PAGE_SIZE));
+                }
+                last = -1;
+            }
+        }
+
+        if (last != -1) {
+            free_space+=(arena->base + arena->size) - (arena->base + last * PAGE_SIZE);
+        }
+    }
+
+    return free_space;
+}
+
 static void dump_page(const vm_page_t *page)
 {
     printf("page %p: address 0x%lx flags 0x%x\n", page, page_to_address(page), page->flags);
@@ -400,6 +427,8 @@ usage:
         list_for_every_entry(&arena_list, a, pmm_arena_t, node) {
             dump_arena(a, false);
         }
+    } else if (!strcmp(argv[1].str, "free_space")) {
+        printf("free space: %llu\n", pmm_get_free_space());
     } else if (!strcmp(argv[1].str, "alloc")) {
         if (argc < 3) goto notenoughargs;
 
