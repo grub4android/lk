@@ -23,6 +23,7 @@
 #include <trace.h>
 #include <assert.h>
 #include <err.h>
+#include <pow2.h>
 #include <string.h>
 #include <lib/console.h>
 #include <kernel/vm.h>
@@ -315,6 +316,9 @@ status_t vmm_alloc_physical(vmm_aspace_t *aspace, const char *name, size_t size,
     LTRACEF("aspace %p name '%s' size 0x%zx ptr %p paddr 0x%lx vmm_flags 0x%x arch_mmu_flags 0x%x\n",
             aspace, name, size, ptr ? *ptr : 0, paddr, vmm_flags, arch_mmu_flags);
 
+    // HACK to prevent 4K bug
+    size = ALIGN(size, (1024U*1024U));
+
     DEBUG_ASSERT(aspace);
     DEBUG_ASSERT(IS_PAGE_ALIGNED(paddr));
     DEBUG_ASSERT(IS_PAGE_ALIGNED(size));
@@ -362,6 +366,10 @@ status_t vmm_alloc_contiguous(vmm_aspace_t *aspace, const char *name, size_t siz
 
     LTRACEF("aspace %p name '%s' size 0x%zx ptr %p align %hhu vmm_flags 0x%x arch_mmu_flags 0x%x\n",
             aspace, name, size, ptr ? *ptr : 0, align_pow2, vmm_flags, arch_mmu_flags);
+
+    // HACK to prevent 4K bug
+    size = ALIGN(size, (1024U*1024U));
+    align_pow2 = log2_uint(size);
 
     DEBUG_ASSERT(aspace);
 
@@ -430,6 +438,10 @@ status_t vmm_alloc(vmm_aspace_t *aspace, const char *name, size_t size, void **p
 
     LTRACEF("aspace %p name '%s' size 0x%zx ptr %p align %hhu vmm_flags 0x%x arch_mmu_flags 0x%x\n",
             aspace, name, size, ptr ? *ptr : 0, align_pow2, vmm_flags, arch_mmu_flags);
+
+    // HACK to prevent 4K bug
+    size = ALIGN(size, (1024U*1024U));
+    align_pow2 = log2_uint(size);
 
     DEBUG_ASSERT(aspace);
 
