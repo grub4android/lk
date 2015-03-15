@@ -630,6 +630,7 @@ static void fastboot_notify(struct udc_gadget *gadget, unsigned event)
 
 int fastboot_start(void *base, unsigned size)
 {
+	char varbuf[1024];
 	thread_t *thr;
 	dprintf(INFO, "fastboot_init()\n");
 
@@ -709,6 +710,10 @@ int fastboot_start(void *base, unsigned size)
 	fastboot_register("getvar:", cmd_getvar);
 	fastboot_register("download:", cmd_download);
 	fastboot_publish("version", "0.5");
+
+	// max download size
+	snprintf(varbuf, sizeof(varbuf), "\t0x%x", download_max);
+	fastboot_publish("max-download-size", strdup(varbuf));
 
 #if WITH_LIB_CONSOLE
 	console_init();
