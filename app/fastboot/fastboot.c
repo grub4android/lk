@@ -29,6 +29,7 @@
  */
 
 #include <app.h>
+#include <pow2.h>
 #include <debug.h>
 #include <printf.h>
 #include <string.h>
@@ -741,7 +742,15 @@ void fastboot_stop(void)
 
 static void fastboot_init(const struct app_descriptor *app)
 {
-	fastboot_start(malloc(10*1024*1024), 10*1024*1024);
+	void* buf = NULL;
+	size_t len = pmm_get_free_space()/2;
+	dprintf(SPEW, "%s: allocate %lu bytes\n", __func__, len);
+	if (vmm_alloc_contiguous(vmm_get_kernel_aspace(), "fastboot_download", len, &buf, log2_uint(len), 0, ARCH_MMU_FLAG_CACHED) < 0) {
+		dprintf(CRITICAL, "%s: couldn't allocate memory\n", __func__);
+		return;
+	}
+
+	fastboot_start(buf, len);
 }
 
 APP_START(fastboot)
