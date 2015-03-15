@@ -67,6 +67,15 @@ int platform_dgetc(char *c, bool wait)
     return -1;
 }
 
+int platform_dtstc(void)
+{
+#ifdef QCOM_ENABLE_UART
+    return uart_tstc(DEBUG_UART);
+#endif
+
+    return 0;
+}
+
 void platform_halt(platform_halt_action suggested_action,
                           platform_halt_reason reason)
 {

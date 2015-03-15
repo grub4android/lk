@@ -32,6 +32,7 @@ __BEGIN_CDECLS
 
 void platform_dputc(char c);
 int platform_dgetc(char *c, bool wait);
+int platform_dtstc(void);
 
 __END_CDECLS
 

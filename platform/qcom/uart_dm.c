@@ -411,3 +411,14 @@ int uart_getc(int port, bool wait)
 
 	return byte;
 }
+
+int uart_tstc(int port) {
+	uint32_t base = port_lookup[port];
+
+	/* Don't do anything if UART is not initialized */
+	if (!uart_init_flag)
+		return 0;
+
+	/* We will be polling RXRDY status bit */
+	return (readl(MSM_BOOT_UART_DM_SR(base)) & MSM_BOOT_UART_DM_SR_RXRDY);
+}
