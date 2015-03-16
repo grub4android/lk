@@ -433,6 +433,38 @@ uint64_t pmm_get_free_space(void)
     return free_space;
 }
 
+void pmm_get_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t, bool))
+{
+    pmm_arena_t *arena;
+    list_for_every_entry(&arena_list, arena, pmm_arena_t, node) {
+        ssize_t last = -1;
+        int mode_free = -1;
+        for (size_t i = 0; i < arena->size / PAGE_SIZE; i++) {
+            bool is_free = page_is_free(&arena->page_array[i]);
+
+            if(is_free==mode_free || mode_free==-1) {
+                if (last == -1) {
+                    last = i;
+                    mode_free = is_free;
+                }
+            }
+            else {
+                if (last != -1) {
+                    if(cb(pdata, arena->base + last * PAGE_SIZE, ((arena->base + i * PAGE_SIZE)-(arena->base + last * PAGE_SIZE)), mode_free))
+                     return;
+                }
+                last = i;
+                mode_free=is_free;
+            }
+        }
+
+        if (last != -1) {
+            if(cb(pdata, arena->base + last * PAGE_SIZE, (arena->base + arena->size) - (arena->base + last * PAGE_SIZE), mode_free))
+                return;
+        }
+    }
+}
+
 static void dump_page(const vm_page_t *page)
 {
     printf("page %p: address 0x%lx flags 0x%x\n", page, page_to_address(page), page->flags);

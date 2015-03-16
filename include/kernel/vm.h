@@ -171,6 +171,8 @@ uint pmm_free_unmap(void* ptr);
 
 uint64_t pmm_get_free_space(void);
 
+void pmm_get_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t, bool));
+
 /* physical to virtual */
 void *paddr_to_kvaddr(paddr_t pa);
 
