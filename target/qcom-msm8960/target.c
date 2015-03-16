@@ -24,9 +24,20 @@
 
 #include <platform/qcom.h>
 
+#ifdef QCOM_ENABLE_DISPLAY
+#include <platform/msm_panel.h>
+#endif
+
 void target_early_init(void)
 {
 #ifdef QCOM_ENABLE_UART
 	platform_uart_init_auto();
+#endif
+}
+
+void target_init(void)
+{
+#ifdef QCOM_ENABLE_DISPLAY
+	target_display_init("");
 #endif
 }

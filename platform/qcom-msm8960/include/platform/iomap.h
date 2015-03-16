@@ -96,12 +96,24 @@
 
 #define MIPI_DSI_BASE                         MSM_IOMAP_P2V(0x04700000)
 #define REG_DSI(off)                          (MIPI_DSI_BASE + (off))
+#define MIPI_DSI0_BASE              (MIPI_DSI_BASE)
+#define MIPI_DSI1_BASE              (MIPI_DSI_BASE)
+#define DSI0_PHY_BASE               MIPI_DSI_BASE
+#define DSI1_PHY_BASE               MIPI_DSI_BASE
+#define DSI0_PLL_BASE               MIPI_DSI_BASE
+#define DSI1_PLL_BASE               MIPI_DSI_BASE
+#define DSI0_REGULATOR_BASE         (MIPI_DSI0_BASE + 0x0280)
+#define DSI1_REGULATOR_BASE         (MIPI_DSI0_BASE + 0x0280
+#define CTRL                        0x000
+#define CLK_CTRL                    0x118
 
 #define DSIPHY_REGULATOR_BASE                 (0x500)
 #define DSIPHY_TIMING_BASE                    (0x440)
 #define DSIPHY_CTRL_BASE                      (0x470)
 #define DSIPHY_PLL_BASE                       (0x200)
 #define DSIPHY_STRENGTH_BASE                  (0x480)
+
+#define INT_CTRL                    0x10C
 
 /* Range 0 - 4 */
 #define DSIPHY_REGULATOR_CTRL(x) REG_DSI(DSIPHY_REGULATOR_BASE + (x) * 4)
@@ -116,6 +128,7 @@
 
 #define MDP_BASE                              MSM_IOMAP_P2V(0x05100000)
 #define REG_MDP(off)                          (MDP_BASE + (off))
+#define MDP_DISP_INTF_SEL                     REG_MDP(0x00038)
 
 //TODO: Where does this go?
 #define MMSS_SFPB_GPREG                       MSM_IOMAP_P2V(0x05700058)

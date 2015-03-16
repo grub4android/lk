@@ -41,8 +41,11 @@ struct pos {
 
 static struct fbcon_config *config = NULL;
 
-#define RGB565_BLUE     0x001f
+#define RGB565_BLACK        0x0000
 #define RGB565_WHITE        0xffff
+
+#define RGB888_BLACK        0x000000
+#define RGB888_WHITE        0xffffff
 
 #define FONT_WIDTH      5
 #define FONT_HEIGHT     12
@@ -82,7 +85,7 @@ static void fbcon_drawglyph(uint16_t *pixels, uint16_t paint, unsigned stride,
 	}
 }
 
-static void fbcon_flush(void)
+void fbcon_flush(void)
 {
 	if (config->update_start)
 		config->update_start();
@@ -110,7 +113,7 @@ static void fbcon_scroll_up(void)
 }
 
 /* TODO: take stride into account */
-static void fbcon_clear(void)
+void fbcon_clear(void)
 {
 	uint16_t *dst = config->base;
 	unsigned count = config->width * config->height;
@@ -178,10 +181,14 @@ void fbcon_setup(struct fbcon_config *_config)
 
 	switch (config->format) {
 		case FB_FORMAT_RGB565:
-			bg = RGB565_BLUE;
+			bg = RGB565_BLACK;
 			fg = RGB565_WHITE;
 			break;
 
+	    case FB_FORMAT_RGB888:
+	            bg = RGB888_BLACK;
+	            fg = RGB888_WHITE;
+	            break;
 		default:
 			dprintf(CRITICAL, "unknown framebuffer pixel format\n");
 			ASSERT(0);
@@ -197,4 +204,9 @@ void fbcon_setup(struct fbcon_config *_config)
 	cur_pos.y = 0;
 	max_pos.x = config->width / (FONT_WIDTH+1);
 	max_pos.y = (config->height - 1) / FONT_HEIGHT;
+}
+
+struct fbcon_config* fbcon_display(void)
+{
+    return config;
 }

@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2008, Google Inc.
- * All rights reserved.
+/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,6 +9,9 @@
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
+ *  * Neither the name of The Linux Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -26,30 +27,30 @@
  * SUCH DAMAGE.
  */
 
-#ifndef __DEV_FBCON_H
-#define __DEV_FBCON_H
+#ifndef _GCDB_AUTOPLL_H_
+#define _GCDB_AUTOPLL_H_
 
-#define FB_FORMAT_RGB565 0
-#define FB_FORMAT_RGB666 1
-#define FB_FORMAT_RGB666_LOOSE 2
-#define FB_FORMAT_RGB888 3
+#define VCO_MIN_CLOCK 350000000
+#define VCO_MAX_CLOCK 750000000
 
-struct fbcon_config {
-	void        *base;
-	unsigned    width;
-	unsigned    height;
-	unsigned    stride;
-	unsigned    bpp;
-	unsigned    format;
+#define HALFBIT_CLOCK1 175000000 /* VCO min clock div by 2 */
+#define HALFBIT_CLOCK2 88000000  /* VCO min clock div by 4 */
+#define HALFBIT_CLOCK3 44000000  /* VCO min clock div by 8 */
+#define HALFBIT_CLOCK4 40000000  /* VCO min clock div by 9 */
 
-	void        (*update_start)(void);
-	int     (*update_done)(void);
-};
+#define HALFBIT_CLOCK1_20NM 	500000000 /* VCO min clock div by 2 */
+#define HALFBIT_CLOCK2_20NM 	250000000  /* VCO min clock div by 4 */
+#define HALFBIT_CLOCK3_20NM 	125000000  /* VCO min clock div by 8 */
+#define HALFBIT_CLOCK4_20NM 	120000000  /* VCO min clock div by 9 */
 
-void fbcon_setup(struct fbcon_config *cfg);
-void fbcon_putc(char c);
-void fbcon_clear(void);
-void fbcon_flush(void);
-struct fbcon_config* fbcon_display(void);
+#define BITS_24 24
+#define BITS_18 18
+#define BITS_16 16
 
-#endif /* __DEV_FBCON_H */
+/*---------------------------------------------------------------------------*/
+/* Structure definition                                                      */
+/*---------------------------------------------------------------------------*/
+
+uint32_t calculate_clock_config(struct msm_panel_info *pinfo);
+
+#endif /*_GCDB_AUTOPLL_H_ */

@@ -75,6 +75,10 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/rpm-smd.c
 endif
 
+ifeq ($(QCOM_ENABLE_DISPLAY),1)
+MODULE_DEPS += $(LOCAL_DIR)/display
+endif
+
 ifeq ($(QCOM_MMU_IDENTITY_MAP),1)
 GLOBAL_DEFINES += QCOM_MMU_IDENTITY_MAP
 endif
