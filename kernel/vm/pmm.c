@@ -363,6 +363,32 @@ uint64_t pmm_get_free_space(void)
     return free_space;
 }
 
+void pmm_get_free_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t))
+{
+    pmm_arena_t *arena;
+    list_for_every_entry(&arena_list, arena, pmm_arena_t, node) {
+		ssize_t last = -1;
+		for (size_t i = 0; i < arena->size / PAGE_SIZE; i++) {
+		    if (page_is_free(&arena->page_array[i])) {
+		        if (last == -1) {
+		            last = i;
+		        }
+		    } else {
+		        if (last != -1) {
+					if(cb(pdata, arena->base + last * PAGE_SIZE, ((arena->base + i * PAGE_SIZE)-(arena->base + last * PAGE_SIZE))))
+						return;
+		        }
+		        last = -1;
+		    }
+		}
+
+		if (last != -1) {
+			if(cb(pdata, arena->base + last * PAGE_SIZE, (arena->base + arena->size) - (arena->base + last * PAGE_SIZE)))
+				return;
+		}
+	}
+}
+
 static void dump_page(const vm_page_t *page)
 {
     printf("page %p: address 0x%lx flags 0x%x\n", page, page_to_address(page), page->flags);
