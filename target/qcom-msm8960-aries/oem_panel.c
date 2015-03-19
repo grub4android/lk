@@ -95,7 +95,7 @@ static struct mipi_dsi_cmd novatek_panel_manufacture_id_cmd =
 static struct mipi_dsi_cmd novatek_panel_manufacture_id0_cmd =
     { sizeof(novatek_panel_manufacture_id0), novatek_panel_manufacture_id0, 0 };
 
-int mipi_dsi_cmd_bta_sw_trigger(void)
+static int mipi_dsi_cmd_bta_sw_trigger(void)
 {
 	uint32_t data;
 	int cnt = 0;
@@ -113,7 +113,7 @@ int mipi_dsi_cmd_bta_sw_trigger(void)
 	return err;
 }
 
-void trigger_mdp_dsi(void)
+static void trigger_mdp_dsi(void)
 {
 	DSB;
 	mdp_start_dma();
@@ -122,7 +122,7 @@ void trigger_mdp_dsi(void)
 	writel(0x1, DSI_CMD_MODE_MDP_SW_TRIGGER);
 }
 
-int
+static int
 config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 		    unsigned short img_width, unsigned short img_height,
 		    unsigned short dst_format,
@@ -208,7 +208,7 @@ config_dsi_cmd_mode(unsigned short disp_width, unsigned short disp_height,
 	return status;
 }
 
-int mipi_dsi_cmd_trigger(struct msm_panel_info *pinfo, struct fbcon_config *fb)
+static int mipi_dsi_cmd_trigger(struct msm_panel_info *pinfo, struct fbcon_config *fb)
 {
 	unsigned short display_wd = pinfo->xres;
 	unsigned short display_ht = pinfo->yres;
@@ -226,6 +226,9 @@ int mipi_dsi_cmd_trigger(struct msm_panel_info *pinfo, struct fbcon_config *fb)
 			pinfo->mipi.rgb_swap);
 
 	mdelay(34);
+
+	// set fbcon update callback
+	fb->update_start = trigger_mdp_dsi;
 
 	return 0;
 }
