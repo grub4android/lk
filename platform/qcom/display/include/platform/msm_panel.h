@@ -294,7 +294,7 @@ struct msm_panel_info {
 	int (*pre_on) (void);
 	int (*pre_off) (void);
 	int (*prepare) (void);
-	int (*early_config) (void *pdata);
+	int (*early_config) (struct msm_panel_info *pinfo, struct fbcon_config *fb);
 	int (*config) (void *pdata);
 	int (*rotate) (void);
 };
@@ -316,7 +316,7 @@ struct msm_fb_panel_data {
 
 int mdp_lcdc_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
 int lvds_on(struct msm_fb_panel_data *pdata);
-int mdp_lcdc_on(void);
+int mdp_lcdc_on(struct msm_fb_panel_data *pdata);
 int mdp_lcdc_off(void);
 int target_display_pre_on(void);
 int target_display_post_on(void);

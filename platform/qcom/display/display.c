@@ -27,9 +27,12 @@
  */
 
 #include <err.h>
+#include <pow2.h>
 #include <debug.h>
 #include <target.h>
 #include <malloc.h>
+#include <string.h>
+#include <kernel/vm.h>
 #include <platform.h>
 #include <platform/mipi_dsi.h>
 #include <platform/msm_panel.h>
@@ -58,10 +61,12 @@ static int msm_fb_alloc(struct fbcon_config *fb)
 	if (fb == NULL)
 		return ERR_INVALID_ARGS;
 
-	if (fb->base == NULL)
-		fb->base = memalign(4096, fb->width
+	if (fb->base == NULL) {
+		uint32_t size = fb->width
 							* fb->height
-							* (fb->bpp / 8));
+							* (fb->bpp / 8);
+		return vmm_alloc_contiguous(vmm_get_kernel_aspace(), "msm_fb", size, &fb->base, log2_uint(size), 0, ARCH_MMU_FLAG_UNCACHED);
+	}
 
 	if (fb->base == NULL)
 		return ERR_INVALID_ARGS;
@@ -72,7 +77,7 @@ static int msm_fb_alloc(struct fbcon_config *fb)
 int msm_display_config(void)
 {
 	int ret = NO_ERROR;
-#ifdef QCOM_DISPLAY_TYPE_MDSS
+#if defined(QCOM_DISPLAY_TYPE_MDSS) || defined(QCOM_DISPLAY_TYPE_MIPI)
 	int mdp_rev;
 #endif
 	struct msm_panel_info *pinfo;
@@ -86,7 +91,7 @@ int msm_display_config(void)
 	mdp_set_revision(panel->mdp_rev);
 
 	switch (pinfo->type) {
-#ifdef QCOM_DISPLAY_TYPE_MDSS
+#if defined(QCOM_DISPLAY_TYPE_MDSS) || defined(QCOM_DISPLAY_TYPE_MIPI)
 	case LVDS_PANEL:
 		dprintf(INFO, "Config LVDS_PANEL.\n");
 		ret = mdp_lcdc_config(pinfo, &(panel->fb));
@@ -107,7 +112,7 @@ int msm_display_config(void)
 			goto msm_display_config_out;
 
 		if (pinfo->early_config)
-			ret = pinfo->early_config((void *)pinfo);
+			ret = pinfo->early_config(pinfo, &(panel->fb));
 
 		ret = mdp_dsi_video_config(pinfo, &(panel->fb));
 		if (ret)
@@ -123,6 +128,9 @@ int msm_display_config(void)
 			ret = mipi_config(panel);
 		if (ret)
 			goto msm_display_config_out;
+
+		if (pinfo->early_config)
+			ret = pinfo->early_config(pinfo, &(panel->fb));
 
 		ret = mdp_dsi_cmd_config(pinfo, &(panel->fb));
 		if (ret)
@@ -160,7 +168,7 @@ int msm_display_config(void)
 	if (pinfo->config)
 		ret = pinfo->config((void *)pinfo);
 
-#ifdef QCOM_DISPLAY_TYPE_MDSS
+#if defined(QCOM_DISPLAY_TYPE_MDSS) || defined(QCOM_DISPLAY_TYPE_MIPI)
 msm_display_config_out:
 #endif
 	return ret;
@@ -169,7 +177,7 @@ msm_display_config_out:
 int msm_display_on(void)
 {
 	int ret = NO_ERROR;
-#ifdef QCOM_DISPLAY_TYPE_MDSS
+#if defined(QCOM_DISPLAY_TYPE_MDSS) || defined(QCOM_DISPLAY_TYPE_MIPI)
 	int mdp_rev;
 #endif
 	struct msm_panel_info *pinfo;
@@ -188,7 +196,7 @@ int msm_display_on(void)
 	}
 
 	switch (pinfo->type) {
-#ifdef QCOM_DISPLAY_TYPE_MDSS
+#if defined(QCOM_DISPLAY_TYPE_MDSS) || defined(QCOM_DISPLAY_TYPE_MIPI)
 	case LVDS_PANEL:
 		dprintf(INFO, "Turn on LVDS PANEL.\n");
 		ret = mdp_lcdc_on(panel);
@@ -321,7 +329,10 @@ int msm_display_init(struct msm_fb_panel_data *pdata)
 		goto msm_display_init_out;
 
 	fbcon_setup(&(panel->fb));
-	//display_image_on_screen();
+
+	// fill fb with black color
+	memset(panel->fb.base, 0, panel->fb.width*panel->fb.height*(panel->fb.bpp/8));
+
 	ret = msm_display_config();
 	if (ret)
 		goto msm_display_init_out;
@@ -363,7 +374,7 @@ int msm_display_off(void)
 	}
 
 	switch (pinfo->type) {
-#ifdef QCOM_DISPLAY_TYPE_MDSS
+#if defined(QCOM_DISPLAY_TYPE_MDSS) || defined(QCOM_DISPLAY_TYPE_MIPI)
 	case LVDS_PANEL:
 		dprintf(INFO, "Turn off LVDS PANEL.\n");
 		mdp_lcdc_off();

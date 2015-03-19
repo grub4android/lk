@@ -41,7 +41,7 @@ __WEAK int lvds_on(struct msm_fb_panel_data *pdata)
 {
 	return 0;
 }
-__WEAK int mdp_lcdc_on(void)
+__WEAK int mdp_lcdc_on(struct msm_fb_panel_data *pdata)
 {
 	return 0;
 }

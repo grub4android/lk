@@ -40,7 +40,7 @@
  * For MDSS targets, all offset definitions are picked up from corresponding
  * target files.
  */
-#if (DISPLAY_TYPE_MDSS == 0)
+#ifndef QCOM_DISPLAY_TYPE_MDSS
 #define DSI_CLKOUT_TIMING_CTRL                REG_DSI(0x0C0)
 #define DSI_SOFT_RESET                        REG_DSI(0x114)
 #define DSIPHY_SW_RESET                       REG_DSI(0x128)
@@ -254,6 +254,7 @@ int mdss_dsi_cmds_tx(struct mipi_panel_info *mipi,
 	struct mipi_dsi_cmd *cmds, int count, char dual_dsi);
 int mdss_dsi_cmds_rx(struct mipi_panel_info *mipi, uint32_t **rp, int rp_len,
 	int rdbk_len);
+int mdss_dsi_cmd_bta_sw_trigger(uint32_t ctl_base);
 int32_t mdss_dsi_auto_pll_config(uint32_t pll_base, uint32_t ctl_base,
 	struct mdss_dsi_pll_config *pd);
 void mdss_dsi_auto_pll_20nm_config(uint32_t pll_base, uint32_t pll_1_base,

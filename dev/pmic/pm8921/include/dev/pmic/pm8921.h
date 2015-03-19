@@ -113,6 +113,7 @@ typedef enum {
 #define LDO_8      (8  | LDO_P_MASK)
 #define LDO_11     (11 | LDO_P_MASK)
 #define LDO_23     (23 | LDO_P_MASK)
+#define LDO_29     (29 | LDO_P_MASK)
 
 enum
 {
@@ -165,10 +166,68 @@ struct pm89xx_vreg {
 	uint16_t ctrl_reg;
 };
 
+#define PM8XXX_GPIO_INIT(_gpio, _dir, _buf, _val, _pull, _vin, _out_strength, \
+			_func, _inv, _disable) \
+{ \
+	.gpio	= _gpio, \
+	.config	= { \
+		.direction	= _dir, \
+		.output_buffer	= _buf, \
+		.output_value	= _val, \
+		.pull		= _pull, \
+		.vin_sel	= _vin, \
+		.out_strength	= _out_strength, \
+		.function	= _func, \
+		.inv_int_pol	= _inv, \
+		.disable_pin	= _disable, \
+	} \
+}
+
+#define PM8XXX_GPIO_OUTPUT(_gpio, _val) \
+	PM8XXX_GPIO_INIT(_gpio, PM_GPIO_DIR_OUT, 0, _val, \
+			PM_GPIO_PULL_NO, 2, \
+			PM_GPIO_STRENGTH_HIGH, \
+			PM_GPIO_FUNC_NORMAL, 1, 0)
+
+
+#define PM8XXX_GPIO_INPUT(_gpio, _pull) \
+	PM8XXX_GPIO_INIT(_gpio, PM_GPIO_DIR_IN, 0, 0, \
+			_pull, 2, \
+			PM_GPIO_STRENGTH_NO, \
+			PM_GPIO_FUNC_NORMAL, 1, 0)
+
+#define PM8XXX_GPIO_INPUT_POL(_gpio, _pull) \
+	PM8XXX_GPIO_INIT(_gpio, PM_GPIO_DIR_IN, 0, 0, \
+			_pull, 2, \
+			PM_GPIO_STRENGTH_NO, \
+			PM_GPIO_FUNC_NORMAL, 0, 0)
+
+#define PM8921_GPIO_OUTPUT_FUNC(_gpio, _val, _func) \
+	PM8XXX_GPIO_INIT(_gpio, PM_GPIO_DIR_OUT, 0, _val, \
+			PM_GPIO_PULL_NO, 2, \
+			PM_GPIO_STRENGTH_HIGH, \
+			_func, 0, 0)
+
+
+#define PM8921_GPIO_OUTPUT_BUFCONF(_gpio, _val, _strength, _bufconf) \
+	PM8XXX_GPIO_INIT(_gpio, PM_GPIO_DIR_OUT,\
+			PM_GPIO_OUT_BUF_##_bufconf, _val, \
+			PM_GPIO_PULL_NO, 2, \
+			PM_GPIO_STRENGTH_##_strength, \
+			PM_GPIO_FUNC_NORMAL, 0, 0)
+
+struct pm8xxx_gpio_init {
+	uint32_t gpio;
+	struct pm8921_gpio config;
+};
+
 void pm8921_init(pm8921_dev_t *);
 int  pm8921_gpio_config(int gpio, struct pm8921_gpio *param);
+void pmic8921_gpio_set(uint32_t gpio, uint32_t level);
+uint8_t pmic8921_gpio_get(uint32_t gpio);
 void pm8921_boot_done(void);
 int  pm8921_ldo_set_voltage(uint32_t ldo_id, uint32_t voltage);
+int  pm8921_ldo_clear_voltage(uint32_t ldo_id);
 int  pm8921_config_reset_pwr_off(unsigned reset);
 int  pm8921_gpio_get(uint8_t gpio, uint8_t *status);
 int  pm8921_pwrkey_status(uint8_t *status);

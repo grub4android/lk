@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dev/fbcon.h>
+#include <kernel/vm.h>
 #include <target/display.h>
 #include <platform/iomap.h>
 #include <platform/clock.h>
@@ -171,6 +172,7 @@ static int mdss_dsi_wait4_video_done(uint32_t ctl_base)
 	/* Skip BLLP 4ms */
 	mdelay(4);
 
+	DSB;
 	return status;
 }
 
@@ -296,7 +298,7 @@ int mdss_dsi_cmds_rx(struct mipi_panel_info *mipi, uint32_t **rp, int rp_len,
 	return rdbk_len;
 }
 
-static int mdss_dsi_cmd_bta_sw_trigger(uint32_t ctl_base)
+int mdss_dsi_cmd_bta_sw_trigger(uint32_t ctl_base)
 {
 	uint32_t data;
 	int cnt = 0;
@@ -760,6 +762,7 @@ static int dsi_cmd_dma_trigger_for_panel(void)
 	int status = 0;
 
 	writel(0x03030303, DSI_INT_CTRL);
+	DSB;
 	writel(0x1, DSI_CMD_MODE_DMA_SW_TRIGGER);
 	DSB;
 	ReadValue = readl(DSI_INT_CTRL) & 0x00000001;
@@ -775,6 +778,7 @@ static int dsi_cmd_dma_trigger_for_panel(void)
 	}
 
 	writel((readl(DSI_INT_CTRL) | 0x01000001), DSI_INT_CTRL);
+	DSB;
 	dprintf(SPEW, "Panel CMD: command mode dma tested successfully\n");
 	return status;
 }
@@ -802,7 +806,8 @@ int mipi_dsi_cmds_tx(struct mipi_dsi_cmd *cmds, int count)
 			goto mipi_cmds_error;
 
 		memcpy((void *)off, (cm->payload), cm->size);
-		writel(off, DSI_DMA_CMD_OFFSET);
+		arch_clean_cache_range(off, cm->size);
+		writel(kvaddr_to_paddr((void*)off), DSI_DMA_CMD_OFFSET);
 		writel(cm->size, DSI_DMA_CMD_LENGTH);	// reg 0x48 for this build
 		DSB;
 		ret += dsi_cmd_dma_trigger_for_panel();

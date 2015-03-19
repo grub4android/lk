@@ -172,6 +172,32 @@ int pm8921_gpio_config(int gpio, struct pm8921_gpio *param)
 	return 0;
 }
 
+void pmic8921_gpio_set(uint32_t gpio, uint32_t level)
+{
+	struct pm8xxx_gpio_init pm8921_gpio[] = {
+		PM8XXX_GPIO_OUTPUT(PM_GPIO(gpio), level),
+	};
+
+	pm8921_gpio_config(pm8921_gpio[0].gpio,
+		&(pm8921_gpio[0].config));
+
+	return;
+}
+
+uint8_t pmic8921_gpio_get(uint32_t gpio)
+{
+	int ret = 0;
+	uint8_t status = 0;
+
+	ret = pm8921_gpio_get(PM_GPIO(gpio), &status);
+	if (ret) {
+		status = 0xFF;
+	}
+	dprintf(SPEW, "pmic8921_gpio_get ret %d status %d\n", ret, status);
+
+	return status;
+}
+
 /* Reads the value of the irq status for the requested block */
 int pm8921_irq_get_block_status(uint8_t block, uint8_t *status)
 {
@@ -267,6 +293,24 @@ int pm8921_ldo_set_voltage(uint32_t ldo_id, uint32_t voltage)
 	val |= ( 1 << PM8921_LDO_CTRL_REG_PULL_DOWN);
 	val |= ( 0 << PM8921_LDO_CTRL_REG_POWER_MODE);
 	val |= ( mult << PM8921_LDO_CTRL_REG_VOLTAGE);
+	ret = dev->write(&val, 1, PM8921_LDO_CTRL_REG(ldo_number));
+	if (ret) {
+		dprintf(CRITICAL, "Failed to write to PM8921 LDO Ctrl Reg ret=%d.\n", ret);
+		return -1;
+	}
+
+	return 0;
+}
+
+int pm8921_ldo_clear_voltage(uint32_t ldo_id)
+{
+	uint8_t val = 0;
+	uint32_t ldo_number = (ldo_id & ~LDO_P_MASK);
+	int32_t ret = 0;
+
+	/* Program the CTRL reg */
+	ret = dev->read(&val, 1, PM8921_LDO_CTRL_REG(ldo_number));
+	val &= ~( 1 << PM8921_LDO_CTRL_REG_ENABLE);
 	ret = dev->write(&val, 1, PM8921_LDO_CTRL_REG(ldo_number));
 	if (ret) {
 		dprintf(CRITICAL, "Failed to write to PM8921 LDO Ctrl Reg ret=%d.\n", ret);
@@ -467,12 +511,12 @@ int pm8921_low_voltage_switch_enable(uint8_t lvs_id)
 
 	if (lvs_id < lvs_start || lvs_id > lvs_end) {
 		dprintf(CRITICAL, "Requested unsupported LVS.\n");
-		return ERR_GENERIC;
+		return ERR_NOT_SUPPORTED;
 	}
 
 	if (lvs_id == lvs_2) {
 		dprintf(CRITICAL, "No support for LVS2 yet!\n");
-		return ERR_GENERIC;
+		return ERR_NOT_SUPPORTED;
 	}
 
 	/* Read LVS_TEST Reg first*/
@@ -505,7 +549,7 @@ int pm8921_mpp_set_digital_output(uint8_t mpp_id)
 
 	if (mpp_id < mpp_start || mpp_id > mpp_end) {
 		dprintf(CRITICAL, "Requested unsupported MPP.\n");
-		return ERR_GENERIC;
+		return ERR_NOT_SUPPORTED;
 	}
 
 	val = 0;
@@ -769,5 +813,5 @@ int pm8921_configure_wled(void)
 	pm8921_masked_write(WLED_SYNC_REG, WLED_SYNC_MASK,	WLED_SYNC_VAL);
 	pm8921_masked_write(WLED_SYNC_REG, WLED_SYNC_MASK,	WLED_SYNC_RESET_VAL);
 
-	return 0;
+	return NO_ERROR;
 }

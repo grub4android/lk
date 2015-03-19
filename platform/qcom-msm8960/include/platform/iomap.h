@@ -88,6 +88,11 @@
 #define GPIO_CONFIG_ADDR(x) (TLMM_BASE_ADDR + 0x1000 + (x)*0x10)
 #define GPIO_IN_OUT_ADDR(x) (TLMM_BASE_ADDR + 0x1004 + (x)*0x10)
 
+#define GSBI_BASE(id)         ((id) == 1 ? (MSM_IOMAP_P2V(0x12440000) + (((id)-1) << 20)) : \
+				((id) <= 7 ? (MSM_IOMAP_P2V(0x16000000) + (((id)-1) << 20)) : \
+                                           (MSM_IOMAP_P2V(0x1A000000) + (((id)-8) << 20))))
+#define QUP_BASE(id)          (id) == 1 ? (GSBI_BASE(id) + 0x20000) : (GSBI_BASE(id) + 0x80000)
+
 #define EBI2_CHIP_SELECT_CFG0   MSM_IOMAP_P2V(0x1A100000)
 #define EBI2_XMEM_CS3_CFG1      MSM_IOMAP_P2V(0x1A110034)
 

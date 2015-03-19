@@ -32,6 +32,7 @@
 #include <bits.h>
 #include <debug.h>
 #include <dev/fbcon.h>
+#include <kernel/vm.h>
 #include <platform/mdp4.h>
 #include <platform/lcdc.h>
 #include <target/display.h>
@@ -150,7 +151,7 @@ int mdp_dsi_cmd_config(struct msm_panel_info *pinfo,
 {
 
 	int ret = 0;
-	unsigned long input_img_addr = fb->base;
+	unsigned long input_img_addr = (unsigned long)kvaddr_to_paddr(fb->base);
 	unsigned short image_wd = pinfo->xres;
 	unsigned short image_ht = pinfo->yres;
 	unsigned short pack_pattern = 0x12;
@@ -187,7 +188,7 @@ mipi_dsi_cmd_config(struct fbcon_config mipi_fb_cfg,
 {
 
 	int status = 0;
-	unsigned long input_img_addr = mipi_fb_cfg.base;
+	unsigned long input_img_addr = (unsigned long)kvaddr_to_paddr(mipi_fb_cfg.base);
 	unsigned short image_wd = mipi_fb_cfg.width;
 	unsigned short image_ht = mipi_fb_cfg.height;
 	unsigned short pack_pattern = 0x12;
@@ -375,7 +376,7 @@ int mdp_dsi_video_on(struct msm_panel_info *pinfo)
 	return ret;
 }
 
-int mdp_dsi_video_off(void)
+int mdp_dsi_video_off(struct msm_panel_info *pinfo)
 {
 	if(!target_cont_splash_screen())
 	{

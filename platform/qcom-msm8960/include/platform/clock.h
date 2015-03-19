@@ -29,6 +29,8 @@
 #ifndef __PLATFORM_MSM8960_CLOCK_H
 #define __PLATFORM_MSM8960_CLOCK_H
 
+#include <target/display.h>
+
 #define MSM_MMSS_CLK_CTL_SIZE 4096
 #define UART_DM_CLK_RX_TX_BIT_RATE 0xFF
 
@@ -328,13 +330,29 @@ struct pll_rate {
 #define BYTE_NS_VAL           0x00000001
 #define BYTE_CC_VAL           0x00000004
 
+#ifndef PIXEL_NS_VAL
 #define PIXEL_NS_VAL          0x00F80003
-#define PIXEL_MD_VAL          0x000001FB
-#define PIXEL_CC_VAL          0x00000080
+#endif
 
+#ifndef PIXEL_MD_VAL
+#define PIXEL_MD_VAL          0x000001FB
+#endif
+
+#ifndef PIXEL_CC_VAL
+#define PIXEL_CC_VAL          0x00000080
+#endif
+
+#ifndef DSI_NS_VAL
 #define DSI_NS_VAL            0xFA000003
+#endif
+
+#ifndef DSI_MD_VAL
 #define DSI_MD_VAL            0x000003FB
+#endif
+
+#ifndef DSI_CC_VAL
 #define DSI_CC_VAL            0x00000080
+#endif
 
 void config_mmss_clk(uint32_t ns,
              uint32_t md,
