@@ -18,13 +18,16 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/acpuclock.c \
 	$(LOCAL_DIR)/gpio.c \
 	$(LOCAL_DIR)/clock.c \
-	$(LOCAL_DIR)/keypad.c
+	$(LOCAL_DIR)/keypad.c \
+	$(LOCAL_DIR)/mmap.c
 
 KEYS_USE_GPIO_KEYPAD := 1
 
 MEMBASE := 0x80000000
 MEMSIZE := 0x02000000	# 32MB
 KERNEL_LOAD_OFFSET := 0x08f00000
+LINUX_BASE := 0x80200000
+LINUX_SIZE := 0x2c00000 # 44MB
 
 MODULE_DEPS += \
 	platform/qcom \

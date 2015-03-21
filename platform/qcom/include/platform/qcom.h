@@ -23,6 +23,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <kernel/vm.h>
 
 #ifdef QCOM_ADDITIONAL_INCLUDE
 #include QCOM_ADDITIONAL_INCLUDE
@@ -41,6 +42,9 @@ void target_usb_stop(void);
 void target_fastboot_init(void);
 const char* target_serialno(void);
 const char* target_usb_controller(void);
+
+typedef void* (*platform_mmap_cb_t)(void* pdata, paddr_t addr, size_t size);
+void* platform_get_mmap(void* pdata, platform_mmap_cb_t cb);
 
 #ifdef QCOM_ENABLE_SDHCI
 void clock_config_cdc(uint32_t interface);

@@ -29,19 +29,23 @@
  */
 
 #include <app.h>
+#include <arch.h>
+#include <err.h>
 #include <debug.h>
 #include <printf.h>
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <target.h>
-#include <dev/udc.h>
+#include <lk/init.h>
 #include <platform.h>
 #include <kernel/vm.h>
-#include <kernel/event.h>
-#include <kernel/thread.h>
+#include <lib/android.h>
 #include <app/fastboot.h>
-#include <lk/init.h>
+
+#if WITH_LIB_UEFI
+#include <uefi/pe32.h>
+#endif
 
 #if WITH_LIB_CONSOLE
 #include <lib/console.h>
@@ -127,6 +131,67 @@ static void cmd_oem_reboot_recovery(const char *arg, void *data, unsigned sz)
 	platform_halt(HALT_ACTION_REBOOT, HALT_REASON_SW_RECOVERY);
 }
 
+static void cmd_boot(const char *arg, void *data, unsigned sz)
+{
+	android_parsed_bootimg_t parsed;
+
+	// parse bootimg
+	android_parse_bootimg(data, sz, &parsed);
+	dprintf(SPEW, "%s: kernel=0x%08x(0x%08x) ramdisk=0x%08x(0x%08x) second=0x%08x(0x%08x) tags=0x%08x(0x%08x) cmdline=[%s]\n", __func__, 
+		parsed.hdr->kernel_addr, parsed.hdr->kernel_size,
+		parsed.hdr->ramdisk_addr, parsed.hdr->ramdisk_size,
+		parsed.hdr->second_addr, parsed.hdr->second_size,
+		parsed.hdr->tags_addr, parsed.hdr->dt_size,
+		parsed.cmdline);
+
+#if WITH_LIB_UEFI
+	// try to load as PE image
+	int rc = peloader_load(parsed.kernel, parsed.hdr->kernel_size);
+	if(rc!=ERR_INVALID_ARGS) {
+		if(rc==NO_ERROR) fastboot_okay("");
+		else fastboot_fail("failed to load PE image");
+		return;
+	}
+#endif
+
+	// TODO: second loader support
+	if(parsed.hdr->second_size>0) {
+		fastboot_fail("second loaders are not supported");
+		return;
+	}
+
+	// allocate memory
+	if(android_allocate_boot_memory(&parsed)) {
+		fastboot_fail("error allocating memory");
+		goto err;
+	}
+	dprintf(SPEW, "%s: kernel=%p(0x%08lx) ramdisk=%p(0x%08lx) second=%p(0x%08lx) tags=%p(0x%08lx)\n", __func__, 
+		parsed.kernel_loaded, parsed.kernel_loaded?kvaddr_to_paddr(parsed.kernel_loaded):0,
+		parsed.ramdisk_loaded, parsed.ramdisk_loaded?kvaddr_to_paddr(parsed.ramdisk_loaded):0,
+		parsed.second_loaded, parsed.second_loaded?kvaddr_to_paddr(parsed.second_loaded):0,
+		parsed.tags_loaded, parsed.tags_loaded?kvaddr_to_paddr(parsed.tags_loaded):0);
+
+	// generate tags
+	if(android_add_board_info(&parsed)) {
+		fastboot_fail("error generating tags");
+		goto err;
+	}
+
+	// load images
+	if(android_load_images(&parsed)) {
+		fastboot_fail("error loading images");
+		goto err;
+	}
+
+	// boot
+	fastboot_okay("");
+	arch_chain_load(parsed.kernel_loaded, 0, parsed.machtype, kvaddr_to_paddr(parsed.tags_loaded), 0);
+
+err:
+	android_free_parsed_bootimg(&parsed);
+}
+
+
 static void fastboot_commands_init(uint level)
 {
 #if WITH_LIB_CONSOLE
@@ -139,6 +204,7 @@ static void fastboot_commands_init(uint level)
 	fastboot_register("reboot", cmd_reboot);
 	fastboot_register("reboot-bootloader", cmd_reboot_bootloader);
 	fastboot_register_desc("oem reboot-recovery", "Reboot to recovery mode", cmd_oem_reboot_recovery);
+	fastboot_register("boot", cmd_boot);
 }
 
-LK_INIT_HOOK(virtio, &fastboot_commands_init, LK_INIT_LEVEL_THREADING);
+LK_INIT_HOOK(fastboot, &fastboot_commands_init, LK_INIT_LEVEL_THREADING);

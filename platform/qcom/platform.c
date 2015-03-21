@@ -68,6 +68,10 @@ void platform_qcom_init_pmm(void) {
 	struct list_node list;
 	list_initialize(&list);
 	pmm_alloc_range(kvaddr_to_paddr((void*)platform_get_smem_base_addr()), 2*MB/PAGE_SIZE, &list);
+
+	// reserve linux memory
+	list_initialize(&list);
+	pmm_alloc_range(kvaddr_to_paddr((void*)LINUX_BASE), LINUX_SIZE/PAGE_SIZE, &list);
 }
 
 void platform_init_mmu_mappings(void)
@@ -148,3 +152,21 @@ __WEAK uint32_t target_ddr_cfg_val(void)
 	return DDR_CONFIG_VAL;
 }
 #endif
+
+__WEAK void* platform_get_mmap(void* pdata, platform_mmap_cb_t cb) {
+	uint32_t i;
+	ram_partition part;
+
+	// Make sure RAM partition table is initialized
+	ASSERT(smem_ram_ptable_init_v1());
+	for(i=0; i<smem_get_ram_ptable_len(); i++) {
+		smem_get_ram_ptable_entry(&part, i);
+
+		if(part.category==SDRAM && part.type==SYS_MEMORY) {
+			/* Pass along all other usable memory regions to Linux */
+			pdata = cb(pdata, (paddr_t) part.start, (size_t)part.size);
+		}
+	}
+
+	return pdata;
+}
