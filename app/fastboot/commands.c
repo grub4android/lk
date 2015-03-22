@@ -55,6 +55,14 @@
 #include <lib/bio.h>
 #endif
 
+#define PRINT_PARSED_INFO(x) \
+	dprintf(SPEW, "%s: kernel=0x%08x(0x%08x) ramdisk=0x%08x(0x%08x) second=0x%08x(0x%08x) tags=0x%08x(0x%08x) cmdline=[%s]\n", __func__, \
+		(x).hdr->kernel_addr, (x).hdr->kernel_size, \
+		(x).hdr->ramdisk_addr, (x).hdr->ramdisk_size, \
+		(x).hdr->second_addr, (x).hdr->second_size, \
+		(x).hdr->tags_addr, (x).hdr->dt_size, \
+		(x).cmdline);
+
 #if WITH_LIB_CONSOLE
 static char fastboot_catcher_buf[MAX_RSP_SIZE];
 static unsigned fastboot_catcher_len = 0;
@@ -136,13 +144,11 @@ static void cmd_boot(const char *arg, void *data, unsigned sz)
 	android_parsed_bootimg_t parsed;
 
 	// parse bootimg
-	android_parse_bootimg(data, sz, &parsed);
-	dprintf(SPEW, "%s: kernel=0x%08x(0x%08x) ramdisk=0x%08x(0x%08x) second=0x%08x(0x%08x) tags=0x%08x(0x%08x) cmdline=[%s]\n", __func__, 
-		parsed.hdr->kernel_addr, parsed.hdr->kernel_size,
-		parsed.hdr->ramdisk_addr, parsed.hdr->ramdisk_size,
-		parsed.hdr->second_addr, parsed.hdr->second_size,
-		parsed.hdr->tags_addr, parsed.hdr->dt_size,
-		parsed.cmdline);
+	if(android_parse_bootimg(data, sz, &parsed)) {
+		fastboot_fail("error parsing bootimg");
+		return;
+	}
+	PRINT_PARSED_INFO(parsed);
 
 #if WITH_LIB_UEFI
 	// try to load as PE image
@@ -154,41 +160,23 @@ static void cmd_boot(const char *arg, void *data, unsigned sz)
 	}
 #endif
 
-	// TODO: second loader support
-	if(parsed.hdr->second_size>0) {
-		fastboot_fail("second loaders are not supported");
+	// boot
+	android_do_boot(&parsed, true);
+}
+
+static void cmd_continue(const char *arg, void *data, unsigned sz)
+{
+	android_parsed_bootimg_t parsed;
+
+	// parse bootimg
+	if(android_parse_partition("boot", &parsed)) {
+		fastboot_fail("error loading partition");
 		return;
 	}
-
-	// allocate memory
-	if(android_allocate_boot_memory(&parsed)) {
-		fastboot_fail("error allocating memory");
-		goto err;
-	}
-	dprintf(SPEW, "%s: kernel=%p(0x%08lx) ramdisk=%p(0x%08lx) second=%p(0x%08lx) tags=%p(0x%08lx)\n", __func__, 
-		parsed.kernel_loaded, parsed.kernel_loaded?kvaddr_to_paddr(parsed.kernel_loaded):0,
-		parsed.ramdisk_loaded, parsed.ramdisk_loaded?kvaddr_to_paddr(parsed.ramdisk_loaded):0,
-		parsed.second_loaded, parsed.second_loaded?kvaddr_to_paddr(parsed.second_loaded):0,
-		parsed.tags_loaded, parsed.tags_loaded?kvaddr_to_paddr(parsed.tags_loaded):0);
-
-	// generate tags
-	if(android_add_board_info(&parsed)) {
-		fastboot_fail("error generating tags");
-		goto err;
-	}
-
-	// load images
-	if(android_load_images(&parsed)) {
-		fastboot_fail("error loading images");
-		goto err;
-	}
+	PRINT_PARSED_INFO(parsed);
 
 	// boot
-	fastboot_okay("");
-	arch_chain_load(parsed.kernel_loaded, 0, parsed.machtype, kvaddr_to_paddr(parsed.tags_loaded), 0);
-
-err:
-	android_free_parsed_bootimg(&parsed);
+	android_do_boot(&parsed, true);
 }
 
 
@@ -205,6 +193,7 @@ static void fastboot_commands_init(uint level)
 	fastboot_register("reboot-bootloader", cmd_reboot_bootloader);
 	fastboot_register_desc("oem reboot-recovery", "Reboot to recovery mode", cmd_oem_reboot_recovery);
 	fastboot_register("boot", cmd_boot);
+	fastboot_register("continue", cmd_continue);
 }
 
 LK_INIT_HOOK(fastboot, &fastboot_commands_init, LK_INIT_LEVEL_THREADING);
