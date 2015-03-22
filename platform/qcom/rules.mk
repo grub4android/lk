@@ -21,8 +21,17 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/hsusb.c \
 	$(LOCAL_DIR)/scm.c
 
+
+ifeq ($(QCOM_ENABLE_QGIC),1)
+GLOBAL_DEFINES += QCOM_ENABLE_QGIC
+MODULE_SRCS += \
+	$(LOCAL_DIR)/qgic.c \
+	$(LOCAL_DIR)/qgic_common.c \
+	$(LOCAL_DIR)/interrupts.c
+else
 MODULE_DEPS += \
 	dev/interrupt/arm_gic
+endif
 
 ifeq ($(QCOM_ENABLE_UART),1)
 GLOBAL_DEFINES += QCOM_ENABLE_UART

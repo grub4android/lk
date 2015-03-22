@@ -36,7 +36,6 @@
 #include <debug.h>
 #include <dev/uart.h>
 #include <dev/pmic/pm8921.h>
-#include <dev/interrupt/arm_gic.h>
 #include <lk/init.h>
 #include <kernel/vm.h>
 #include <platform.h>

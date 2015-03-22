@@ -40,7 +40,7 @@
 #include <dev/uart.h>
 #include <dev/keys.h>
 #include <dev/pmic/pm8921.h>
-#include <dev/interrupt/arm_gic.h>
+#include <platform/qgic.h>
 #include <platform.h>
 #include <platform/gic.h>
 #include <platform/smem.h>
@@ -81,7 +81,7 @@ void platform_early_init(void)
     msm_clocks_init();
 
     /* initialize the interrupt controller */
-    arm_gic_init();
+    qgic_init();
 
     platform_init_timer();
 
