@@ -117,4 +117,6 @@ ifeq ($(QCOM_MMU_SMEM_IRAM),1)
 GLOBAL_DEFINES += QCOM_MMU_SMEM_IRAM
 endif
 
+include $(LOCAL_DIR)/tools/Makefile
+
 include make/module.mk
