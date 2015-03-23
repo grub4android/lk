@@ -12,5 +12,6 @@ MODULES += \
 	lib/debugcommands \
 	lib/libm \
 	lib/bio \
-	lib/partition
+	lib/partition \
+	lib/uefi
 
