@@ -482,12 +482,12 @@ void bio_dump_devices(void)
 	mutex_release(&bdevs->lock);
 }
 
-void bio_foreach(void (*cb)(const char*), bool subdevs)
+void bio_foreach(void (*cb)(const char*, void*), bool subdevs, void* pdata)
 {
 	bdev_t *entry;
 	list_for_every_entry_reverse(&bdevs->list, entry, bdev_t, node) {
 		if(!subdevs && entry->is_subdev) continue;
-		cb(entry->name);
+		cb(entry->name, pdata);
 	}
 }
 

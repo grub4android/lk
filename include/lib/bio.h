@@ -75,7 +75,7 @@ void bio_initialize_bdev(bdev_t *dev, const char *name, size_t block_size, bnum_
 void bio_dump_devices(void);
 
 /* iterate over all registered devices */
-void bio_foreach(void (*cb)(const char*), bool subdevs);
+void bio_foreach(void (*cb)(const char*, void*), bool subdevs, void*);
 
 int bio_num_devices(bool subdevs);
 
