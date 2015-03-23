@@ -98,4 +98,15 @@ enum bio_ioctl_num {
 	BIO_IOCTL_PUT_MEM_MAP, /* if needed, return the pointer (to 'close' the map) */
 };
 
+typedef struct {
+	// inheirit the usual bits
+	bdev_t dev;
+
+	// we're a subdevice of this
+	bdev_t *parent;
+
+	// we're this many blocks into it
+	bnum_t offset;
+} subdev_t;
+
 // vim: set ts=4 sw=4 noexpandtab:

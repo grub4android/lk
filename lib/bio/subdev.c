@@ -27,17 +27,6 @@
 
 #define LOCAL_TRACE 0
 
-typedef struct {
-	// inheirit the usual bits
-	bdev_t dev;
-
-	// we're a subdevice of this
-	bdev_t *parent;
-
-	// we're this many blocks into it
-	bnum_t offset;
-} subdev_t;
-
 static ssize_t subdev_read(struct bdev *_dev, void *buf, off_t offset, size_t len)
 {
 	subdev_t *subdev = (subdev_t *)_dev;
