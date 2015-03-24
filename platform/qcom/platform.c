@@ -80,7 +80,7 @@ void platform_init_mmu_mappings(void)
 
 __WEAK uint32_t platform_get_smem_base_addr(void)
 {
-	return (uint32_t)paddr_to_kvaddr(MSM_SHARED_BASE);
+	return MSM_SHARED_BASE;
 }
 
 __WEAK int boot_device_mask(int val)

@@ -59,12 +59,30 @@
 #define VIBRATE_TIME    250
 #endif
 
-struct mmu_initial_mapping mmu_initial_mappings_static[] = {
+struct mmu_initial_mapping mmu_initial_mappings[] = {
+    { .phys = MEMBASE,
+      .virt = KERNEL_BASE,
+      .size = KERNEL_LOAD_OFFSET+MEMSIZE,
+      .flags = 0,
+      .name = "kernel"},
+
+	// IOMAP covers IMEM already
     { .phys = MSM_IOMAP_BASE_PHYS,
       .virt = MSM_IOMAP_BASE,
       .size = MSM_IOMAP_SIZE,
       .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
       .name = "iomap"},
+
+    { .phys = MSM_SHARED_BASE_PHYS,
+      .virt = MSM_SHARED_BASE,
+      .size = 2*MB,
+      .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
+      .name = "smem"},
+
+    { .phys = MEMBASE + KERNEL_LOAD_OFFSET,
+      .virt = MEMBASE + KERNEL_LOAD_OFFSET,
+      .size = 16*MB,
+      .flags = MMU_INITIAL_MAPPING_TEMPORARY},
 
 	{ 0 },
 };

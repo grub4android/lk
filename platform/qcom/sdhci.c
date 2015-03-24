@@ -598,7 +598,7 @@ static struct desc_entry *sdhci_prep_desc_table(void *data, uint32_t len)
 	uint32_t i;
 	uint32_t table_len = 0;
 
-	data = kvaddr_to_paddr(data)?:data;
+	data = (void*)kvaddr_to_paddr(data);
 
 	if (len <= SDHCI_ADMA_DESC_LINE_SZ) {
 		/* Allocate only one descriptor */
@@ -714,7 +714,7 @@ static struct desc_entry *sdhci_adma_transfer(struct sdhci_host *host,
 	adma_addr = sdhci_prep_desc_table(data, sz);
 
 	/* Write adma address to adma register */
-	REG_WRITE32(host, (uint32_t) kvaddr_to_paddr(adma_addr)?:adma_addr, SDHCI_ADM_ADDR_REG);
+	REG_WRITE32(host, (uint32_t) kvaddr_to_paddr((void*)adma_addr), SDHCI_ADM_ADDR_REG);
 
 	/* Write the block size */
 	if (cmd->data.blk_sz)

@@ -16,6 +16,7 @@
 
 #define ROUND_TO_PAGE(x,y) (((x) + (y)) & (~(y)))
 
+#pragma GCC diagnostic ignored "-Wtype-limits"
 static int internal_allocate_mem(vaddr_t linux_virt, size_t size, uint32_t addr, void** result) {
 	// check if start addr is inside linux range
 	if(!(addr>=LINUX_BASE && addr<=LINUX_BASE+LINUX_SIZE))

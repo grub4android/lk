@@ -12,5 +12,6 @@ enum target_subtype {
 	HW_PLATFORM_SUBTYPE_SKUG = 5,
 };
 
+unsigned board_machtype(void);
 
 #endif

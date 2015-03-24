@@ -54,7 +54,7 @@ uint32_t smem_get_base_addr(void)
 	if(smem_info && (smem_info->identifier == SMEM_TARGET_INFO_IDENTIFIER))
 		return smem_info->phy_addr;
 	else
-		return paddr_to_kvaddr(MSM_SHARED_BASE);
+		return MSM_SHARED_BASE;
 }
 #endif
 

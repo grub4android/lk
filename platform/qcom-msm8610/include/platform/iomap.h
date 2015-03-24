@@ -39,7 +39,8 @@
 
 #define SDRAM_START_ADDR            0x00000000
 
-#define MSM_SHARED_BASE             0x0D900000
+#define MSM_SHARED_BASE             (MSM_IOMAP_BASE+MSM_IOMAP_SIZE)
+#define MSM_SHARED_BASE_PHYS        0x0D900000
 
 #define APPS_SS_BASE                MSM_IOMAP_P2V(0xF9000000)
 
