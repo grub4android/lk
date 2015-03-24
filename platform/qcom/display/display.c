@@ -453,3 +453,32 @@ int msm_display_off(void)
 msm_display_off_out:
 	return ret;
 }
+
+#ifdef QCOM_ENABLE_2NDSTAGE_BOOT
+int msm_display_2ndstagefb_reserve(void) {
+	struct fbcon_config config;
+	mdp_dump_config(&config);
+
+	// reserve framebuffer memory
+	struct list_node list;
+	list_initialize(&list);
+	size_t fbsize = config.width*config.height*(config.bpp/3);
+	pmm_alloc_range((paddr_t)config.base, fbsize/PAGE_SIZE, &list);
+
+	return NO_ERROR;
+}
+
+int msm_display_2ndstagefb_setup(void) {
+	// get memory
+	struct fbcon_config* config = calloc(sizeof(struct fbcon_config), 1);
+	mdp_dump_config(config);
+
+	// map physical framebuffer
+	size_t fbsize = config->width*config->height*(config->bpp/3);
+	if(vmm_alloc_physical(vmm_get_kernel_aspace(), "msm_fb", fbsize, &config->base, (paddr_t)config->base, 0, ARCH_MMU_FLAG_UNCACHED)<0)
+		return ERR_NO_MEMORY;
+
+	fbcon_setup(config);
+	return NO_ERROR;
+}
+#endif

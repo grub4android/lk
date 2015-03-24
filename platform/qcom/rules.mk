@@ -119,6 +119,10 @@ ifeq ($(QCOM_MMU_SMEM_IRAM),1)
 GLOBAL_DEFINES += QCOM_MMU_SMEM_IRAM
 endif
 
+ifeq ($(QCOM_ENABLE_2NDSTAGE_BOOT),1)
+GLOBAL_DEFINES += QCOM_ENABLE_2NDSTAGE_BOOT
+endif
+
 include $(LOCAL_DIR)/tools/Makefile
 
 include make/module.mk

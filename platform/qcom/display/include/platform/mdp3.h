@@ -52,5 +52,6 @@ int mdp_edp_off(void);
 int mdss_hdmi_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
 int mdss_hdmi_on(struct msm_panel_info *pinfo);
 int mdss_hdmi_off(void);
+int mdp_dump_config(struct fbcon_config *fb);
 
 #endif

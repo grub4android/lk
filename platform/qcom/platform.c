@@ -40,6 +40,10 @@
 #include <lib/bio.h>
 #endif
 
+#ifdef QCOM_ENABLE_DISPLAY
+#include <platform/msm_panel.h>
+#endif
+
 static pmm_arena_t arenas[4];
 
 void platform_qcom_init_pmm(void) {
@@ -72,6 +76,10 @@ void platform_qcom_init_pmm(void) {
 	// reserve linux memory
 	list_initialize(&list);
 	pmm_alloc_range(kvaddr_to_paddr((void*)LINUX_BASE), LINUX_SIZE/PAGE_SIZE, &list);
+
+#ifdef QCOM_ENABLE_2NDSTAGE_BOOT
+	msm_display_2ndstagefb_reserve();
+#endif
 }
 
 void platform_init_mmu_mappings(void)

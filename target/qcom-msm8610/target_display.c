@@ -194,6 +194,11 @@ void target_display_init(const char *panel_name)
 	uint32_t ret = 0;
 	char cont_splash = '\0';
 
+#ifdef QCOM_ENABLE_2NDSTAGE_BOOT
+	msm_display_2ndstagefb_setup();
+	return;
+#endif
+
 	set_panel_cmd_string(panel_name, &cont_splash);
 
 	if (!strcmp(panel_name, NO_PANEL_CONFIG)) {

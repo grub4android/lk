@@ -343,4 +343,9 @@ int msm_display_off(void);
 int msm_display_init(struct msm_fb_panel_data *pdata);
 uint8_t target_is_edp(void);
 
+#ifdef QCOM_ENABLE_2NDSTAGE_BOOT
+int msm_display_2ndstagefb_reserve(void);
+int msm_display_2ndstagefb_setup(void);
+#endif
+
 #endif
