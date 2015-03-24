@@ -111,6 +111,7 @@
 #define DSI1_REGULATOR_BASE         (MIPI_DSI0_BASE + 0x0280
 #define CTRL                        0x000
 #define CLK_CTRL                    0x118
+#define RDBK_DATA0                  0x06C
 
 #define DSIPHY_REGULATOR_BASE                 (0x500)
 #define DSIPHY_TIMING_BASE                    (0x440)

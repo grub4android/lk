@@ -79,10 +79,11 @@ static uint32_t response_value = 0;
 
 static uint32_t mdss_dsi_read_panel_signature(struct mipi_panel_info *mipi)
 {
+	uint32_t ret = response_value;
+
 #ifdef QCOM_DISPLAY_TYPE_MDSS
 	uint32_t rec_buf[1];
 	uint32_t *lp = rec_buf, data;
-	uint32_t ret = response_value;
 	uint32_t panel_signature = mipi->signature;
 
 	if (ret && ret != panel_signature)
