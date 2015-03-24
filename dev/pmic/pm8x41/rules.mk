@@ -9,12 +9,12 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/pm8x41_adc.c \
 	$(LOCAL_DIR)/pm8x41_wled.c
 
-ifeq ($(ENABLE_PON_VIB_SUPPORT),true)
+ifeq ($(PM8X41_ENABLE_PON_VIB_SUPPORT),true)
 MODULE_SRCS += \
 	$(LOCAL_DIR)/pm8x41_vib.c
 endif
 
-ifeq ($(ENABLE_PWM_SUPPORT),true)
+ifeq ($(PM8X41_ENABLE_PWM_SUPPORT),true)
 MODULE_SRCS += \
 	$(LOCAL_DIR)/pm_pwm.c
 endif

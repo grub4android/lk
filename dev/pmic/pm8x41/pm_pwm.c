@@ -28,8 +28,8 @@
  */
 
 #include <debug.h>
-#include <pm_pwm.h>
-#include <pm8x41_hw.h>
+#include <dev/pmic/pm_pwm.h>
+#include <dev/pmic/pm8x41_hw.h>
 
 #define NSEC_PER_USEC		1000L
 #define USEC_PER_SEC		1000000L

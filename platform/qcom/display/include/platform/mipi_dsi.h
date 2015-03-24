@@ -77,8 +77,6 @@
 #define DTYPE_GEN_LWRITE 0x29	/* 4th Byte is 0xc0 */
 #define DTYPE_DCS_WRITE1 0x15	/* 4th Byte is 0x80 */
 
-#define RDBK_DATA0 0x06C
-
 #define MIPI_VIDEO_MODE	        1
 #define MIPI_CMD_MODE           2
 

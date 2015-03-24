@@ -66,6 +66,12 @@ struct fbcon_config mipi_fb_cfg = {
 	.update_done = NULL,
 };
 
+#ifdef QCOM_DISPLAY_TYPE_MDSS
+static char read_id_a1h_cmd[4] = { 0xA1, 0x00, 0x06, 0xA0 };	/* DTYPE_DCS_READ */
+static struct mipi_dsi_cmd read_ddb_start_cmd =
+	{sizeof(read_id_a1h_cmd), read_id_a1h_cmd,  0x00};
+#endif
+
 void secure_writel(uint32_t, uint32_t);
 uint32_t secure_readl(uint32_t);
 
@@ -73,11 +79,11 @@ static uint32_t response_value = 0;
 
 static uint32_t mdss_dsi_read_panel_signature(struct mipi_panel_info *mipi)
 {
-	uint32_t ret = response_value;
-
 #ifdef QCOM_DISPLAY_TYPE_MDSS
 	uint32_t rec_buf[1];
 	uint32_t *lp = rec_buf, data;
+	uint32_t ret = response_value;
+	uint32_t panel_signature = mipi->signature;
 
 	if (ret && ret != panel_signature)
 		goto exit_read_signature;
@@ -110,6 +116,7 @@ static int mdss_dsi_cmd_dma_trigger_for_panel(char dual_dsi,
 #ifdef QCOM_DISPLAY_TYPE_MDSS
 	uint32_t ReadValue;
 	uint32_t count = 0;
+	uint32_t base = dual_dsi ? sctl_base : ctl_base;
 
 	writel(0x03030303, ctl_base + INT_CTRL);
 	writel(0x1, ctl_base + CMD_MODE_DMA_SW_TRIGGER);

@@ -26,6 +26,8 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef _PLATFORM_MSM_SHARED_MDP_3_H_
+#define _PLATFORM_MSM_SHARED_MDP_3_H_
 
 #include <dev/fbcon.h>
 #include <platform/msm_panel.h>
@@ -34,27 +36,21 @@
 #define PASS                        0
 #define FAIL                        1
 
-int mdp_setup_dma_p_video_mode(unsigned short disp_width,
-			       unsigned short disp_height,
-			       unsigned short img_width,
-			       unsigned short img_height,
-			       unsigned short hsync_porch0_fp,
-			       unsigned short hsync_porch0_bp,
-			       unsigned short vsync_porch0_fp,
-			       unsigned short vsync_porch0_bp,
-			       unsigned short hsync_width,
-			       unsigned short vsync_width,
-			       unsigned long input_img_addr,
-			       unsigned short img_width_full_size,
-			       unsigned short pack_pattern,
-			       unsigned char ystride);
-
+int mdp_dsi_video_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
+int mdp_dsi_cmd_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
 void mdp_disable(void);
-void mdp_shutdown(void);
+int mdp_dsi_video_off(struct msm_panel_info *pinfo);
+int mdp_dsi_cmd_off(void);
 void mdp_set_revision(int rev);
 int mdp_get_revision(void);
-
-/* defining no-op functions that are implemented only for mdp5 */
+int mdp_dsi_video_on(struct msm_panel_info *pinfo);
+int mdp_dma_on(struct msm_panel_info *pinfo);
+int mdp_dma_off(void);
 int mdp_edp_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
 int mdp_edp_on(struct msm_panel_info *pinfo);
 int mdp_edp_off(void);
+int mdss_hdmi_config(struct msm_panel_info *pinfo, struct fbcon_config *fb);
+int mdss_hdmi_on(struct msm_panel_info *pinfo);
+int mdss_hdmi_off(void);
+
+#endif
