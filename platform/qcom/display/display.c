@@ -330,9 +330,6 @@ int msm_display_init(struct msm_fb_panel_data *pdata)
 
 	fbcon_setup(&(panel->fb));
 
-	// fill fb with black color
-	memset(panel->fb.base, 0, panel->fb.width*panel->fb.height*(panel->fb.bpp/8));
-
 	ret = msm_display_config();
 	if (ret)
 		goto msm_display_init_out;

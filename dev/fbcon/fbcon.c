@@ -30,6 +30,7 @@
 #include <err.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include <dev/fbcon.h>
 
 #include "font5x12.h"
@@ -115,14 +116,8 @@ static void fbcon_scroll_up(void)
 /* TODO: take stride into account */
 void fbcon_clear(void)
 {
-	uint16_t *dst = config->base;
 	unsigned count = config->width * config->height;
-
-	cur_pos.x = 0;
-	cur_pos.y = 0;
-
-	while (count--)
-		*dst++ = BGCOLOR;
+	memset(config->base, BGCOLOR, count * ((config->bpp) / 8));
 }
 
 
@@ -197,8 +192,10 @@ void fbcon_setup(struct fbcon_config *_config)
 
 	fbcon_set_colors(bg, fg);
 
+#ifndef QCOM_ENABLE_2NDSTAGE_BOOT
 	fbcon_clear();
 	fbcon_flush();
+#endif
 
 	cur_pos.x = 0;
 	cur_pos.y = 0;
