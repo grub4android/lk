@@ -5,7 +5,8 @@ MODULE := $(LOCAL_DIR)
 MODULE_DEPS += \
 	lib/bio \
 	lib/rtc \
-	lib/sysparam
+	lib/sysparam \
+	dev/fbcon
 
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
