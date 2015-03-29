@@ -344,6 +344,13 @@ status_t vmm_alloc_physical(vmm_aspace_t *aspace, const char *name, size_t size,
         vaddr = (vaddr_t)*ptr;
     }
 
+#if KERNEL_VM_IDMAPS_ONLY
+    if(vmm_flags & VMM_FLAG_VALLOC_SPECIFIC)
+        PANIC_UNIMPLEMENTED;
+    vaddr = (vaddr_t)paddr;
+    vmm_flags |= VMM_FLAG_VALLOC_SPECIFIC;
+#endif
+
     /* allocate a region and put it in the aspace list */
     vmm_region_t *r = alloc_region(aspace, name, size, vaddr, 0, vmm_flags, VMM_REGION_FLAG_PHYSICAL, arch_mmu_flags);
     if (!r)
@@ -404,6 +411,13 @@ status_t vmm_alloc_contiguous(vmm_aspace_t *aspace, const char *name, size_t siz
         goto err;
     }
 
+#if KERNEL_VM_IDMAPS_ONLY
+    if(vmm_flags & VMM_FLAG_VALLOC_SPECIFIC)
+        PANIC_UNIMPLEMENTED;
+    vaddr = (vaddr_t)pa;
+    vmm_flags |= VMM_FLAG_VALLOC_SPECIFIC;
+#endif
+
     /* allocate a region and put it in the aspace list */
     vmm_region_t *r = alloc_region(aspace, name, size, vaddr, align_pow2, vmm_flags, VMM_REGION_FLAG_PHYSICAL, arch_mmu_flags);
     if (!r) {
@@ -435,6 +449,10 @@ err:
 status_t vmm_alloc(vmm_aspace_t *aspace, const char *name, size_t size, void **ptr, uint8_t align_pow2, uint vmm_flags, uint arch_mmu_flags)
 {
     status_t err = NO_ERROR;
+
+#if KERNEL_VM_IDMAPS_ONLY
+    PANIC_UNIMPLEMENTED;
+#endif
 
     LTRACEF("aspace %p name '%s' size 0x%zx ptr %p align %hhu vmm_flags 0x%x arch_mmu_flags 0x%x\n",
             aspace, name, size, ptr ? *ptr : 0, align_pow2, vmm_flags, arch_mmu_flags);
