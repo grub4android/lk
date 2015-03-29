@@ -79,10 +79,12 @@ struct mmu_initial_mapping mmu_initial_mappings[] = {
       .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
       .name = "smem"},
 
+#if MEMBASE != KERNEL_BASE
     { .phys = MEMBASE + KERNEL_LOAD_OFFSET,
       .virt = MEMBASE + KERNEL_LOAD_OFFSET,
       .size = 16*MB,
       .flags = MMU_INITIAL_MAPPING_TEMPORARY},
+#endif
 
 	{ 0 },
 };

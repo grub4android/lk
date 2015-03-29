@@ -33,14 +33,22 @@
 #define _PLATFORM_MSM8610_IOMAP_H_
 
 #define MSM_IOMAP_BASE_PHYS              0xF9000000
+#if KERNEL_VM_IDMAPS_ONLY
+#define MSM_IOMAP_BASE                   MSM_IOMAP_BASE_PHYS
+#else
 #define MSM_IOMAP_BASE                   KERNEL_ASPACE_BASE
+#endif
 #define MSM_IOMAP_SIZE                   0x07000000
 #define MSM_IOMAP_P2V(x)    ((x)+(MSM_IOMAP_BASE-MSM_IOMAP_BASE_PHYS))
 
 #define SDRAM_START_ADDR            0x00000000
 
-#define MSM_SHARED_BASE             (MSM_IOMAP_BASE+MSM_IOMAP_SIZE)
 #define MSM_SHARED_BASE_PHYS        0x0D900000
+#if KERNEL_VM_IDMAPS_ONLY
+#define MSM_SHARED_BASE             MSM_SHARED_BASE_PHYS
+#else
+#define MSM_SHARED_BASE             (MSM_IOMAP_BASE+MSM_IOMAP_SIZE)
+#endif
 
 #define APPS_SS_BASE                MSM_IOMAP_P2V(0xF9000000)
 
