@@ -46,9 +46,20 @@
 
 static pmm_arena_t arenas[4];
 
+static pmm_arena_t arena_lk = {
+	.name = "kernel",
+	.base = MEMBASE + KERNEL_LOAD_OFFSET,
+	.size = MEMSIZE,
+	.flags = PMM_ARENA_FLAG_KMAP,
+	.priority = 1
+};
+
 void platform_qcom_init_pmm(void) {
 	struct smem_ram_ptable ram_ptable;
 	uint32_t i, j = 0;
+
+	pmm_add_arena(&arena_lk);
+	uint32_t lk_end = arena_lk.base+arena_lk.size;
 
 	/* Make sure RAM partition table is initialized */
 	ASSERT(smem_ram_ptable_init(&ram_ptable));
@@ -62,7 +73,28 @@ void platform_qcom_init_pmm(void) {
 			arena->name = "sdram";
 			arena->base = ram_ptable.parts[i].start;
 			arena->size = ram_ptable.parts[i].size;
-			arena->flags = PMM_ARENA_FLAG_KMAP;
+			arena->flags = 0;
+			uint32_t arena_end = arena->base+arena->size;
+
+			// fix start-overlap
+			uint32_t overlap_sz = lk_end-arena->base;
+			if(arena_lk.base<arena_end && overlap_sz>0) {
+				// add pre-overlap memory
+				if(arena_lk.base>arena->base) {
+					pmm_arena_t* arena_pre = &arenas[j++];
+					memset(arena_pre, 0, sizeof(*arena_pre));
+
+					arena_pre->name = "sdram-pre";
+					arena_pre->base = arena->base;
+					arena_pre->size = arena_lk.base - arena->base;
+					arena_pre->flags = 0;
+
+					pmm_add_arena(arena_pre);
+				}
+
+				arena->base += overlap_sz;
+				arena->size -= overlap_sz;
+			}
 
 			pmm_add_arena(arena);
 		}
