@@ -36,7 +36,9 @@
 #include <debug.h>
 #include <string.h>
 #include <kernel/vm.h>
+#include <dev/keys.h>
 #include <dev/pmic/pm8x41.h>
+#include <platform/gpio.h>
 #include <dev/interrupt/arm_gic.h>
 #include <platform/scm.h>
 #include <platform/qcom.h>
@@ -175,6 +177,45 @@ static void set_sdc_power_ctrl(void)
 }
 #endif
 
+/* Return 1 if vol_up pressed */
+__WEAK int target_volume_up(void)
+{
+	uint8_t status = 0;
+
+	gpio_tlmm_config(TLMM_VOL_UP_BTN_GPIO, 0, GPIO_INPUT, GPIO_PULL_UP, GPIO_2MA, GPIO_ENABLE);
+
+	/* Wait for the configuration to complete.*/
+	thread_sleep(1);
+	/* Get status of GPIO */
+	status = gpio_status(TLMM_VOL_UP_BTN_GPIO);
+
+	/* Active low signal. */
+	return !status;
+}
+
+/* Return 1 if vol_down pressed */
+__WEAK uint32_t target_volume_down(void)
+{
+	/* Volume down button tied in with PMIC RESIN. */
+	return pm8x41_resin_status();
+}
+
+__WEAK int target_power_key(void)
+{
+	return pm8x41_get_pwrkey_is_pressed();
+}
+
+static int event_source_poll(key_event_source_t* source) {
+	keys_set_report_key(source, KEY_VOLUMEUP, target_volume_up());
+	keys_set_report_key(source, KEY_VOLUMEDOWN, target_volume_down());
+	keys_set_report_key(source, KEY_RIGHT, target_power_key());
+	return NO_ERROR;
+}
+
+static key_event_source_t event_source = {
+	.poll = event_source_poll
+};
+
 void platform_init(void)
 {
 	dprintf(INFO, "platform_init()\n");
@@ -190,6 +231,7 @@ void platform_init(void)
 	vib_timed_turn_on(VIBRATE_TIME);
 #endif
 
+	keys_add_source(&event_source);
 }
 
 void platform_quiesce(void)
