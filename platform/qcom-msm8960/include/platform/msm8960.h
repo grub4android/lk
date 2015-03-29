@@ -45,4 +45,8 @@ void platform_uart_init_auto(void);
 int target_uart_gpio_config(uint8_t id);
 #endif
 
+void apq8064_keypad_gpio_init(void);
+void msm8960_keypad_gpio_init(void);
+void msm8930_keypad_gpio_init(void);
+
 #endif
