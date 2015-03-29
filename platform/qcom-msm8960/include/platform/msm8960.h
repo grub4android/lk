@@ -39,6 +39,10 @@
 void target_mmc_caps(struct mmc_host *host);
 uint8_t platform_pmic_type(uint32_t pmic_type);
 unsigned board_machtype(void);
+
+#ifdef QCOM_ENABLE_UART
 void platform_uart_init_auto(void);
+int target_uart_gpio_config(uint8_t id);
+#endif
 
 #endif

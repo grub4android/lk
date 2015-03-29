@@ -36,8 +36,98 @@
 #include <platform/gsbi.h>
 #include <platform/iomap.h>
 #include <platform/board.h>
+#include <platform/msm8960.h>
 #include <dev/pmic/pm8921.h>
 #include "platform_p.h"
+
+typedef struct gpioregs gpioregs;
+
+struct gpioregs
+{
+	unsigned out;
+	unsigned in;
+	unsigned oe;
+};
+
+static gpioregs GPIO_REGS[] = {
+	{
+		.out =  GPIO_OUT_0,
+		.in =   GPIO_IN_0,
+		.oe =   GPIO_OE_0,
+	},
+	{
+		.out =  GPIO_OUT_1,
+		.in =   GPIO_IN_1,
+		.oe =   GPIO_OE_1,
+	},
+	{
+		.out =  GPIO_OUT_2,
+		.in =   GPIO_IN_2,
+		.oe =   GPIO_OE_2,
+	},
+};
+
+static gpioregs *find_gpio(unsigned n, unsigned *bit)
+{
+	if (n > 89) {
+		dprintf(CRITICAL, "Wrong GPIO %d\n", n);
+		return 0;
+	}
+	if (n > 63) {
+		*bit = 1 << (n - 64);
+		return GPIO_REGS + 2;
+	}
+	if (n > 31) {
+		*bit = 1 << (n - 32);
+		return GPIO_REGS + 1;
+	}
+	*bit = 1 << n;
+	return GPIO_REGS + 0;
+}
+
+int gpio_direction(unsigned n, unsigned flags)
+{
+        gpioregs *r;
+        unsigned b;
+        unsigned v;
+
+        if ((r = find_gpio(n, &b)) == 0)
+                return -1;
+
+        v = readl(r->oe);
+        if (flags & GPIO_OUTPUT)
+                writel(v | b, r->oe);
+        else
+                writel(v & (~b), r->oe);
+        return 0;
+}
+
+void gpio_output_value(unsigned n, unsigned on)
+{
+        gpioregs *r;
+        unsigned b;
+        unsigned v;
+
+        if ((r = find_gpio(n, &b)) == 0)
+		return;
+
+        v = readl(r->out);
+        if (on)
+                writel(v | b, r->out);
+        else
+                writel(v & (~b), r->out);
+}
+
+int gpio_input_value(unsigned n)
+{
+        gpioregs *r;
+        unsigned b;
+
+        if ((r = find_gpio(n, &b)) == 0)
+		return 0;
+
+        return (readl(r->in) & b) ? 1 : 0;
+}
 
 void gpio_tlmm_config(uint32_t gpio, uint8_t func,
 		      uint8_t dir, uint8_t pull,
@@ -67,7 +157,10 @@ void gpio_set(uint32_t gpio, uint32_t dir)
 /* Configure gpio for uart - based on gsbi id */
 void gpio_config_uart_dm(uint8_t id)
 {
-	if(board_platform_id() == MPQ8064)
+	if(target_uart_gpio_config(id)) {
+		// the target code handled this
+	}
+	else if(board_platform_id() == MPQ8064)
 	{
 		switch (id) {
 

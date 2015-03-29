@@ -53,11 +53,35 @@
 #define GPIO_ENABLE     1
 #define GPIO_DISABLE    0
 
+#define GPIO_BASE_REG(x) (TLMM_BASE_ADDR + 0x3000 + (x))
+
+/* output value */
+#define GPIO_OUT_0      GPIO_BASE_REG(0x00) /* gpio  31-0   */
+#define GPIO_OUT_1      GPIO_BASE_REG(0x04) /* gpio  63-31  */
+#define GPIO_OUT_2      GPIO_BASE_REG(0x08) /* gpio  89-64  */
+
+/* same pin map as above, output enable */
+#define GPIO_OE_0       GPIO_BASE_REG(0x80)
+#define GPIO_OE_1       GPIO_BASE_REG(0x84)
+#define GPIO_OE_2       GPIO_BASE_REG(0x88)
+
+/* same pin map as above, input read */
+#define GPIO_IN_0       GPIO_BASE_REG(0x60)
+#define GPIO_IN_1       GPIO_BASE_REG(0x64)
+#define GPIO_IN_2       GPIO_BASE_REG(0x68)
+
+/* GPIO_IN_OUT: OUTPUT LEVEL */
+#define GPIO_IN_OUT_HIGH	0x2
+#define GPIO_IN_OUT_LOW		0x00
+
 void gpio_config_i2c(uint8_t gsbi_id);
 void gpio_config_uart_dm(uint8_t id);
 void gpio_tlmm_config(uint32_t gpio, uint8_t func,
 			uint8_t dir, uint8_t pull,
 			uint8_t drvstr, uint32_t enable);
 void gpio_set(uint32_t gpio, uint32_t dir);
+int gpio_direction(unsigned n, unsigned flags);
+void gpio_output_value(unsigned n, unsigned on);
+int gpio_input_value(unsigned n);
 
 #endif

@@ -115,6 +115,11 @@ void platform_uart_init_auto(void)
 			target_id);
 	}
 }
+
+__WEAK int target_uart_gpio_config(uint8_t id)
+{
+	return 0;
+}
 #endif
 
 /* Detect the target type */
