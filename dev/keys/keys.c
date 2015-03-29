@@ -29,39 +29,169 @@
  * SUCH DAMAGE.
  */
 
-#include <bits.h>
+#include <err.h>
+#include <list.h>
 #include <debug.h>
+#include <trace.h>
 #include <string.h>
+#include <printf.h>
+#include <malloc.h>
+#include <lk/init.h>
 #include <dev/keys.h>
+#include <kernel/event.h>
+#include <kernel/mutex.h>
+#include <lib/console.h>
 
-static unsigned long key_bitmap[BITMAP_NUM_WORDS(MAX_KEYS)];
+#define LOCAL_TRACE 0
 
-void keys_init(void)
+typedef struct {
+	struct list_node node;
+	uint16_t code;
+	uint16_t value;
+} key_event_t;
+
+static struct list_node event_queue;
+static event_t key_posted;
+static mutex_t queue_mutex;
+
+static struct list_node event_sources;
+static mutex_t source_mutex;
+
+static int key_poll_thread(void *arg)
 {
-	memset(key_bitmap, 0, sizeof(key_bitmap));
+	for(;;) {
+		mutex_acquire(&source_mutex);
+		key_event_source_t *source;
+		list_for_every_entry(&event_sources, source, key_event_source_t, node) {
+			// update time
+			lk_time_t current = current_time();
+			source->delta = current-source->last;
+			source->last = current;
+
+			source->poll(source);
+		}
+		mutex_release(&source_mutex);
+
+		thread_yield();
+	}
+	return 0;
 }
 
-void keys_post_event(uint16_t code, int16_t value)
+static void keys_init_threading(uint level)
+{
+	thread_detach_and_resume(thread_create("key poll thread", &key_poll_thread, NULL, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE));
+}
+
+static void keys_init_heap(uint level)
+{
+	list_initialize(&event_queue);
+	event_init(&key_posted, 0, EVENT_FLAG_AUTOUNSIGNAL);
+	mutex_init(&queue_mutex);
+
+	list_initialize(&event_sources);
+	mutex_init(&source_mutex);
+}
+
+void keys_add_source(key_event_source_t* source) {
+	source->last = INFINITE_TIME;
+
+	mutex_acquire(&source_mutex);
+	list_add_tail(&event_sources, &source->node);
+	mutex_release(&source_mutex);
+}
+
+int keys_post_event(uint16_t code, int16_t value)
 {
 	if (code >= MAX_KEYS) {
-		dprintf(INFO, "Invalid keycode posted: %d\n", code);
-		return;
+		LTRACEF("Invalid keycode posted: %d\n", code);
+		return ERR_INVALID_ARGS;
 	}
 
-	/* TODO: Implement an actual event queue if it becomes necessary */
-	if (value)
-		bitmap_set(key_bitmap, code);
-	else
-		bitmap_clear(key_bitmap, code);
+	// I guess we shouldn't ignore these
+	if(!value) return NO_ERROR;
+	
+	// create event
+	key_event_t* event = malloc(sizeof(key_event_t));
+	event->code = code;
+	event->value = value;
 
-//	dprintf(INFO, "key state change: %d %d\n", code, value);
+	// add event
+	mutex_acquire(&queue_mutex);
+	list_add_tail(&event_queue, &event->node);
+	mutex_init(&queue_mutex);
+
+	// signal
+	LTRACEF("key state change: %d %d\n", code, value);
+	event_signal(&key_posted, 0);
+
+	return NO_ERROR;
 }
 
 int keys_get_state(uint16_t code)
 {
 	if (code >= MAX_KEYS) {
-		dprintf(INFO, "Invalid keycode requested: %d\n", code);
-		return -1;
+		LTRACEF("Invalid keycode requested: %d\n", code);
+		return ERR_INVALID_ARGS;
 	}
-	return bitmap_test(key_bitmap, code);
+
+	// TODO	
+
+	return 0;
 }
+
+int keys_get_next(uint16_t* code, uint16_t* value, bool wait)
+{
+	// wait for next event
+	if(!keys_has_next())
+		event_wait(&key_posted);
+
+	// get event
+	mutex_acquire(&queue_mutex);
+	key_event_t* event = list_remove_tail_type(&event_queue, key_event_t, node);
+	mutex_release(&queue_mutex);
+
+	// set result code
+	*code = event->code;
+	*value = event->value;
+
+	// free event
+	free(event);
+
+	return NO_ERROR;
+}
+
+int keys_has_next(void)
+{
+	return !list_is_empty(&event_queue);
+}
+
+static int cmd_keys(int argc, const cmd_args *argv)
+{
+	if (argc < 2) {
+	notenoughargs:
+		printf("not enough arguments\n");
+	usage:
+		printf("usage:\n");
+		printf("%s post <code> <value>\n", argv[0].str);
+		return ERR_GENERIC;
+	}
+
+	if (!strcmp(argv[1].str, "post")) {
+		if (argc < 4) goto notenoughargs;
+		keys_post_event(argv[2].u, argv[3].u);
+	} else {
+		printf("unknown command\n");
+		goto usage;
+	}
+
+	return NO_ERROR;
+}
+
+STATIC_COMMAND_START
+#if LK_DEBUGLEVEL > 0
+STATIC_COMMAND("keys", "key commands", &cmd_keys)
+#endif
+STATIC_COMMAND_END(keys);
+
+LK_INIT_HOOK(keys_threading, &keys_init_threading, LK_INIT_LEVEL_THREADING);
+LK_INIT_HOOK(keys_heap, &keys_init_heap, LK_INIT_LEVEL_HEAP);
