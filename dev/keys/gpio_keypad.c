@@ -32,6 +32,7 @@
  */
 
 #include <reg.h>
+#include <err.h>
 #include <bits.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -328,6 +329,7 @@ scan_qwerty_gpio_keypad(struct timer *timer, lk_time_t now, void *arg)
 	int i=0;
 	int num =0;
 	uint8_t key_status;
+	key_event_source_t* source = arg;
 	struct qwerty_keypad_info *keypad = qwerty_keypad->keypad_info;
 
 	num = keypad->mapsize;
@@ -342,17 +344,24 @@ scan_qwerty_gpio_keypad(struct timer *timer, lk_time_t now, void *arg)
 		keypad->key_gpio_get(keypad->gpiomap[i], &key_status);
 
 		/*Post event if key pressed*/
-		if(key_status)
-		{
-			keys_post_event(keypad->keymap[i], 1);
-			goto done;
-		}
+		keys_set_report_key(source, keypad->keymap[i], key_status);
 	}
 
-done:
 	event_signal(&qwerty_keypad->full_scan, false);
 	return INT_RESCHEDULE;
 }
+
+static int event_source_poll(key_event_source_t* source) {
+	timer_set_oneshot(&qwerty_keypad->timer, 0, scan_qwerty_gpio_keypad, source);
+
+	/* wait for the keypad to complete one full scan */
+	event_wait(&qwerty_keypad->full_scan);
+	return NO_ERROR;
+}
+
+static key_event_source_t event_source = {
+	.poll = event_source_poll
+};
 
 void ssbi_gpio_keypad_init(struct qwerty_keypad_info  *qwerty_kp)
 {
@@ -368,10 +377,9 @@ void ssbi_gpio_keypad_init(struct qwerty_keypad_info  *qwerty_kp)
 	event_init(&qwerty_keypad->full_scan, false, EVENT_FLAG_AUTOUNSIGNAL);
 	timer_initialize(&qwerty_keypad->timer);
 
-	timer_set_oneshot(&qwerty_keypad->timer, 0, scan_qwerty_gpio_keypad, NULL);
-
-	/* wait for the keypad to complete one full scan */
-	event_wait(&qwerty_keypad->full_scan);
+	// register event source
+	event_source.pdata = qwerty_kp;
+	keys_add_source(&event_source);
 }
 
 void pmic_write(unsigned address, unsigned data)
