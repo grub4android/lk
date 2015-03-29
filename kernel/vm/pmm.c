@@ -290,7 +290,7 @@ uint pmm_alloc_contiguous_ex(uint count, uint8_t alignment_log2, paddr_t *pa, st
             uint start = aligned_offset;
             LTRACEF("starting search at aligned offset %u\n", start);
 retry:
-            while (start < a->size / PAGE_SIZE) {
+            while (start < (a->size / PAGE_SIZE)-start) {
                 vm_page_t *p = &a->page_array[start];
                 for (uint i = 0; i < count; i++) {
                     if (p->flags & VM_PAGE_FLAG_NONFREE) {
