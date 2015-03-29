@@ -45,6 +45,17 @@
 #endif
 
 static pmm_arena_t arenas[4];
+static char strbuf[4096];
+static uint32_t strbuf_pos = 0;
+
+static void* strbuf_alloc(size_t len) {
+	if(strbuf_pos+len>ARRAY_SIZE(strbuf))
+		return NULL;
+
+	void* ptr = &strbuf[strbuf_pos];
+	strbuf_pos+=len;
+	return ptr;
+}
 
 static pmm_arena_t arena_lk = {
 	.name = "kernel",
@@ -56,7 +67,7 @@ static pmm_arena_t arena_lk = {
 
 void platform_qcom_init_pmm(void) {
 	struct smem_ram_ptable ram_ptable;
-	uint32_t i, j = 0;
+	uint32_t i, j = 0, sdcount = 0;
 
 	pmm_add_arena(&arena_lk);
 	uint32_t lk_end = arena_lk.base+arena_lk.size;
@@ -70,7 +81,9 @@ void platform_qcom_init_pmm(void) {
 			pmm_arena_t* arena = &arenas[j++];
 			memset(arena, 0, sizeof(*arena));
 
-			arena->name = "sdram";
+			arena->name = strbuf_alloc(10);
+			snprintf((char*)arena->name, 10, "sdram%u", sdcount++);
+
 			arena->base = ram_ptable.parts[i].start;
 			arena->size = ram_ptable.parts[i].size;
 			arena->flags = 0;
@@ -84,7 +97,9 @@ void platform_qcom_init_pmm(void) {
 					pmm_arena_t* arena_pre = &arenas[j++];
 					memset(arena_pre, 0, sizeof(*arena_pre));
 
-					arena_pre->name = "sdram-pre";
+					arena_pre->name = strbuf_alloc(15);
+					snprintf((char*)arena_pre->name, 15, "sdram%u-pre", sdcount-1);
+
 					arena_pre->base = arena->base;
 					arena_pre->size = arena_lk.base - arena->base;
 					arena_pre->flags = 0;
@@ -95,6 +110,8 @@ void platform_qcom_init_pmm(void) {
 				arena->base += overlap_sz;
 				arena->size -= overlap_sz;
 			}
+
+			// XXX: handle overlap at the end
 
 			pmm_add_arena(arena);
 		}
@@ -107,7 +124,7 @@ void platform_qcom_init_pmm(void) {
 
 	// reserve linux memory
 	list_initialize(&list);
-	pmm_alloc_range(kvaddr_to_paddr((void*)LINUX_BASE), LINUX_SIZE/PAGE_SIZE, &list);
+	pmm_alloc_range(LINUX_BASE, LINUX_SIZE/PAGE_SIZE, &list);
 
 #ifdef QCOM_ENABLE_2NDSTAGE_BOOT
 	msm_display_2ndstagefb_reserve();
