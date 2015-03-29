@@ -103,6 +103,23 @@ void platform_early_init(void)
     platform_qcom_init_pmm();
 }
 
+__WEAK int target_power_key(void)
+{
+	uint8_t ret = 0;
+
+	pm8921_pwrkey_status(&ret);
+	return ret;
+}
+
+static int event_source_poll(key_event_source_t* source) {
+	keys_set_report_key(source, KEY_RIGHT, target_power_key());
+	return NO_ERROR;
+}
+
+static key_event_source_t event_source = {
+	.poll = event_source_poll
+};
+
 void platform_init(void)
 {
 	unsigned base_addr;
@@ -115,9 +132,7 @@ void platform_init(void)
 	pmic.write = (pm8921_write_func) & pa1_ssbi2_write_bytes;
 
 	pm8921_init(&pmic);
-
-	/* Keypad init */
-	keys_init();
+	keys_add_source(&event_source);
 
 	switch(platform_id) {
 	case MSM8960:
