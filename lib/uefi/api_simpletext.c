@@ -1,6 +1,7 @@
 #include <debug.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <dev/keys.h>
 #include <uefi/api.h>
 #include <uefi/api_simpletext.h>
 
@@ -488,8 +489,49 @@ efi_status_t efi_simpletext_in_reset(struct efi_simple_input_interface* this, ef
 	return EFI_SUCCESS;
 }
 
+efi_uint16_t ascii_scancode_table[MAX_KEYS] = {
+	[KEY_UP] = SCAN_UP,
+	[KEY_DOWN] = SCAN_DOWN,
+	[KEY_RIGHT] = SCAN_RIGHT,
+	[KEY_LEFT] = SCAN_LEFT,
+	[KEY_HOME] = SCAN_HOME,
+	//[KEY_END] = SCAN_END,
+	//[KEY_INSERT] = SCAN_INSERT,
+	[KEY_CLEAR] = SCAN_DELETE,
+	//[KEY_PAGE_UP] = SCAN_PAGE_UP,
+	//[KEY_PAGE_DOWN] = SCAN_PAGE_DOWN,
+	[KEY_F1] = SCAN_F1,
+	[KEY_F2] = SCAN_F2,
+	[KEY_F3] = SCAN_F3,
+	[KEY_F4] = SCAN_F4,
+	[KEY_F5] = SCAN_F5,
+	[KEY_F6] = SCAN_F6,
+	[KEY_F7] = SCAN_F7,
+	[KEY_F8] = SCAN_F8,
+	[KEY_F9] = SCAN_F9,
+	//[KEY_F10] = SCAN_F10,
+	[KEY_ESC] = SCAN_ESC,
+
+	[KEY_VOLUMEUP] = SCAN_UP,
+	[KEY_VOLUMEDOWN] = SCAN_DOWN,
+};
+
 efi_status_t efi_simpletext_in_read_key_stroke(struct efi_simple_input_interface* this, efi_input_key_t * key) {
 	efi_char8_t c;
+
+	if(keys_has_next()) {
+		uint16_t code, value;
+		keys_get_next(&code, &value, true);
+
+		key->unicode_char = 0;
+		key->scan_code = SCAN_NULL;
+		if(ascii_scancode_table[code]) {
+			key->scan_code = ascii_scancode_table[code];
+		}
+		else key->unicode_char = code;
+
+		return EFI_SUCCESS;
+	}
 
 	if(!platform_dtstc())
 		return EFI_NOT_READY;

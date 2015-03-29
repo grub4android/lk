@@ -6,7 +6,8 @@ MODULE_DEPS += \
 	lib/bio \
 	lib/rtc \
 	lib/sysparam \
-	dev/fbcon
+	dev/fbcon \
+	dev/keys
 
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
