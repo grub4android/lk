@@ -255,14 +255,14 @@ void *pmm_alloc_kpages(uint count, struct list_node *list)
 
 
     paddr_t pa;
-    uint alloc_count = pmm_alloc_contiguous(count, PAGE_SIZE_SHIFT, &pa, list);
+    uint alloc_count = pmm_alloc_contiguous_ex(count, PAGE_SIZE_SHIFT, &pa, list, PMM_ARENA_FLAG_KMAP);
     if (alloc_count == 0)
         return NULL;
 
     return paddr_to_kvaddr(pa);
 }
 
-uint pmm_alloc_contiguous(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list)
+uint pmm_alloc_contiguous_ex(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list, uint pmm_flags)
 {
     LTRACEF("count %u, align %u\n", count, alignment_log2);
 
@@ -276,7 +276,7 @@ uint pmm_alloc_contiguous(uint count, uint8_t alignment_log2, paddr_t *pa, struc
     pmm_arena_t *a;
     list_for_every_entry(&arena_list, a, pmm_arena_t, node) {
         // XXX make this a flag to only search kmap?
-        if (a->flags & PMM_ARENA_FLAG_KMAP) {
+        if (!pmm_flags || a->flags & pmm_flags) {
             /* walk the list starting at alignment boundaries.
              * calculate the starting offset into this arena, based on the
              * base address of the arena to handle the case where the arena
@@ -334,6 +334,10 @@ retry:
 
     LTRACEF("couldn't find run\n");
     return 0;
+}
+
+uint pmm_alloc_contiguous(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list) {
+	return pmm_alloc_contiguous_ex(count, alignment_log2, pa, list, 0);
 }
 
 uint64_t pmm_get_free_space(void)

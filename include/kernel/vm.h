@@ -127,6 +127,7 @@ uint pmm_free_page(vm_page_t *page) __NONNULL((1));
      * If the optional list is passed, append the allocate page structures to the tail of the list.
      */
 uint pmm_alloc_contiguous(uint count, uint8_t align_log2, paddr_t *pa, struct list_node *list);
+uint pmm_alloc_contiguous_ex(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list, uint pmm_flags);
 
     /* Allocate a run of pages out of the kernel area and return the pointer in kernel space.
      * If the optional list is passed, append the allocate page structures to the tail of the list.
