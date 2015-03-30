@@ -5,6 +5,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <lib/bio.h>
 #include <kernel/vm.h>
 #include <kernel/thread.h>
 #include <uefi/api.h>
@@ -36,7 +37,7 @@ static int efiboot_thread_entry(void *arg)
 	return 0;
 }
 
-int peloader_load(void* data, size_t size) {
+int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size, const char* bootdev, const char* bootpath) {
 	uint16_t i;
 
 	struct pe32_header* hdr = data;
@@ -144,15 +145,21 @@ int peloader_load(void* data, size_t size) {
 	li->image_data_type = 0; // TODO
 	li->unload = NULL; // TODO
 
+	// ramdisk
+	if(ramdisk && ramdisk_size>0) {
+		bootdev = "grub_ramdisk";
+		create_membdev(bootdev, ramdisk, ramdisk_size);
+	}
+
+	// scan devices
+	uefi_api_blockio_init();
+
 	// set boot dev
-	// TODO use real bootdev
-	uefi_api_blockio_by_name(req->image_handle, "hd0,27", &li->device_handle);
+	uefi_api_blockio_by_name(req->image_handle, bootdev, &li->device_handle);
 	ASSERT(li->device_handle);
 
 	// create file path
-	// TODO use real file path
-	const char* devpath = "/boot/grub/core.img";
-	size_t pathlen = strlen(devpath);
+	size_t pathlen = strlen(bootpath);
 
 	// create device path interface
 	efi_file_path_device_path_t* dp = uefi_create_device_path(sizeof(efi_file_path_device_path_t) + sizeof(uint16_t)*pathlen);
@@ -163,7 +170,7 @@ int peloader_load(void* data, size_t size) {
 	// convert name to utf16
 	uint16_t* out = dp->path_name;
 	const uint8_t* end;
-	grub_utf8_to_utf16(out, pathlen, (const uint8_t *)devpath, pathlen, &end);
+	grub_utf8_to_utf16(out, pathlen, (const uint8_t *)bootpath, pathlen, &end);
 
 	// set path
 	li->file_path = (efi_device_path_t*)dp;

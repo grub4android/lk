@@ -922,7 +922,6 @@ static void uefi_init(uint level) {
 	list_initialize(&uefi_global_handle_list);
 
 	uefi_api_console_init();
-	uefi_api_blockio_init();
 	uefi_api_gop_init();
 
 	efi_memory_descriptor_t * map = NULL;
