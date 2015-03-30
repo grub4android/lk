@@ -1,6 +1,7 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
 MODULE := $(LOCAL_DIR)
+include platform/qcom/include.mk
 
 ARCH := arm
 ARM_CPU := cortex-a8
