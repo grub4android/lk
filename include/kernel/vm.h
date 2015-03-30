@@ -139,7 +139,7 @@ static inline void *pmm_alloc_kpage(void) { return pmm_alloc_kpages(1, NULL); }
 
 uint64_t pmm_get_free_space(void);
 
-void pmm_get_free_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t));
+void pmm_get_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t, bool));
 
 /* physical to virtual */
 void *paddr_to_kvaddr(paddr_t pa);

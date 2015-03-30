@@ -116,8 +116,10 @@ struct efi_map_pdata {
 	size_t count;
 };
 
-static int efi_pmm_range_cb(void* _pdata, paddr_t addr, size_t size) {
+static int efi_pmm_range_cb(void* _pdata, paddr_t addr, size_t size, bool is_free) {
 	struct efi_map_pdata* pdata = _pdata;
+
+	//dprintf(CRITICAL, "(%d) 0x%lx-0x%lx\n", is_free, addr, addr+size);
 
 	// allocate memory for new map entry
 	pdata->map = realloc(pdata->map, sizeof(efi_memory_descriptor_t)*(++pdata->count));
@@ -125,35 +127,33 @@ static int efi_pmm_range_cb(void* _pdata, paddr_t addr, size_t size) {
 	efi_memory_descriptor_t* desc = &pdata->map[pdata->count-1];
 
 	// write new map entry
-	desc->type = EFI_CONVENTIONAL_MEMORY;
+	desc->type = is_free?EFI_CONVENTIONAL_MEMORY:EFI_BOOT_SERVICES_CODE;
 	desc->padding = 0;
 	desc->physical_start = addr;
-	desc->virtual_start = addr;
+	desc->virtual_start = 0;
 	desc->num_pages = size/EFI_PAGE_SIZE;
-	desc->attribute = 0;
+	desc->attribute = EFI_MEMORY_UC | EFI_MEMORY_WC | EFI_MEMORY_WT | EFI_MEMORY_WB;
 
 	return 0;
 }
 
+static int compare_memory_descriptor(const void* _a, const void* _b) {
+	const efi_memory_descriptor_t* a = _a;
+	const efi_memory_descriptor_t* b = _b;
+
+	return a->physical_start - b->physical_start;
+}
+
 static efi_uintn_t efi_create_memory_map(efi_memory_descriptor_t ** efi_map) {
-#if 0
 	// create map
 	struct efi_map_pdata pdata = {NULL, 0};
-	pmm_get_free_ranges(&pdata, efi_pmm_range_cb);
+	pmm_get_ranges(&pdata, efi_pmm_range_cb);
+
+	// sort
+	qsort(pdata.map, pdata.count, sizeof(*pdata.map), compare_memory_descriptor);
+
 	*efi_map = pdata.map;
 	return pdata.count;
-#else
-	// report a fake map starting at 0x0 because it seems like GRUB uses the first entry only
-	*efi_map = malloc(sizeof(efi_memory_descriptor_t));
-	efi_memory_descriptor_t* desc = &(*efi_map)[0];
-	desc->type = EFI_CONVENTIONAL_MEMORY;
-	desc->padding = 0;
-	desc->physical_start = 0x0;
-	desc->virtual_start = 0x0;
-	desc->num_pages = pmm_get_free_space()/EFI_PAGE_SIZE;
-	desc->attribute = 0;
-	return 1;
-#endif
 }
 
 static efi_status_t efi_get_memory_map(efi_uintn_t * memory_map_size,
@@ -185,7 +185,7 @@ static efi_status_t efi_get_memory_map(efi_uintn_t * memory_map_size,
 	// prevent people from having pointer math bugs in their code.
 	// now you have to use *DescriptorSize to make things work.
 	//
-	size += sizeof(efi_uint64_t) - (size % sizeof (efi_uint64_t));
+	//size += sizeof(efi_uint64_t) - (size % sizeof (efi_uint64_t));
 
 	// set descriptor size
 	if (descriptor_size)
