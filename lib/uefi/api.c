@@ -35,6 +35,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <target.h>
 #include <platform.h>
 #include <kernel/vm.h>
 #include <kernel/thread.h>
@@ -546,8 +547,24 @@ static efi_status_t efi_unload_image(efi_handle_t image_handle)
 static efi_status_t efi_exit_boot_services(efi_handle_t image_handle,
 					   efi_uintn_t map_key)
 {
-	DEBUG_ASSERT(0);
-	return EFI_UNSUPPORTED;
+	/* we are going to shut down the system, start by disabling interrupts */
+	enter_critical_section();
+
+	/* give target and platform a chance to put hardware into a suitable
+	 * state for chain loading.
+	 */
+	target_quiesce();
+	platform_quiesce();
+
+	arch_quiesce();
+
+	// disable cache
+	arch_disable_cache(UCACHE);
+
+	// disable MMU
+	arch_disable_mmu();
+
+	return EFI_SUCCESS;
 }
 
 static efi_status_t efi_get_next_monotonic_count(efi_uint64_t * count)
