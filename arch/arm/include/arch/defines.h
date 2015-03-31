@@ -48,5 +48,7 @@
 #error unknown cpu
 #endif
 
+#define IS_CACHE_LINE_ALIGNED(addr)  !((uint32_t) (addr) & (CACHE_LINE - 1))
+
 #endif
 
