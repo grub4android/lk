@@ -1,0 +1,2 @@
+DEBUG := 1
+WITH_KERNEL_VMM := 0

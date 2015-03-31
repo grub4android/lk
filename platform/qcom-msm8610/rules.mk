@@ -1,0 +1,47 @@
+LOCAL_DIR := $(GET_LOCAL_DIR)
+
+MODULE := $(LOCAL_DIR)
+include platform/qcom/include.mk
+
+ARCH := arm
+ARM_CPU := cortex-a8
+QCOM_ENABLE_EMMC := 1
+QCOM_ENABLE_SDHCI := 1
+QCOM_ENABLE_QTIMER := 1
+QCOM_ENABLE_CLOCK_LIB2 := 1
+QCOM_ENABLE_SPMI := 1
+QCOM_ENABLE_DISPLAY := 1
+QCOM_DISPLAY_TYPE_MDP3 := 1
+QCOM_DISPLAY_TYPE_MDSS := 1
+PM8X41_ENABLE_PWM_SUPPORT := true
+
+GLOBAL_INCLUDES += \
+	$(LOCAL_DIR)/include
+
+MODULE_SRCS += \
+	$(LOCAL_DIR)/platform.c \
+	$(LOCAL_DIR)/target.c \
+	$(LOCAL_DIR)/acpuclock.c \
+	$(LOCAL_DIR)/msm8610-clock.c \
+	$(LOCAL_DIR)/gpio.c
+
+MEMBASE := 0x07A00000
+MEMSIZE := 0x04000000	# 64MB
+LINUX_BASE := 0x0
+LINUX_SIZE := 0x2c00000 # 44MB
+
+MODULE_DEPS += \
+	platform/qcom \
+	dev/pmic/pm8x41 \
+	dev/keys
+
+GLOBAL_DEFINES += \
+	MEMBASE=$(MEMBASE) \
+	MEMSIZE=$(MEMSIZE)
+
+GLOBAL_CFLAGS += -DQCOM_ADDITIONAL_INCLUDE="<platform/msm8610.h>"
+
+LINKER_SCRIPT += \
+	$(BUILDDIR)/system-onesegment.ld
+
+include make/module.mk
