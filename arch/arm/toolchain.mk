@@ -49,7 +49,11 @@ ARCH_arm_COMPILEFLAGS += -mcpu=cortex-m4 -mfloat-abi=softfp
 endif
 ifeq ($(ARM_CPU),cortex-a8)
 ARCH_arm_COMPILEFLAGS += -mcpu=$(ARM_CPU)
+ifneq ($(ARM_WITHOUT_VFP_NEON),true)
 ARCH_arm_COMPILEFLAGS += -mfpu=neon -mfloat-abi=softfp
+else
+ARCH_arm_COMPILEFLAGS += -mfpu=vfpv3 -mfloat-abi=softfp
+endif
 endif
 ifeq ($(ARM_CPU),cortex-a9)
 ARCH_arm_COMPILEFLAGS += -mcpu=$(ARM_CPU)
