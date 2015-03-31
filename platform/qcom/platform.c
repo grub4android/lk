@@ -44,7 +44,7 @@
 #include <platform/msm_panel.h>
 #endif
 
-static char bssbuf[(sizeof(pmm_arena_t)+15)*10];
+static char bssbuf[(sizeof(pmm_arena_t)+15)*30];
 static uintptr_t bssbuf_end = (uintptr_t)bssbuf;
 
 static void* bss_alloc(size_t len) {
@@ -70,21 +70,24 @@ static pmm_arena_t arena_lk = {
 static void* mmap_callback(void* pdata, paddr_t addr, size_t size, bool reserved) {
 	uint32_t* sdcount = pdata;
 	uint32_t lk_end = arena_lk.base+arena_lk.size;
-
-	if(reserved) return pdata;
+	uint flags = reserved?PMM_ARENA_FLAG_RESERVED:PMM_ARENA_FLAG_SDRAM;
 
 	// allocate
 	pmm_arena_t* arena = bss_alloc(sizeof(pmm_arena_t));
 	ASSERT(arena);
 
 	// name
-	arena->name = bss_alloc(10);
-	snprintf((char*)arena->name, 10, "sdram%u", (*sdcount)++);
+	if(reserved)
+		arena->name = "reserved";
+	else {
+		arena->name = bss_alloc(10);
+		snprintf((char*)arena->name, 10, "sdram%u", (*sdcount)++);
+	}
 
 	// configure
 	arena->base = addr;
 	arena->size = size;
-	arena->flags = PMM_ARENA_FLAG_SDRAM;
+	arena->flags = flags;
 	uint32_t arena_end = arena->base+arena->size;
 
 	// overlap check
@@ -100,13 +103,17 @@ static void* mmap_callback(void* pdata, paddr_t addr, size_t size, bool reserved
 			ASSERT(arena_pre);
 
 			// name
-			arena_pre->name = bss_alloc(15);
-			snprintf((char*)arena_pre->name, 15, "sdram%u-pre", (*sdcount)-1);
+			if(reserved)
+				arena->name = "reserved-pre";
+			else {
+				arena_pre->name = bss_alloc(15);
+				snprintf((char*)arena_pre->name, 15, "sdram%u-pre", (*sdcount)-1);
+			}
 
 			// configure
 			arena_pre->base = arena->base;
 			arena_pre->size = arena_lk.base - arena->base;
-			arena_pre->flags = PMM_ARENA_FLAG_SDRAM;
+			arena_pre->flags = flags;
 
 			// add
 			pmm_add_arena(arena_pre);
@@ -119,13 +126,17 @@ static void* mmap_callback(void* pdata, paddr_t addr, size_t size, bool reserved
 			ASSERT(arena_post);
 
 			// name
-			arena_post->name = bss_alloc(15);
-			snprintf((char*)arena_post->name, 15, "sdram%u-post", (*sdcount)-1);
+			if(reserved)
+				arena->name = "reserved-post";
+			else {
+				arena_post->name = bss_alloc(15);
+				snprintf((char*)arena_post->name, 15, "sdram%u-post", (*sdcount)-1);
+			}
 
 			// configure
 			arena_post->base = lk_end;
 			arena_post->size = arena_end - lk_end;
-			arena_post->flags = PMM_ARENA_FLAG_SDRAM;
+			arena_post->flags = flags;
 
 			// add
 			pmm_add_arena(arena_post);
