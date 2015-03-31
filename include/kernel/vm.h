@@ -86,9 +86,21 @@ typedef struct vm_page {
     uint ref : 24;
 
     uint alloc_count;
+    uint32_t type;
 } vm_page_t;
 
 #define VM_PAGE_FLAG_NONFREE  (0x1)
+
+#define VM_PAGE_TYPE_UNKNOWN  (UINT32_MAX)
+#define VM_PAGE_TYPE_RESERVED (0x0)
+#define VM_PAGE_TYPE_KERNEL   (0x1)
+#define VM_PAGE_TYPE_IO       (0x2)
+#define VM_PAGE_TYPE_LOADER   (0x3)
+
+static inline bool page_is_free(const vm_page_t *page)
+{
+    return !(page->flags & VM_PAGE_FLAG_NONFREE);
+}
 
 /* kernel address space */
 #ifndef KERNEL_ASPACE_BASE
@@ -168,10 +180,11 @@ static inline void *pmm_alloc_kpage(void) { return pmm_alloc_kpages(1, NULL); }
 void* pmm_alloc_map(size_t size, uint arch_mmu_flags);
 void* pmm_alloc_map_addr(paddr_t pa, size_t size, uint arch_mmu_flags);
 uint pmm_free_unmap(void* ptr);
+void pmm_set_type_ptr(void* ptr, uint32_t type);
 
 uint64_t pmm_get_free_space(void);
 
-void pmm_get_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t, bool));
+void pmm_get_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t, const pmm_arena_t*, const vm_page_t*));
 
 /* physical to virtual */
 void *paddr_to_kvaddr(paddr_t pa);

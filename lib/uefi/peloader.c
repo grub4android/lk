@@ -74,6 +74,7 @@ int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size, c
 		dprintf(CRITICAL, "Could not allocate memory!");
 		return ERR_NO_MEMORY;
 	}
+	pmm_set_type_ptr(memory, VM_PAGE_TYPE_LOADER);
 	uint32_t fixup_diff = (uint32_t)(memory - opt->image_base);
 
 	// copy pe32 header

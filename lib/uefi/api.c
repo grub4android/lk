@@ -100,6 +100,7 @@ static efi_status_t efi_allocate_pages(efi_allocate_type_t type,
 	if (!buf) {
 		return EFI_OUT_OF_RESOURCES;
 	}
+	pmm_set_type_ptr(buf, VM_PAGE_TYPE_LOADER);
 
 	*memory = (efi_physical_address_t)(uint32_t)buf;
 	return EFI_SUCCESS;
@@ -112,26 +113,64 @@ static efi_status_t efi_free_pages(efi_physical_address_t memory,
 	return EFI_SUCCESS;
 }
 
+#define EFI_MMAP_FLAGS_CONV (EFI_MEMORY_UC | EFI_MEMORY_WC | EFI_MEMORY_WT | EFI_MEMORY_WB)
+
 struct efi_map_pdata {
 	efi_memory_descriptor_t* map;
 	size_t count;
 };
 
-static int efi_pmm_range_cb(void* _pdata, paddr_t addr, size_t size, bool is_free) {
-	struct efi_map_pdata* pdata = _pdata;
-
-	// allocate memory for new map entry
+static int efi_add_mmap_desc(struct efi_map_pdata* pdata, efi_uint32_t type, efi_physical_address_t pa, size_t size, efi_uint64_t attribute) {
 	pdata->map = realloc(pdata->map, sizeof(efi_memory_descriptor_t)*(++pdata->count));
 	ASSERT(pdata->map);
 	efi_memory_descriptor_t* desc = &pdata->map[pdata->count-1];
 
 	// write new map entry
-	desc->type = is_free?EFI_CONVENTIONAL_MEMORY:EFI_BOOT_SERVICES_CODE;
+	desc->type = type;
 	desc->padding = 0;
-	desc->physical_start = addr;
+	desc->physical_start = pa;
 	desc->virtual_start = 0;
 	desc->num_pages = size/EFI_PAGE_SIZE;
-	desc->attribute = EFI_MEMORY_UC | EFI_MEMORY_WC | EFI_MEMORY_WT | EFI_MEMORY_WB;
+	desc->attribute = attribute;
+
+	return 0;
+}
+
+static int efi_pmm_range_cb(void* _pdata, paddr_t addr, size_t size, const pmm_arena_t* arena, const vm_page_t* page) {
+	struct efi_map_pdata* pdata = _pdata;
+	bool is_free = page_is_free(page);
+
+	efi_uint32_t type = EFI_UNUSABLE_MEMORY;
+
+	// reserved arena
+	if(arena->flags==PMM_ARENA_FLAG_RESERVED)
+		type = EFI_RESERVED_MEMORY_TYPE;
+	// kmap arena
+	else if(arena->flags & PMM_ARENA_FLAG_KMAP)
+		type = EFI_BOOT_SERVICES_DATA;
+	// sdram arena
+	else if(arena->flags & PMM_ARENA_FLAG_SDRAM) {
+		// free->conventional
+		if(is_free)
+			type = EFI_CONVENTIONAL_MEMORY;
+		// unknown->boot-data
+		else if(page->type==VM_PAGE_TYPE_UNKNOWN)
+			type = EFI_BOOT_SERVICES_DATA;
+		// reserved page
+		else if(page->type==VM_PAGE_TYPE_RESERVED)
+			type = EFI_RESERVED_MEMORY_TYPE;
+		// kernel page
+		else if(page->type==VM_PAGE_TYPE_KERNEL)
+			type = EFI_BOOT_SERVICES_DATA;
+		// IO page
+		else if(page->type==VM_PAGE_TYPE_IO)
+			type = EFI_MEMORY_MAPPED_IO;
+		// loader page
+		else if(page->type==VM_PAGE_TYPE_LOADER)
+			type = EFI_LOADER_DATA;
+	}
+
+	efi_add_mmap_desc(pdata, type, addr, size, EFI_MMAP_FLAGS_CONV);
 
 	return 0;
 }
@@ -944,9 +983,6 @@ static void uefi_init(uint level) {
 
 	uefi_api_console_init();
 	uefi_api_gop_init();
-
-	efi_memory_descriptor_t * map = NULL;
-	efi_create_memory_map(&map);
 }
 
 efi_handle_t uefi_create_handle(void) {

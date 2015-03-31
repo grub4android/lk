@@ -48,11 +48,6 @@ static mutex_t lock = MUTEX_INITIAL_VALUE(lock);
 #define ADDRESS_IN_ARENA(address, arena) \
     ((address) >= (arena)->base && (address) <= (arena)->base + (arena)->size - 1)
 
-static inline bool page_is_free(const vm_page_t *page)
-{
-    return !(page->flags & VM_PAGE_FLAG_NONFREE);
-}
-
 paddr_t page_to_address(const vm_page_t *page)
 {
     pmm_arena_t *a;
@@ -145,6 +140,7 @@ uint pmm_alloc_pages(uint count, struct list_node *list)
             a->free_count--;
 
             page->flags |= VM_PAGE_FLAG_NONFREE;
+            page->type = VM_PAGE_TYPE_UNKNOWN;
             list_add_tail(list, &page->node);
 
             allocated++;
@@ -188,6 +184,7 @@ uint pmm_alloc_range(paddr_t address, uint count, struct list_node *list)
 
             list_delete(&page->node);
             page->flags |= VM_PAGE_FLAG_NONFREE;
+            page->type = VM_PAGE_TYPE_UNKNOWN;
             if(allocated==0)
                 page->alloc_count = count;
             list_add_tail(list, &page->node);
@@ -326,6 +323,27 @@ uint pmm_free_unmap(void* ptr)
     return !success;
 }
 
+void pmm_set_type_ptr(void* ptr, uint32_t type) {
+    paddr_t pa = (paddr_t)ptr;
+
+    pmm_arena_t *a;
+    list_for_every_entry(&arena_list, a, pmm_arena_t, node) {
+        if (pa >= a->base && pa <= a->base + a->size - 1) {
+            // get index of first page
+            size_t index = (pa - a->base) / PAGE_SIZE;
+
+            // get page count
+            uint count = a->page_array[index].alloc_count;
+            ASSERT(count);
+
+            // set type
+            for (uint i = index; i < index + count; i++) {
+                a->page_array[i].type = type;
+            }
+        }
+    }
+}
+
 uint pmm_alloc_contiguous(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list, uint flags)
 {
     LTRACEF("count %u, align %u\n", count, alignment_log2);
@@ -382,6 +400,7 @@ retry:
 
                     list_delete(&p->node);
                     p->flags |= VM_PAGE_FLAG_NONFREE;
+                    p->type = VM_PAGE_TYPE_UNKNOWN;
                     if(i==start)
                         p->alloc_count = count;
                     a->free_count--;
@@ -433,34 +452,34 @@ uint64_t pmm_get_free_space(void)
     return free_space;
 }
 
-void pmm_get_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t, bool))
+void pmm_get_ranges(void* pdata, int (*cb)(void*, paddr_t, size_t, const pmm_arena_t*, const vm_page_t*))
 {
     pmm_arena_t *arena;
     list_for_every_entry(&arena_list, arena, pmm_arena_t, node) {
-        ssize_t last = -1;
-        int mode_free = -1;
-        for (size_t i = 0; i < arena->size / PAGE_SIZE; i++) {
-            bool is_free = page_is_free(&arena->page_array[i]);
+        vm_page_t* head_page = &arena->page_array[0];
+        vm_page_t* last_page = head_page;
 
-            if(is_free==mode_free || mode_free==-1) {
-                if (last == -1) {
-                    last = i;
-                    mode_free = is_free;
-                }
+        for (size_t i = 0; i < arena->size / PAGE_SIZE; i++) {
+            vm_page_t* page = &arena->page_array[i];
+
+            if( page_is_free(head_page)!=page_is_free(page) ||
+                head_page->flags!=page->flags ||
+                head_page->type !=page->type
+            ) {
+                paddr_t addr_first = page_to_address(head_page);
+                paddr_t addr_last = page_to_address(last_page);
+                cb(pdata, addr_first, addr_last-addr_first + PAGE_SIZE, arena, head_page);
+
+                head_page = page;
             }
-            else {
-                if (last != -1) {
-                    if(cb(pdata, arena->base + last * PAGE_SIZE, ((arena->base + i * PAGE_SIZE)-(arena->base + last * PAGE_SIZE)), mode_free))
-                     return;
-                }
-                last = i;
-                mode_free=is_free;
-            }
+
+            last_page = page;
         }
 
-        if (last != -1) {
-            if(cb(pdata, arena->base + last * PAGE_SIZE, (arena->base + arena->size) - (arena->base + last * PAGE_SIZE), mode_free))
-                return;
+        if(head_page!=last_page) {
+            paddr_t addr_first = page_to_address(head_page);
+            paddr_t addr_last = page_to_address(last_page);
+            cb(pdata, addr_first, addr_last-addr_first + PAGE_SIZE, arena, head_page);
         }
     }
 }
