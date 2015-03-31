@@ -84,6 +84,8 @@ typedef struct vm_page {
 
     uint flags : 8;
     uint ref : 24;
+
+    uint alloc_count;
 } vm_page_t;
 
 #define VM_PAGE_FLAG_NONFREE  (0x1)
@@ -162,6 +164,10 @@ void *pmm_alloc_kpages(uint count, struct list_node *list);
 
     /* Helper routine for pmm_alloc_kpages. */
 static inline void *pmm_alloc_kpage(void) { return pmm_alloc_kpages(1, NULL); }
+
+void* pmm_alloc_map(size_t size, uint arch_mmu_flags);
+void* pmm_alloc_map_addr(paddr_t pa, size_t size, uint arch_mmu_flags);
+uint pmm_free_unmap(void* ptr);
 
 uint64_t pmm_get_free_space(void);
 

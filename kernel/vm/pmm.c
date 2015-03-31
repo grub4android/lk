@@ -188,6 +188,8 @@ uint pmm_alloc_range(paddr_t address, uint count, struct list_node *list)
 
             list_delete(&page->node);
             page->flags |= VM_PAGE_FLAG_NONFREE;
+            if(allocated==0)
+                page->alloc_count = count;
             list_add_tail(list, &page->node);
 
             a->free_count--;
@@ -262,6 +264,68 @@ void *pmm_alloc_kpages(uint count, struct list_node *list)
     return paddr_to_kvaddr(pa);
 }
 
+void* pmm_alloc_map(size_t size, uint arch_mmu_flags)
+{
+    uint count = ALIGN(size, PAGE_SIZE) / PAGE_SIZE;
+
+    // allocate pmm pages
+    paddr_t pa;
+    if(!pmm_alloc_contiguous(count, PAGE_SIZE_SHIFT, &pa, NULL, PMM_ARENA_FLAG_SDRAM))
+        return NULL;
+
+    // map memory
+    ASSERT(arch_mmu_map((vaddr_t)pa, pa, count, arch_mmu_flags));
+
+    return (void*)pa;
+}
+
+void* pmm_alloc_map_addr(paddr_t pa, size_t size, uint arch_mmu_flags)
+{
+    struct list_node list;
+    uint count = ALIGN(size, PAGE_SIZE) / PAGE_SIZE;
+
+    // allocate pmm pages
+    list_initialize(&list);
+    if(!pmm_alloc_range(pa, count, &list))
+        return NULL;
+
+    // map memory
+    ASSERT(arch_mmu_map((vaddr_t)pa, pa, count, arch_mmu_flags));
+
+    return (void*)pa;
+}
+
+uint pmm_free_unmap(void* ptr)
+{
+    bool success = false;
+    paddr_t pa = (paddr_t)ptr;
+
+    pmm_arena_t *a;
+    list_for_every_entry(&arena_list, a, pmm_arena_t, node) {
+        if (pa >= a->base && pa <= a->base + a->size - 1) {
+            // get index of first page
+            size_t index = (pa - a->base) / PAGE_SIZE;
+
+            // get page count
+            uint count = a->page_array[index].alloc_count;
+            ASSERT(count);
+
+            // free pages
+            for (uint i = index; i < index + count; i++) {
+                ASSERT(pmm_free_page(&a->page_array[i]));
+            }
+
+            // unmap memory
+            ASSERT(arch_mmu_unmap((vaddr_t)pa, count));
+
+            success = true;
+        }
+    }
+
+    ASSERT(success);
+    return !success;
+}
+
 uint pmm_alloc_contiguous(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list, uint flags)
 {
     LTRACEF("count %u, align %u\n", count, alignment_log2);
@@ -318,6 +382,8 @@ retry:
 
                     list_delete(&p->node);
                     p->flags |= VM_PAGE_FLAG_NONFREE;
+                    if(i==start)
+                        p->alloc_count = count;
                     a->free_count--;
 
                     if (list)
