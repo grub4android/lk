@@ -120,7 +120,11 @@ typedef struct pmm_arena {
     struct list_node free_list;
 } pmm_arena_t;
 
-#define PMM_ARENA_FLAG_KMAP (0x1) /* this arena is already mapped and useful for kallocs */
+#define PMM_ARENA_FLAG_RESERVED (0x0)
+#define PMM_ARENA_FLAG_KMAP     (0x1) /* this arena is already mapped and useful for kallocs */
+#define PMM_ARENA_FLAG_ANY      (0x2)
+#define PMM_ARENA_FLAG_SDRAM    (0x4)
+
 
     /* Add a pre-filled memory arena to the physical allocator. */
 status_t pmm_add_arena(pmm_arena_t *arena) __NONNULL((1));
@@ -149,7 +153,7 @@ uint pmm_free_page(vm_page_t *page) __NONNULL((1));
      * If the optional physical address pointer is passed, return the address.
      * If the optional list is passed, append the allocate page structures to the tail of the list.
      */
-uint pmm_alloc_contiguous(uint count, uint8_t align_log2, paddr_t *pa, struct list_node *list);
+uint pmm_alloc_contiguous(uint count, uint8_t align_log2, paddr_t *pa, struct list_node *list, uint flags);
 
     /* Allocate a run of pages out of the kernel area and return the pointer in kernel space.
      * If the optional list is passed, append the allocate page structures to the tail of the list.

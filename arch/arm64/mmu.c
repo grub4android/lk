@@ -180,7 +180,7 @@ static int alloc_page_table(paddr_t *paddrp, uint page_size_shift)
 
     if (size >= PAGE_SIZE) {
         count = size / PAGE_SIZE;
-        ret = pmm_alloc_contiguous(count, page_size_shift, paddrp, NULL);
+        ret = pmm_alloc_contiguous(count, page_size_shift, paddrp, NULL, PMM_ARENA_FLAG_ANY);
         if (ret != count)
             return ERR_NO_MEMORY;
     } else {

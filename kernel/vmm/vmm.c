@@ -430,7 +430,7 @@ status_t vmm_alloc_contiguous(vmm_aspace_t *aspace, const char *name, size_t siz
 
     paddr_t pa = 0;
     /* allocate a run of physical pages */
-    uint count = pmm_alloc_contiguous(size / PAGE_SIZE, align_pow2, &pa, &page_list);
+    uint count = pmm_alloc_contiguous(size / PAGE_SIZE, align_pow2, &pa, &page_list, 0);
     if (count < size / PAGE_SIZE) {
         err = ERR_NO_MEMORY;
         goto err;
