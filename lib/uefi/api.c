@@ -94,15 +94,37 @@ static efi_status_t efi_allocate_pages(efi_allocate_type_t type,
 		return EFI_UNSUPPORTED;
 	}
 
-	// allocate memory
+	// calculate length
 	size_t len = pages*EFI_PAGE_SIZE;
-	void* buf = pmm_alloc_map(len, ARCH_MMU_FLAG_CACHED);
+
+	// allocate
+	void* buf = NULL;
+	switch(type) {
+		case EFI_ALLOCATE_ANY_PAGES:
+			buf = pmm_alloc_map(len, ARCH_MMU_FLAG_CACHED);
+			break;
+		case EFI_ALLOCATE_MAX_ADDRESS:
+			buf = pmm_alloc_map_maxaddr(len, ARCH_MMU_FLAG_CACHED);
+			break;
+		case EFI_ALLOCATE_ADDRESS:
+			buf = pmm_alloc_map_addr((paddr_t)*memory, len, ARCH_MMU_FLAG_CACHED);
+			break;
+
+		default:
+			return EFI_INVALID_PARAMETER;
+	}
+
+	// check result
 	if (!buf) {
 		return EFI_OUT_OF_RESOURCES;
 	}
+
+	// set memory type
 	pmm_set_type_ptr(buf, VM_PAGE_TYPE_LOADER);
 
+	// return memory address
 	*memory = (efi_physical_address_t)(uint32_t)buf;
+
 	return EFI_SUCCESS;
 }
 

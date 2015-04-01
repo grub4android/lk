@@ -169,6 +169,10 @@ uint pmm_free_page(vm_page_t *page) __NONNULL((1));
      */
 uint pmm_alloc_contiguous(uint count, uint8_t align_log2, paddr_t *pa, struct list_node *list, uint flags);
 
+    /* Same as pmm_alloc_contiguous but allocates the max available address
+     */
+uint pmm_alloc_contiguous_maxaddr(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list, uint flags);
+
     /* Allocate a run of pages out of the kernel area and return the pointer in kernel space.
      * If the optional list is passed, append the allocate page structures to the tail of the list.
      */
@@ -178,6 +182,7 @@ void *pmm_alloc_kpages(uint count, struct list_node *list);
 static inline void *pmm_alloc_kpage(void) { return pmm_alloc_kpages(1, NULL); }
 
 void* pmm_alloc_map(size_t size, uint arch_mmu_flags);
+void* pmm_alloc_map_maxaddr(size_t size, uint arch_mmu_flags);
 void* pmm_alloc_map_addr(paddr_t pa, size_t size, uint arch_mmu_flags);
 uint pmm_free_unmap(void* ptr);
 void pmm_set_type_ptr(void* ptr, uint32_t type);

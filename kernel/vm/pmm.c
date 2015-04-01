@@ -276,6 +276,21 @@ void* pmm_alloc_map(size_t size, uint arch_mmu_flags)
     return (void*)pa;
 }
 
+void* pmm_alloc_map_maxaddr(size_t size, uint arch_mmu_flags)
+{
+    uint count = ALIGN(size, PAGE_SIZE) / PAGE_SIZE;
+
+    // allocate pmm pages
+    paddr_t pa;
+    if(!pmm_alloc_contiguous_maxaddr(count, PAGE_SIZE_SHIFT, &pa, NULL, PMM_ARENA_FLAG_SDRAM))
+        return NULL;
+
+    // map memory
+    ASSERT(arch_mmu_map((vaddr_t)pa, pa, count, arch_mmu_flags));
+
+    return (void*)pa;
+}
+
 void* pmm_alloc_map_addr(paddr_t pa, size_t size, uint arch_mmu_flags)
 {
     struct list_node list;
@@ -342,6 +357,129 @@ void pmm_set_type_ptr(void* ptr, uint32_t type) {
             }
         }
     }
+}
+
+static int compare_arena(const void* _a, const void* _b)
+{
+    const pmm_arena_t* a = *((const pmm_arena_t**)_a);
+    const pmm_arena_t* b = *((const pmm_arena_t**)_b);
+
+    if(a->base < b->base)
+        return -1;
+    else if(a->base > b->base)
+        return 1;
+    //if(a->base == b->base)
+    else
+        return 0;
+}
+
+static uint get_arenas_sorted(pmm_arena_t*** arenas_out)
+{
+    size_t num_arenas = list_length(&arena_list);
+    pmm_arena_t** arenas = malloc(num_arenas*sizeof(pmm_arena_t*));
+    ASSERT(arenas);
+
+    uint32_t c = 0;
+    pmm_arena_t *a;
+    list_for_every_entry(&arena_list, a, pmm_arena_t, node) {
+        arenas[c++] = a;
+    }
+    ASSERT(c==num_arenas);
+
+    qsort(arenas, num_arenas, sizeof(*arenas), compare_arena);
+
+    *arenas_out = arenas;
+    return num_arenas;
+}
+
+uint pmm_alloc_contiguous_maxaddr(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list, uint flags)
+{
+    LTRACEF("count %u, align %u\n", count, alignment_log2);
+
+    if (count == 0)
+        return 0;
+    if (alignment_log2 < PAGE_SIZE_SHIFT)
+        alignment_log2 = PAGE_SIZE_SHIFT;
+
+    mutex_acquire(&lock);
+
+    // get sorted list of arenas
+    pmm_arena_t** arenas = NULL;
+    uint num_arenas = get_arenas_sorted(&arenas);
+
+    for(int i=num_arenas-1; i>=0; i--) {
+        pmm_arena_t *a = arenas[i];
+
+        if (a->flags != PMM_ARENA_FLAG_RESERVED && (flags & PMM_ARENA_FLAG_ANY || a->flags & flags)) {
+            /* walk the list starting at alignment boundaries.
+            * calculate the starting offset into this arena, based on the
+            * base address of the arena to handle the case where the arena
+            * is not aligned on the same boundary requested.
+            */
+            paddr_t rounded_base = ROUNDUP(a->base, 1UL << alignment_log2);
+            if (rounded_base < a->base || rounded_base > a->base + a->size - 1)
+                continue;
+
+            uint aligned_offset = (rounded_base - a->base) / PAGE_SIZE;
+            uint arena_end = a->size / PAGE_SIZE;
+            uint end = arena_end;
+            LTRACEF("starting search at aligned offset %u\n", end);
+            LTRACEF("arena base 0x%lx size %zu\n", a->base, a->size);
+
+retry:
+            /* search while we're still within the arena and have a chance of finding a slot
+            (start + count < end of arena) */
+            while ((end >= aligned_offset) &&
+                   ((end - aligned_offset) >= count)) {
+                vm_page_t *p = &a->page_array[end];
+                for (uint i = 0; i < count; i++) {
+                    if (p->flags & VM_PAGE_FLAG_NONFREE) {
+                        /* this run is broken, break out of the inner loop.
+                        * start over at the next alignment boundary
+                        */
+                        end = ROUNDDOWN(end - i - 1, 1UL << (alignment_log2 - PAGE_SIZE_SHIFT)) + aligned_offset;
+                        goto retry;
+                    }
+                    p--;
+                }
+
+                /* we found a run */
+                LTRACEF("found run from pn %u to %u\n", end - count, end);
+
+
+                /* remove the pages from the run out of the free list */
+                for (uint i = end - count; i < end; i++) {
+                    p = &a->page_array[i];
+                    DEBUG_ASSERT(!(p->flags & VM_PAGE_FLAG_NONFREE));
+                    DEBUG_ASSERT(list_in_list(&p->node));
+
+                    list_delete(&p->node);
+                    p->flags |= VM_PAGE_FLAG_NONFREE;
+                    p->type = VM_PAGE_TYPE_UNKNOWN;
+                    if(i==(end-count))
+                        p->alloc_count = count;
+                    a->free_count--;
+
+                    if (list)
+                        list_add_tail(list, &p->node);
+                }
+
+                if (pa)
+                    *pa = a->base + (end-count) * PAGE_SIZE;
+
+                mutex_release(&lock);
+
+                return count;
+            }
+        }
+    }
+
+    // free arenas
+    free(arenas);
+
+    mutex_release(&lock);
+
+    return 0;
 }
 
 uint pmm_alloc_contiguous(uint count, uint8_t alignment_log2, paddr_t *pa, struct list_node *list, uint flags)
