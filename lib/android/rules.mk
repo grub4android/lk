@@ -5,6 +5,7 @@ MODULE := $(LOCAL_DIR)
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
 MODULE_SRCS := \
-    $(LOCAL_DIR)/loader.c
+    $(LOCAL_DIR)/loader.c \
+    $(LOCAL_DIR)/cmdline.c
 
 include make/module.mk

@@ -288,7 +288,7 @@ unsigned board_machtype(void)
 	return board_target_id();
 }
 
-unsigned target_baseband(void)
+enum baseband target_baseband(void)
 {
 	return board_baseband();
 }

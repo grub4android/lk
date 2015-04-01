@@ -335,7 +335,7 @@ int mdss_hdmi_init(void);
 int target_hdmi_gpio_ctrl(bool enable);
 int target_cont_splash_screen(void);
 void target_force_cont_splash_disable(uint8_t override);
-bool target_display_panel_node(char *panel_name, char *pbuf, uint16_t buf_size);
+bool target_display_panel_node(const char *panel_name, char *pbuf, uint16_t buf_size);
 void target_display_init(const char *panel_name);
 void target_display_shutdown(void);
 uint8_t target_panel_auto_detect_enabled(void);

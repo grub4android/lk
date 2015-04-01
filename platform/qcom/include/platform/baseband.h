@@ -30,6 +30,7 @@
 #define __BASEBAND_H__
 
 enum baseband {
+	BASEBAND_UNKNOWN = -1,
 	BASEBAND_MSM = 0,
 	BASEBAND_APQ = 1,
 	BASEBAND_CSFB = 2,

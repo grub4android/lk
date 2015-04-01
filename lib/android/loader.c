@@ -8,9 +8,15 @@
 #include <lib/bio.h>
 #include <kernel/vm.h>
 #include <lib/android.h>
+#include <lib/android/cmdline.h>
 #include <platform/qcom.h>
 #include <platform/board.h>
+#include <platform/baseband.h>
+#include <platform/msm_panel.h>
+#include <dev/gcdb/panel_display.h>
+#include <lib/sysparam.h>
 #include <app/fastboot.h>
+#include <lk/init.h>
 
 #include "atags.h"
 
@@ -335,3 +341,66 @@ err:
 
 	return ERR_GENERIC;
 }
+
+ssize_t android_sysparam_cb(const char* name, void* data, size_t* len) {
+	// get len
+	size_t cmdline_len = cmdline_length();
+
+	size_t read = 0;
+	if(data)
+		read = cmdline_generate(data, *len);
+
+	// return length
+	if(len)
+		*len = cmdline_len;
+
+	return read;
+}
+
+static void android_init(uint level)
+{
+	//
+	// CMDLINE
+	//
+
+#ifdef ANDROID_BOOTTYPE_EMMC
+	cmdline_add("androidboot.emmc", "true");
+#endif
+	cmdline_add("androidboot.serialno", target_serialno());
+	// GPT
+	// FFBM cookie + loglevel
+	// ALARMBOOT
+	// BATTCHARGE-PAUSE
+	// DUALBOOT
+	// SIGNED-KERNEL
+	// TARGET-BOOTPARAMS
+
+	// BASEBAND
+	switch(target_baseband()) {
+		CMDLINE_BASEBAND(BASEBAND_APQ, "apq");
+		CMDLINE_BASEBAND(BASEBAND_MSM, "msm");
+		CMDLINE_BASEBAND(BASEBAND_CSFB, "csfb");
+		CMDLINE_BASEBAND(BASEBAND_SVLTE1, "svlte1");
+		CMDLINE_BASEBAND(BASEBAND_SVLTE2A, "svlte2a");
+		CMDLINE_BASEBAND(BASEBAND_MDM, "mdm");
+		CMDLINE_BASEBAND(BASEBAND_MDM2, "mdm2");
+		CMDLINE_BASEBAND(BASEBAND_SGLTE, "sglte");
+		CMDLINE_BASEBAND(BASEBAND_SGLTE2, "sglte2");
+		CMDLINE_BASEBAND(BASEBAND_DSDA, "dsda");
+		CMDLINE_BASEBAND(BASEBAND_DSDA2, "dsda2");
+		default:
+			break;
+	}
+
+	// DISPLAY
+	char display_panel[MAX_PANEL_ID_LEN];
+	target_display_panel_node("", display_panel, MAX_PANEL_ID_LEN);
+	cmdline_add(display_panel, NULL);
+
+	// WARMBOOT
+
+	// add dynamic cmdline param
+	sysparam_add_dynamic("android_additional_cmdline", android_sysparam_cb);
+}
+
+LK_INIT_HOOK(android, &android_init, LK_INIT_LEVEL_TARGET);

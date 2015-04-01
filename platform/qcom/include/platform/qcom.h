@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <kernel/vm.h>
+#include <platform/baseband.h>
 
 #ifdef QCOM_ADDITIONAL_INCLUDE
 #include QCOM_ADDITIONAL_INCLUDE
@@ -50,3 +51,5 @@ void* platform_get_mmap(void* pdata, platform_mmap_cb_t cb);
 void clock_config_cdc(uint32_t interface);
 uint32_t target_ddr_cfg_val(void);
 #endif
+
+enum baseband target_baseband(void);

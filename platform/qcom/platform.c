@@ -269,3 +269,8 @@ __WEAK void* platform_get_mmap(void* pdata, platform_mmap_cb_t cb) {
 
 	return pdata;
 }
+
+__WEAK enum baseband target_baseband(void)
+{
+	return BASEBAND_UNKNOWN;
+}

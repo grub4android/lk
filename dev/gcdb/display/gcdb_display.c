@@ -178,7 +178,7 @@ static bool mdss_dsi_set_panel_node(const char *panel_name, const char **dsi_id,
 	return true;
 }
 
-bool gcdb_display_cmdline_arg(char *panel_name, char *pbuf, uint16_t buf_size)
+bool gcdb_display_cmdline_arg(const char *panel_name, char *pbuf, uint16_t buf_size)
 {
 	const char *dsi_id = NULL;
 	const char *panel_node = NULL;

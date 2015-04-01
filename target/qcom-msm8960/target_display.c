@@ -74,7 +74,7 @@ int target_ldo_ctrl(uint8_t enable, struct msm_panel_info *pinfo)
 	return 0;
 }
 
-bool target_display_panel_node(char *panel_name, char *pbuf, uint16_t buf_size)
+bool target_display_panel_node(const char *panel_name, char *pbuf, uint16_t buf_size)
 {
 	return gcdb_display_cmdline_arg(panel_name, pbuf, buf_size);
 }

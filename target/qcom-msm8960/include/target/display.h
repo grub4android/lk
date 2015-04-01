@@ -67,7 +67,7 @@ static const uint32_t panel_physical_ctrl[] = {
 /*---------------------------------------------------------------------------*/
 /* Other Configuration                                                       */
 /*---------------------------------------------------------------------------*/
-#define DISPLAY_CMDLINE_PREFIX " mdp.panel="
+#define DISPLAY_CMDLINE_PREFIX "mdp.panel="
 
 #define MIPI_HSYNC_PULSE_WIDTH       8
 #define MIPI_HSYNC_BACK_PORCH_DCLK   16

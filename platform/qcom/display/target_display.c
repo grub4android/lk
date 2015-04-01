@@ -146,7 +146,7 @@ __WEAK void target_force_cont_splash_disable(uint8_t override)
         splash_override = override;
 }
 
-__WEAK bool target_display_panel_node(char *panel_name, char *pbuf,
+__WEAK bool target_display_panel_node(const char *panel_name, char *pbuf,
 	uint16_t buf_size)
 {
 	return false;
