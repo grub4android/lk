@@ -93,7 +93,7 @@ static void* mmap_callback(void* pdata, paddr_t addr, size_t size, bool reserved
 	// overlap check
 	if(MAX(arena_lk.base,arena->base) <= MIN(lk_end,arena_end)) {
 		// the LK arena contains this arena
-		if(arena_lk.base<=arena_lk.base && lk_end>=arena_end)
+		if(arena_lk.base<=arena->base && lk_end>=arena_end)
 			return pdata;
 
 		// start
