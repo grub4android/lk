@@ -72,6 +72,8 @@ struct sysparam {
 
     /* in memory size to hold this structure, the name string, and the data */
     size_t memlen;
+
+    sysparam_dynamic_callback dynamic_cb;
 };
 
 /* global state */
@@ -100,6 +102,11 @@ static inline bool sysparam_is_locked(const struct sysparam *param)
 static inline bool sysparam_is_saved(const struct sysparam *param)
 {
     return !(param->flags & SYSPARAM_FLAG_NOSAVE);
+}
+
+static inline bool sysparam_is_dynamic(const struct sysparam *param)
+{
+    return !!param->dynamic_cb;
 }
 
 static inline size_t sysparam_len(const struct sysparam_phys *sp)
@@ -151,6 +158,7 @@ static struct sysparam *sysparam_create(const char *name, size_t namelen, const 
         return NULL;
     }
     param->memlen += alloclen;
+    param->dynamic_cb = NULL;
 
     memcpy(param->data, data, datalen);
     memset((char *)param->data + datalen, 0, alloclen - datalen); /* zero out the trailing space */
@@ -292,6 +300,10 @@ ssize_t sysparam_read(const char *name, void *data, size_t len)
     if (!param)
         return ERR_NOT_FOUND;
 
+    if(sysparam_is_dynamic(param)) {
+        return param->dynamic_cb(param->name, data, &len);
+    }
+
     size_t toread = MIN(len, param->datalen);
     memcpy(data, param->data, toread);
 
@@ -305,6 +317,12 @@ ssize_t sysparam_length(const char *name)
     param = sysparam_find(name);
     if (!param)
         return ERR_NOT_FOUND;
+
+    if(sysparam_is_dynamic(param)) {
+        size_t len = 0;
+        param->dynamic_cb(param->name, NULL, &len);
+        return len;
+    }
 
     return param->datalen;
 }
@@ -337,6 +355,24 @@ status_t sysparam_add_nosave(const char *name, const void *value, size_t len)
     if (!param)
         return ERR_NO_MEMORY;
 
+    list_add_tail(&params.list, &param->node);
+
+    return NO_ERROR;
+}
+
+status_t sysparam_add_dynamic(const char *name, sysparam_dynamic_callback cb)
+{
+    struct sysparam *param;
+
+    param = sysparam_find(name);
+    if (param)
+        return ERR_ALREADY_EXISTS;
+
+    param = sysparam_create(name, strlen(name), NULL, 0, SYSPARAM_FLAG_NOSAVE);
+    if (!param)
+        return ERR_NO_MEMORY;
+
+    param->dynamic_cb = cb;
     list_add_tail(&params.list, &param->node);
 
     return NO_ERROR;
@@ -506,9 +542,10 @@ void sysparam_dump(bool show_all)
 
     struct sysparam *param;
     list_for_every_entry(&params.list, param, struct sysparam, node) {
-        printf("________%c%c %-16s : ",
+        printf("________%c%c%c %-16s : ",
                 (param->flags & SYSPARAM_FLAG_LOCK) ? 'L' : '_',
                 (param->flags & SYSPARAM_FLAG_NOSAVE) ? '_' : 'S',
+                (sysparam_is_dynamic(param)) ? 'D' : '_',
                 param->name);
 
         const uint8_t *dat = (const uint8_t *)param->data;

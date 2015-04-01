@@ -31,6 +31,8 @@
 #define SYSPARAM_ALLOW_WRITE 0
 #endif
 
+typedef ssize_t (*sysparam_dynamic_callback)(const char* name, void* data, size_t* len);
+
 status_t sysparam_scan(bdev_t *bdev, off_t offset, size_t len);
 status_t sysparam_reload(void);
 
@@ -40,6 +42,7 @@ ssize_t sysparam_length(const char *name);
 ssize_t sysparam_read(const char *name, void *data, size_t len);
 status_t sysparam_get_ptr(const char *name, const void **ptr, size_t *len);
 status_t sysparam_add_nosave(const char *name, const void *value, size_t len);
+status_t sysparam_add_dynamic(const char *name, sysparam_dynamic_callback cb);
 
 #if SYSPARAM_ALLOW_WRITE
 status_t sysparam_add(const char *name, const void *value, size_t len);
