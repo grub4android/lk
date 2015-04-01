@@ -96,6 +96,7 @@ typedef struct vm_page {
 #define VM_PAGE_TYPE_KERNEL   (0x1)
 #define VM_PAGE_TYPE_IO       (0x2)
 #define VM_PAGE_TYPE_LOADER   (0x3)
+#define VM_PAGE_TYPE_LINUX    (0x4)
 
 static inline bool page_is_free(const vm_page_t *page)
 {

@@ -97,6 +97,8 @@ static efi_status_t efi_allocate_pages(efi_allocate_type_t type,
 	// calculate length
 	size_t len = pages*EFI_PAGE_SIZE;
 
+    bool ls_linux_addr = ((*memory)>=LINUX_BASE && (*memory)+len<=LINUX_BASE+LINUX_SIZE);
+
 	// allocate
 	void* buf = NULL;
 	switch(type) {
@@ -107,7 +109,10 @@ static efi_status_t efi_allocate_pages(efi_allocate_type_t type,
 			buf = pmm_alloc_map_maxaddr(len, ARCH_MMU_FLAG_CACHED);
 			break;
 		case EFI_ALLOCATE_ADDRESS:
-			buf = pmm_alloc_map_addr((paddr_t)*memory, len, ARCH_MMU_FLAG_CACHED);
+			if(ls_linux_addr)
+				buf = (void*)(paddr_t)*memory;
+			else
+				buf = pmm_alloc_map_addr((paddr_t)*memory, len, ARCH_MMU_FLAG_CACHED);
 			break;
 
 		default:
@@ -120,7 +125,8 @@ static efi_status_t efi_allocate_pages(efi_allocate_type_t type,
 	}
 
 	// set memory type
-	pmm_set_type_ptr(buf, VM_PAGE_TYPE_LOADER);
+	if(!(type==EFI_ALLOCATE_ADDRESS && ls_linux_addr))
+		pmm_set_type_ptr(buf, VM_PAGE_TYPE_LOADER);
 
 	// return memory address
 	*memory = (efi_physical_address_t)(uint32_t)buf;
@@ -190,6 +196,9 @@ static int efi_pmm_range_cb(void* _pdata, paddr_t addr, size_t size, const pmm_a
 		// loader page
 		else if(page->type==VM_PAGE_TYPE_LOADER)
 			type = EFI_LOADER_DATA;
+		// linux page
+		else if(page->type==VM_PAGE_TYPE_LINUX)
+			type = EFI_CONVENTIONAL_MEMORY;
 	}
 
 	efi_add_mmap_desc(pdata, type, addr, size, EFI_MMAP_FLAGS_CONV);
