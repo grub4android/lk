@@ -401,6 +401,30 @@ static void android_init(uint level)
 
 	// add dynamic cmdline param
 	sysparam_add_dynamic("android_additional_cmdline", android_sysparam_cb);
+
+	//
+	// ADDRESS OVERRIDES
+	//
+
+#ifdef ANDROID_FORCE_KERNEL_ADDR
+	uint64_t kernel_addr = ANDROID_FORCE_KERNEL_ADDR;
+	sysparam_add_nosave("android_kernel_addr", &kernel_addr, sizeof(kernel_addr));
+#endif
+
+#ifdef ANDROID_FORCE_KERNEL64_ADDR
+	uint64_t kernel64_addr = ANDROID_FORCE_KERNEL64_ADDR;
+	sysparam_add_nosave("android_kernel64_addr", &kernel64_addr, sizeof(kernel64_addr));
+#endif
+
+#ifdef ANDROID_FORCE_RAMDISK_ADDR
+	uint64_t ramdisk_addr = ANDROID_FORCE_RAMDISK_ADDR;
+	sysparam_add_nosave("android_ramdisk_addr", &ramdisk_addr, sizeof(ramdisk_addr));
+#endif
+
+#ifdef ANDROID_FORCE_TAGS_ADDR
+	uint64_t tags_addr = ANDROID_FORCE_TAGS_ADDR;
+	sysparam_add_nosave("android_tags_addr", &tags_addr, sizeof(tags_addr));
+#endif
 }
 
 LK_INIT_HOOK(android, &android_init, LK_INIT_LEVEL_TARGET);
