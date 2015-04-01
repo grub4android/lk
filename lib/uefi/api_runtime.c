@@ -108,8 +108,8 @@ efi_status_t efi_get_variable(efi_char16_t *variable_name,
 	efi_char8_t* name8 = malloc(strlen16(variable_name)+1);
 	SafeUnicodeStrToAsciiStr(variable_name, name8);
 
-	// try to read variable
-	ssize_t len = sysparam_read((const char *)name8, data, *data_size);
+	// get length
+	ssize_t len = sysparam_length((const char*)name8);
 
 	// not found
 	if(len==ERR_NOT_FOUND) {
@@ -118,18 +118,21 @@ efi_status_t efi_get_variable(efi_char16_t *variable_name,
 	}
 
 	// buffer is too small
-	else if(len<(ssize_t)data_size) {
+	if((ssize_t)*data_size<len) {
 		status = EFI_BUFFER_TOO_SMALL;
-		goto out;
+		goto set_length;
 	}
 
-	// OK
-	else {
-		if(attributes)
-			*attributes = EFI_VARIABLE_BOOTSERVICE_ACCESS;
+	// read variable
+	sysparam_read((const char *)name8, data, *data_size);
 
-		*data_size = len;
-	}
+	// set attributes
+	if(attributes)
+		*attributes = EFI_VARIABLE_BOOTSERVICE_ACCESS;
+
+set_length:
+	// set size
+	*data_size = len;
 	
 out:
 	free(name8);
