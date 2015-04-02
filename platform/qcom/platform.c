@@ -168,7 +168,7 @@ void platform_qcom_init_pmm(void) {
 	pmm_alloc_map_addr(LINUX_BASE, LINUX_SIZE, ARCH_MMU_FLAG_UNCACHED_DEVICE);
 	pmm_set_type_ptr((void*)LINUX_BASE, VM_PAGE_TYPE_LINUX);
 
-#ifdef QCOM_ENABLE_2NDSTAGE_BOOT
+#if defined(ENABLE_2NDSTAGE_BOOT) && defined(QCOM_ENABLE_DISPLAY)
 	msm_display_2ndstagefb_reserve();
 #endif
 }

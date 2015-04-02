@@ -39,7 +39,7 @@
 #include <dev/keys.h>
 #include <dev/pmic/pm8x41.h>
 #include <platform/gpio.h>
-#include <dev/interrupt/arm_gic.h>
+#include <platform/qgic_common.h>
 #include <platform/scm.h>
 #include <platform/qcom.h>
 #include <platform/spmi.h>
@@ -91,7 +91,7 @@ void platform_early_init(void)
     platform_clock_init();
 
     /* initialize the interrupt controller */
-    arm_gic_init();
+    qgic_init();
 
     qtimer_init();
 

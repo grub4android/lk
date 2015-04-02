@@ -12,11 +12,14 @@
 #include <platform/qcom.h>
 #include <platform/board.h>
 #include <platform/baseband.h>
-#include <platform/msm_panel.h>
-#include <dev/gcdb/panel_display.h>
 #include <lib/sysparam.h>
 #include <app/fastboot.h>
 #include <lk/init.h>
+
+#ifdef QCOM_ENABLE_DISPLAY
+#include <platform/msm_panel.h>
+#include <dev/gcdb/panel_display.h>
+#endif
 
 #include "atags.h"
 
@@ -392,10 +395,12 @@ static void android_init(uint level)
 			break;
 	}
 
+#ifdef QCOM_ENABLE_DISPLAY
 	// DISPLAY
 	char display_panel[MAX_PANEL_ID_LEN];
 	target_display_panel_node("", display_panel, MAX_PANEL_ID_LEN);
 	cmdline_add(display_panel, NULL);
+#endif
 
 	// WARMBOOT
 

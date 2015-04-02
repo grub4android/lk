@@ -97,7 +97,8 @@ static efi_status_t efi_allocate_pages(efi_allocate_type_t type,
 	// calculate length
 	size_t len = pages*EFI_PAGE_SIZE;
 
-    bool ls_linux_addr = ((*memory)>=LINUX_BASE && (*memory)+len<=LINUX_BASE+LINUX_SIZE);
+	#pragma GCC diagnostic ignored "-Wtype-limits"
+	bool ls_linux_addr = ((*memory)>=LINUX_BASE && (*memory)+len<=LINUX_BASE+LINUX_SIZE);
 
 	// allocate
 	void* buf = NULL;

@@ -451,7 +451,7 @@ msm_display_off_out:
 	return ret;
 }
 
-#ifdef QCOM_ENABLE_2NDSTAGE_BOOT
+#ifdef ENABLE_2NDSTAGE_BOOT
 int msm_display_2ndstagefb_reserve(void) {
 	struct fbcon_config config;
 	mdp_dump_config(&config);
@@ -472,7 +472,7 @@ int msm_display_2ndstagefb_setup(void) {
 
 	// map physical framebuffer
 	size_t fbsize = config->width*config->height*(config->bpp/3);
-	if(vmm_alloc_physical(vmm_get_kernel_aspace(), "msm_fb", fbsize, &config->base, (paddr_t)config->base, 0, ARCH_MMU_FLAG_UNCACHED)<0)
+	if(!arch_mmu_map((vaddr_t)config->base, (paddr_t)config->base, fbsize/PAGE_SIZE, ARCH_MMU_FLAG_UNCACHED))
 		return ERR_NO_MEMORY;
 
 	fbcon_setup(config);

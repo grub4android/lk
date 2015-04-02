@@ -1,5 +1,6 @@
 TARGET := qcom-msm8610
 #QCOM_ENABLE_UART := 1
+ARM_WITHOUT_VFP_NEON := 1
 
 MODULES += \
 	app/tests \

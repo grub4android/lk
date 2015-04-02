@@ -84,7 +84,7 @@ void target_display_init(const char *panel_name)
 	uint32_t panel_loop = 0;
 	uint32_t ret = 0;
 
-#ifdef QCOM_ENABLE_2NDSTAGE_BOOT
+#ifdef ENABLE_2NDSTAGE_BOOT
 	msm_display_2ndstagefb_setup();
 	return;
 #endif

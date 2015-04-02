@@ -5,6 +5,7 @@ include platform/qcom/include.mk
 
 ARCH := arm
 ARM_CPU := cortex-a8
+QCOM_ENABLE_QGIC := 1
 QCOM_ENABLE_EMMC := 1
 QCOM_ENABLE_SDHCI := 1
 QCOM_ENABLE_QTIMER := 1

@@ -192,7 +192,7 @@ void fbcon_setup(struct fbcon_config *_config)
 
 	fbcon_set_colors(bg, fg);
 
-#ifndef QCOM_ENABLE_2NDSTAGE_BOOT
+#ifndef ENABLE_2NDSTAGE_BOOT
 	fbcon_clear();
 	fbcon_flush();
 #endif
