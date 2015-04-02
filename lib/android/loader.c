@@ -402,6 +402,10 @@ static void android_init(uint level)
 	// add dynamic cmdline param
 	sysparam_add_dynamic("android_additional_cmdline", android_sysparam_cb);
 
+	// mach type
+	uint32_t mach_type = board_machtype();
+	sysparam_add_nosave("android_machine_type", &mach_type, sizeof(mach_type));
+
 	//
 	// ADDRESS OVERRIDES
 	//
