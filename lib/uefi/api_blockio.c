@@ -44,22 +44,34 @@ static efi_status_t efi_bio_flush_blocks(struct efi_block_io* this) {
 
 static void bio_subdev_cb(const char* name, void* _pdata) {
 	bio_subdev_pdata_t* pdata = _pdata;
+	const char* parent_name = pdata->parent->name;
 
 	// check for free slot
 	if(num_devices>=MAX_DEVICES)
 		return;
 
-	// check if this device is a parent
-	const char* parent_name = pdata->parent->name;
-	if(strncmp(parent_name, name, strlen(parent_name)) || !strcmp(name, parent_name))
+	// ignore device which are not the parent itself or a subdevice of it
+	if(strncmp(parent_name, name, strlen(parent_name)))
 		return;
 
-	// open disk
-	bdev_t* dev = bio_open(name);
-	if(!dev || !dev->is_subdev) return;
+	// check if this device is the parent
+	bool is_parent = !strcmp(name, parent_name);
+	bool is_memdisk = !strcmp(parent_name, "grub_ramdisk");
 
-	// get subdev
-	subdev_t* subdev = (subdev_t*)dev;
+	// open disk
+	bdev_t* dev;
+	if(is_parent)
+		dev = pdata->parent;
+	else
+		dev= bio_open(name);
+	if(!dev) return;
+
+	// get partition offset
+	efi_lba_t partition_start = 0;
+	if(dev->is_subdev) {
+		subdev_t* subdev = (subdev_t*)dev;
+		partition_start = subdev->offset;
+	}
 
 	// add to media devices
 	uint32_t media_id = num_devices++;
@@ -73,7 +85,7 @@ static void bio_subdev_cb(const char* name, void* _pdata) {
 	media->media_id = media_id;
 	media->removable_media = false;
 	media->media_present = true;
-	media->logical_partition = true;
+	media->logical_partition = !is_parent;
 	media->read_only = true;
 	media->write_caching = false;
 	media->block_size = dev->block_size;
@@ -93,18 +105,36 @@ static void bio_subdev_cb(const char* name, void* _pdata) {
 	efi_guid_t guid_block = EFI_BLOCK_IO_GUID;
 	uefi_add_protocol_interface(handle, guid_block, bio);
 
+	uint32_t path_len = pdata->parent_path->header.length;
+	if(is_memdisk)
+		path_len+=sizeof(efi_cdrom_device_path_t);
+	else
+		path_len+=sizeof(efi_hard_drive_device_path_t);
+
 	// create devicepath based on parent's path
-	void* _dp = uefi_create_device_path(pdata->parent_path->header.length + sizeof(efi_hard_drive_device_path_t));
+	void* _dp = uefi_create_device_path(path_len);
 	memcpy(_dp, pdata->parent_path, pdata->parent_path->header.length);
 	
-	// create HD device path
-	efi_hard_drive_device_path_t* dp = _dp + pdata->parent_path->header.length;
-	dp->header.type = EFI_MEDIA_DEVICE_PATH_TYPE;
-	dp->header.subtype = EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE;
-	dp->header.length = sizeof(*dp);
-	dp->partition_number = ++pdata->index;
-	dp->partition_start = subdev->offset;
-	dp->partition_size = dev->size/dev->block_size;
+	if(is_memdisk) {
+		// create CDROM device path
+		efi_cdrom_device_path_t* dp = _dp + pdata->parent_path->header.length;
+		dp->header.type = EFI_MEDIA_DEVICE_PATH_TYPE;
+		dp->header.subtype = EFI_CDROM_DEVICE_PATH_SUBTYPE;
+		dp->header.length = sizeof(*dp);
+		dp->partition_start = partition_start;
+		dp->partition_size = dev->size/dev->block_size;
+		++pdata->index;
+	}
+	else {
+		// create HD device path
+		efi_hard_drive_device_path_t* dp = _dp + pdata->parent_path->header.length;
+		dp->header.type = EFI_MEDIA_DEVICE_PATH_TYPE;
+		dp->header.subtype = EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE;
+		dp->header.length = sizeof(*dp);
+		dp->partition_number = pdata->index++;
+		dp->partition_start = partition_start;
+		dp->partition_size = dev->size/dev->block_size;
+	}
 
 	// add device path protocol
 	efi_guid_t guid_dp = EFI_DEVICE_PATH_GUID;
