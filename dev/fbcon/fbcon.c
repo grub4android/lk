@@ -28,10 +28,12 @@
 
 #include <debug.h>
 #include <err.h>
+#include <printf.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <dev/fbcon.h>
+#include <lib/console.h>
 
 #include "font5x12.h"
 
@@ -207,3 +209,41 @@ struct fbcon_config* fbcon_display(void)
 {
     return config;
 }
+
+static int cmd_fbcon(int argc, const cmd_args *argv)
+{
+	if (argc < 2) {
+	notenoughargs:
+		printf("not enough arguments\n");
+	usage:
+		printf("usage:\n");
+		printf("%s config\n", argv[0].str);
+		return ERR_GENERIC;
+	}
+
+	if (!strcmp(argv[1].str, "config")) {
+		printf("config %p\n", config);
+
+		if(config) {
+			printf("\tbase %p\n", config->base);
+			printf("\twidth %u\n", config->width);
+			printf("\theight %u\n", config->height);
+			printf("\tstride %u\n", config->stride);
+			printf("\tbpp %u\n", config->bpp);
+			printf("\tformat %u\n", config->format);
+			printf("\tupdate_start %p\n", config->update_start);
+			printf("\tupdate_done %p\n", config->update_done);
+		}
+	} else {
+		printf("unknown command\n");
+		goto usage;
+	}
+
+	return NO_ERROR;
+}
+
+STATIC_COMMAND_START
+#if LK_DEBUGLEVEL > 0
+STATIC_COMMAND("fbcon", "fbcon commands", &cmd_fbcon)
+#endif
+STATIC_COMMAND_END(fbcon);
