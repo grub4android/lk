@@ -410,7 +410,7 @@ static void handle_ept_complete(struct udc_endpoint *ept)
 				 * data before checking the status
 				 * every time.
 				 */
-				arch_invalidate_cache_range((addr_t)(item),
+				arch_clean_invalidate_cache_range((addr_t)(item),
 							sizeof(
 							struct ept_queue_item));
 
