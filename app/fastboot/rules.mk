@@ -2,7 +2,9 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 
 MODULE := $(LOCAL_DIR)
 
-MODULE_DEPS := lib/android
+MODULE_DEPS := \
+	lib/sparse \
+	lib/android
 
 MODULE_SRCS += \
 	$(LOCAL_DIR)/fastboot.c \

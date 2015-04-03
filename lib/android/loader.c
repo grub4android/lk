@@ -72,13 +72,23 @@ int internal_prepare_cmdline(android_parsed_bootimg_t* parsed) {
 	return NO_ERROR;
 }
 
-int android_parse_bootimg(void* ptr, size_t size, android_parsed_bootimg_t* parsed) {
+int android_is_bootimg(void* ptr, size_t size) {
 	// check data ptr
 	if(!ptr)
 		return ERR_INVALID_ARGS;
 
 	// check size
 	if(size<sizeof(boot_img_hdr_t))
+		return ERR_INVALID_ARGS;
+
+	// get bootimg header
+	boot_img_hdr_t* hdr = ptr;
+	return !memcmp(hdr->magic, BOOT_MAGIC, BOOT_MAGIC_SIZE);
+}
+
+int android_parse_bootimg(void* ptr, size_t size, android_parsed_bootimg_t* parsed) {
+	// validate
+	if(!android_is_bootimg(ptr, size))
 		return ERR_INVALID_ARGS;
 
 	// check parsed ptr

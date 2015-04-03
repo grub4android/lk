@@ -40,6 +40,7 @@
 #include <lk/init.h>
 #include <platform.h>
 #include <kernel/vm.h>
+#include <lib/sparse.h>
 #include <lib/android.h>
 #include <app/fastboot.h>
 
@@ -55,6 +56,7 @@
 #include <lib/bio.h>
 #endif
 
+#define ISPART(x) (!strcmp((pname), (x)))
 #define PRINT_PARSED_INFO(x) \
 	dprintf(SPEW, "%s: kernel=0x%08x(0x%08x) ramdisk=0x%08x(0x%08x) second=0x%08x(0x%08x) tags=0x%08x(0x%08x) cmdline=[%s]\n", __func__, \
 		(x).hdr->kernel_addr, (x).hdr->kernel_size, \
@@ -128,6 +130,76 @@ static void cmd_oem_dump_partition(const char *arg, void *unused, unsigned sz)
 
 	bio_close(dev);
 }
+
+static void cmd_flash(const char *arg, void *data, unsigned sz)
+{
+	// duplicate arg for strtok
+	char tmp[strlen(arg)+1];
+	strcpy(tmp, arg);
+
+	// get partition name
+	char *saveptr = NULL;
+	char *pch = strtok_r(tmp, ":", &saveptr);
+	char pname[strlen(pch)];
+	strcpy(pname, pch);
+
+	// get LUN
+	pch = strtok_r(NULL, ":", &saveptr);
+	if(pch) {
+		// UFS LUN
+		fastboot_fail("Unsupported");
+	}
+
+	// flash partition table
+	if(ISPART("partition")) {
+		fastboot_fail("Unsupported");
+		return;
+	}
+
+	// open device
+	bdev_t* dev = bio_open_by_label(pname);
+	if(!dev) {
+		fastboot_fail("partition not found");
+		return;
+	}
+
+	// check size
+	if(sz > dev->size) {
+		fastboot_fail("image is too large");
+		goto finish;
+	}
+
+	// sparse flash
+	if(sparse_validate(data, sz)) {
+		if(sparse_write_to_device(dev, data, sz)) {
+			goto finish;
+		}
+	}
+
+	// normal flash
+	else {
+		// validate data
+		if(ISPART("boot") || ISPART("boot1") || ISPART("recovery")) {
+			// parse bootimg
+			if(!android_is_bootimg(data, sz)) {
+				fastboot_fail("not a boot image");
+				goto finish;
+			}
+		}
+
+		// write
+		if(bio_write(dev, data, 0, sz)!=(ssize_t)sz) {
+			fastboot_fail("write failure");
+			goto finish;
+		}
+
+		// send OK
+		fastboot_okay("");
+	}
+
+finish:
+	bio_close(dev);
+}
 #endif
 
 static void cmd_reboot(const char *arg, void *data, unsigned sz)
@@ -196,6 +268,7 @@ static void fastboot_commands_init(uint level)
 #endif
 #if WITH_LIB_BIO
 	fastboot_register_desc("oem dump-partition", "download partition data", cmd_oem_dump_partition);
+	fastboot_register("flash:", cmd_flash);
 #endif
 
 	fastboot_register("reboot", cmd_reboot);

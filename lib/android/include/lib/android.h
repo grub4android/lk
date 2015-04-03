@@ -23,6 +23,7 @@ typedef struct {
 	void* tags_loaded;	
 } android_parsed_bootimg_t;
 
+int android_is_bootimg(void* ptr, size_t size);
 int android_parse_bootimg(void* ptr, size_t size, android_parsed_bootimg_t* parsed);
 int android_parse_partition(const char* name, android_parsed_bootimg_t* parsed);
 int android_do_boot(android_parsed_bootimg_t* parsed, bool fastboot_control);
