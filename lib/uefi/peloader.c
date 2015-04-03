@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <lib/bio.h>
+#include <dev/keys.h>
 #include <kernel/vm.h>
 #include <kernel/thread.h>
 #include <uefi/api.h>
@@ -179,6 +180,9 @@ int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size, c
 	// add loaded image protocol
 	efi_guid_t guid = EFI_LOADED_IMAGE_GUID;
 	uefi_add_protocol_interface(req->image_handle, guid, li);
+
+	// clear pending keys
+	keys_clear_all();
 
 	// run binary in new thread
 	thread_detach_and_resume(thread_create("efiboot", efiboot_thread_entry, (void*)req, DEFAULT_PRIORITY, EFI_STACK_SIZE));
