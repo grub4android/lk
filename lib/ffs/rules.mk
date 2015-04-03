@@ -4,6 +4,8 @@ MODULE := $(LOCAL_DIR)
 
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
+MODULE_CFLAGS := -Wno-error=strict-aliasing
+
 MODULE_SRCS += \
 	$(LOCAL_DIR)/ff.c \
 	$(LOCAL_DIR)/option/ccsbcs.c \

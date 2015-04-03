@@ -112,6 +112,11 @@ void _panic(void *caller, const char *fmt, ...)
 	platform_halt(HALT_ACTION_HALT, HALT_REASON_SW_PANIC);
 }
 
+void abort(void)
+{
+	panic("abort");
+}
+
 static int __debug_stdio_fputc(void *ctx, int c)
 {
 	_dputc(c);

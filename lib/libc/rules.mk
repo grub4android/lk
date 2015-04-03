@@ -10,7 +10,11 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/stdio.c \
 	$(LOCAL_DIR)/qsort.c \
 	$(LOCAL_DIR)/eabi.c \
-	$(LOCAL_DIR)/gcd_lcm.c
+	$(LOCAL_DIR)/gcd_lcm.c \
+	$(LOCAL_DIR)/errno.c \
+	$(LOCAL_DIR)/bsearch.c \
+	$(LOCAL_DIR)/strtol.c \
+	$(LOCAL_DIR)/strtoul.c
 
 ifneq ($(WITH_CUSTOM_MALLOC),true)
 MODULE_SRCS += $(LOCAL_DIR)/malloc.c

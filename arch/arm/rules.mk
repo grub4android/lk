@@ -168,7 +168,8 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/arm/fpu.c \
 	$(LOCAL_DIR)/arm/mmu.c \
 	$(LOCAL_DIR)/arm/thread.c \
-	$(LOCAL_DIR)/arm/dcc.S
+	$(LOCAL_DIR)/arm/dcc.S \
+	$(LOCAL_DIR)/arm/setjmp.S
 
 MODULE_ARM_OVERRIDE_SRCS := \
 	$(LOCAL_DIR)/arm/arch.c

@@ -100,6 +100,7 @@ void unregister_print_callback(print_callback_t *cb);
 /* systemwide halts */
 void _panic(void *caller, const char *fmt, ...) __PRINTFLIKE(2, 3) __NO_RETURN;
 #define panic(x...) _panic(__GET_CALLER(), x)
+void abort(void) __NO_RETURN;
 
 #define PANIC_UNIMPLEMENTED panic("%s unimplemented\n", __PRETTY_FUNCTION__)
 

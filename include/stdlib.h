@@ -29,6 +29,9 @@
 #include <endian.h>
 #include <rand.h>
 #include <arch/defines.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 unsigned gcd(unsigned m, unsigned n);
 unsigned lcm(unsigned m, unsigned n);
@@ -40,6 +43,8 @@ unsigned long long atoull(const char *num);
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+#define abs(a) (((a) < 0) ? -(a) : (a))
 
 #define ROUNDUP(a, b) (((a) + ((b)-1)) & ~((b)-1))
 #define ROUNDDOWN(a, b) ((a) & ~((b)-1))
@@ -61,7 +66,18 @@ unsigned long long atoull(const char *num);
 #define BUF_DMA_ALIGN(var, size) \
 	static uint8_t var[ROUNDUP(size, CACHE_LINE)] __attribute__((aligned(CACHE_LINE)));
 
+void * bsearch(const void *key, const void *base0,
+	size_t nmemb, size_t size,
+	int (*compar)(const void *, const void *));
+
 void qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *));
+
+long strtol(const char *, char **, int);
+unsigned long strtoul(const char *, char **, int);
+
+#define getenv(Name) NULL
+
+__END_DECLS
 
 #endif
 
