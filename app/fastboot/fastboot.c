@@ -745,7 +745,7 @@ void fastboot_stop(void)
 	usb_if.udc_stop();
 }
 
-static void fastboot_init(const struct app_descriptor *app)
+static void fastboot_entry(const struct app_descriptor *app, void *args)
 {
 	void* buf = NULL;
 	size_t len = pmm_get_free_space()/2;
@@ -760,5 +760,5 @@ static void fastboot_init(const struct app_descriptor *app)
 }
 
 APP_START(fastboot)
-    .init = fastboot_init,
+    .entry = fastboot_entry,
 APP_END

@@ -5,6 +5,7 @@ ARM_WITHOUT_VFP_NEON := 1
 MODULES += \
 	app/tests \
 	app/stringtests \
+	app/aboot \
 	app/fastboot \
 	lib/aes \
 	lib/aes/test \

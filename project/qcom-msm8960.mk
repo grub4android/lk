@@ -4,6 +4,7 @@ QCOM_ENABLE_UART := 1
 MODULES += \
 	app/tests \
 	app/stringtests \
+	app/aboot \
 	app/fastboot \
 	lib/aes \
 	lib/aes/test \

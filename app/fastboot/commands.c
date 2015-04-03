@@ -42,6 +42,7 @@
 #include <kernel/vm.h>
 #include <lib/sparse.h>
 #include <lib/android.h>
+#include <app/aboot.h>
 #include <app/fastboot.h>
 
 #if WITH_LIB_UEFI
@@ -247,17 +248,8 @@ static void cmd_boot(const char *arg, void *data, unsigned sz)
 
 static void cmd_continue(const char *arg, void *data, unsigned sz)
 {
-	android_parsed_bootimg_t parsed;
-
-	// parse bootimg
-	if(android_parse_partition("boot", &parsed)) {
-		fastboot_fail("error loading partition");
-		return;
-	}
-	PRINT_PARSED_INFO(parsed);
-
-	// boot
-	android_do_boot(&parsed, true);
+	fastboot_okay("");
+	aboot_boot(HALT_REASON_UNKNOWN);
 }
 
 
