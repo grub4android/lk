@@ -106,3 +106,21 @@ void platform_halt(platform_halt_action suggested_action,
             break;
     }
 }
+
+platform_halt_reason platform_get_reboot_reason(void) {
+	switch(qcom_get_reboot_reason()) {
+		case REBOOT_MODE_BOOTLOADER:
+			return HALT_REASON_SW_BOOTLOADER;
+		case REBOOT_MODE_NORMAL:
+			return HALT_REASON_SW_RESET;
+		case REBOOT_MODE_RECOVERY:
+			return HALT_REASON_SW_RECOVERY;
+		case REBOOT_MODE_ALARM:
+			return HALT_REASON_ALARM;
+		case REBOOT_MODE_PANIC:
+			return HALT_REASON_SW_PANIC;
+
+		default:
+			return HALT_REASON_UNKNOWN;
+	}
+}

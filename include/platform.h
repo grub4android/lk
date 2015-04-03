@@ -39,6 +39,7 @@ typedef enum {
     HALT_REASON_LOWVOLTAGE,     // LV/Brownout condition
     HALT_REASON_HIGHVOLTAGE,    // High voltage condition.
     HALT_REASON_THERMAL,        // Thermal reason (probably overtemp)
+    HALT_REASON_ALARM,          // Alarm boot
     HALT_REASON_OTHER_HW,       // Other hardware (platform) specific reason
     HALT_REASON_SW_RESET,       // Generic Software Initiated Reboot
     HALT_REASON_SW_WATCHDOG,    // Reboot triggered by a SW watchdog timer
@@ -46,6 +47,7 @@ typedef enum {
     HALT_REASON_SW_UPDATE,      // SW triggered reboot in order to begin firmware update
     HALT_REASON_SW_BOOTLOADER,  // Reboot to bootloader mode
     HALT_REASON_SW_RECOVERY,    // Reboot to recovery mode
+    HALT_REASON_SW_DOWNLOAD,    // Reboot to download mode
 } platform_halt_reason;
 
 lk_time_t current_time(void);

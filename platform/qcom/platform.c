@@ -23,6 +23,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <reg.h>
 #include <printf.h>
 #include <string.h>
 #include <compiler.h>
@@ -180,6 +181,17 @@ void platform_init_mmu_mappings(void)
 __WEAK uint32_t platform_get_smem_base_addr(void)
 {
 	return MSM_SHARED_BASE;
+}
+
+__WEAK uint32_t qcom_get_reboot_reason(void)
+{
+	uint32_t restart_reason = 0;
+
+	/* Read reboot reason and scrub it */
+	restart_reason = readl(RESTART_REASON_ADDR);
+	writel(0x00, RESTART_REASON_ADDR);
+
+	return restart_reason;
 }
 
 __WEAK int boot_device_mask(int val)
