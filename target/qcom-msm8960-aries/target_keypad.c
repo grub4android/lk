@@ -93,3 +93,50 @@ void msm8960_keypad_init(void)
 	msm8960_keypad_gpio_init();
 	ssbi_gpio_keypad_init(&msm8960_qwerty_keypad);
 }
+
+static struct pm8xxx_gpio_init pm8921_keypad_gpios[] = {
+	/* keys GPIOs */
+	PM8XXX_GPIO_INPUT(PM_GPIO(1), PM_GPIO_PULL_UP_31_5),
+	PM8XXX_GPIO_INPUT(PM_GPIO(2), PM_GPIO_PULL_UP_31_5),
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(9), 0),
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(10), 0),
+};
+
+/* pm8921 GPIO configuration for APQ8064 keypad */
+static struct pm8xxx_gpio_init pm8921_keypad_gpios_apq[] = {
+	/* keys GPIOs */
+	PM8XXX_GPIO_INPUT(PM_GPIO(1), PM_GPIO_PULL_UP_31_5),
+	PM8XXX_GPIO_INPUT(PM_GPIO(2), PM_GPIO_PULL_UP_31_5),
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(9), 0),
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(10), 0),
+};
+
+void msm8960_keypad_gpio_init(void)
+{
+	int i = 0;
+	int num = 0;
+
+	num = ARRAY_SIZE(pm8921_keypad_gpios);
+
+	for(i=0; i < num; i++)
+	{
+		pm8921_gpio_config(pm8921_keypad_gpios[i].gpio,
+							&(pm8921_keypad_gpios[i].config));
+	}
+}
+
+void apq8064_keypad_gpio_init(void)
+{
+	int i = 0;
+	int num = 0;
+	struct pm8xxx_gpio_init *gpio_array;
+
+	num = ARRAY_SIZE(pm8921_keypad_gpios_apq);
+	gpio_array = pm8921_keypad_gpios_apq;
+
+	for(i = 0; i < num; i++)
+	{
+		pm8921_gpio_config(gpio_array[i].gpio,
+							&(gpio_array[i].config));
+	}
+}

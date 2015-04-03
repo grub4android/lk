@@ -330,3 +330,21 @@ void target_display_shutdown(void)
 	gcdb_display_shutdown();
 }
 
+static struct pm8xxx_gpio_init pm8921_display_gpios_apq[] = {
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(11), 0),
+	PM8XXX_GPIO_OUTPUT(PM_GPIO(25), 0),
+	PM8XXX_GPIO_INPUT_POL(PM_GPIO(12), PM_GPIO_PULL_NO),
+};
+
+void apq8064_display_gpio_init(void)
+{
+	int i = 0;
+	int num = 0;
+
+	num = ARRAY_SIZE(pm8921_display_gpios_apq);
+
+	for (i = 0; i < num; i++) {
+		pm8921_gpio_config(pm8921_display_gpios_apq[i].gpio,
+			&(pm8921_display_gpios_apq[i].config));
+	}
+}
