@@ -204,7 +204,7 @@ efi_status_t uefi_api_blockio_init(void) {
 	return EFI_SUCCESS;
 }
 
-efi_status_t uefi_api_blockio_by_name(efi_handle_t image_handle, const char* name, efi_handle_t* dev_handle) {
+efi_status_t uefi_api_blockio_by_name(efi_handle_t image_handle, const char* name, const char* label, efi_handle_t* dev_handle) {
 	// get boot device handle
 	efi_handle_t handles[MAX_DEVICES];
 	efi_uintn_t bufsize = ARRAY_SIZE(handles)*sizeof(*handles);
@@ -217,9 +217,16 @@ efi_status_t uefi_api_blockio_by_name(efi_handle_t image_handle, const char* nam
 				continue;
 
 			// get bio dev
-			bdev_t* dev = media_devices[bio->media->media_id]; 
+			bdev_t* dev = media_devices[bio->media->media_id];
 
-			if(!strcmp(dev->name, name)) {
+			// by name
+			if(name && !strcmp(dev->name, name)) {
+				*dev_handle = handles[i];
+				return EFI_SUCCESS;
+			}
+
+			// by label
+			if(label && dev->label && !strcmp(dev->label, label)) {
 				*dev_handle = handles[i];
 				return EFI_SUCCESS;
 			}

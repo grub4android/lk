@@ -234,7 +234,7 @@ static void cmd_boot(const char *arg, void *data, unsigned sz)
 
 #if WITH_LIB_UEFI
 	// try to load as PE image
-	int rc = peloader_load(parsed.kernel, parsed.hdr->kernel_size, parsed.ramdisk, parsed.hdr->ramdisk_size, "hd0,27", "/boot/grub/core.img");
+	int rc = peloader_load(parsed.kernel, parsed.hdr->kernel_size, parsed.ramdisk, parsed.hdr->ramdisk_size);
 	if(rc!=ERR_INVALID_ARGS) {
 		if(rc==NO_ERROR) fastboot_okay("");
 		else fastboot_fail("failed to load PE image");

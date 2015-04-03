@@ -307,6 +307,6 @@ struct pe32_reloc {
 #define PE32_REL_I386_DIR32	0x6
 #define PE32_REL_I386_REL32	0x14
 
-int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size, const char* bootdev, const char* bootpath);
+int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size);
 
 #endif /* ! EFI_PE32_HEADER */

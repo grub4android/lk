@@ -4,6 +4,6 @@
 #include <uefi/api.h>
 
 efi_status_t uefi_api_blockio_init(void);
-efi_status_t uefi_api_blockio_by_name(efi_handle_t image_handle, const char* name, efi_handle_t* dev_handle);
+efi_status_t uefi_api_blockio_by_name(efi_handle_t image_handle, const char* name, const char* label, efi_handle_t* dev_handle);
 
 #endif

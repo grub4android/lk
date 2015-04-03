@@ -1,4 +1,3 @@
-
 #include <err.h>
 #include <pow2.h>
 #include <debug.h>
@@ -38,8 +37,11 @@ static int efiboot_thread_entry(void *arg)
 	return 0;
 }
 
-int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size, const char* bootdev, const char* bootpath) {
+int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size) {
 	uint16_t i;
+	const char* bootdev_name = NULL;
+	const char* bootdev_label = NULL;
+	const char* bootpath = GRUB_BOOT_PATH_PREFIX "/boot/grub/core.img";
 
 	struct pe32_header* hdr = data;
 	struct pe32_coff_header* coff = &hdr->coff_header;
@@ -149,16 +151,21 @@ int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size, c
 
 	// ramdisk
 	if(ramdisk && ramdisk_size>0) {
-		bootdev = "grub_ramdisk";
-		create_membdev(bootdev, ramdisk, ramdisk_size);
+		bootdev_name = "grub_ramdisk";
+		create_membdev(bootdev_name, ramdisk, ramdisk_size);
 	}
+#ifdef GRUB_BOOT_PARTITION
+	{
+		bootdev_label = GRUB_BOOT_PARTITION;
+	}
+#endif
 
 	// scan devices
 	uefi_api_blockio_init();
 
 	// set boot dev
-	uefi_api_blockio_by_name(req->image_handle, bootdev, &li->device_handle);
-	ASSERT(li->device_handle);
+	uefi_api_blockio_by_name(req->image_handle, bootdev_name, bootdev_label, &li->device_handle);
+	DEBUG_ASSERT(li->device_handle);
 
 	// create file path
 	size_t pathlen = strlen(bootpath);

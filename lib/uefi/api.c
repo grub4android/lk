@@ -28,9 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#undef LK_DEBUGLEVEL
-#define LK_DEBUGLEVEL 2
-
 #include <debug.h>
 #include <string.h>
 #include <assert.h>

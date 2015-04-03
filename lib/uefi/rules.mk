@@ -20,4 +20,9 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/api_blockio.c \
 	$(LOCAL_DIR)/api_gop.c
 
+ifneq ($(GRUB_BOOT_PARTITION),)
+MODULE_CFLAGS += -DGRUB_BOOT_PARTITION=\"$(GRUB_BOOT_PARTITION)\"
+endif
+MODULE_CFLAGS += -DGRUB_BOOT_PATH_PREFIX=\"$(GRUB_BOOT_PATH_PREFIX)\"
+
 include make/module.mk

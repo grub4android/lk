@@ -1,6 +1,3 @@
-#undef LK_DEBUGLEVEL
-#define LK_DEBUGLEVEL 2
-
 #include <err.h>
 #include <debug.h>
 #include <assert.h>
