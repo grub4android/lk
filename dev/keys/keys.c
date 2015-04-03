@@ -30,6 +30,7 @@
  */
 
 #include <err.h>
+#include <bits.h>
 #include <list.h>
 #include <debug.h>
 #include <trace.h>
@@ -44,6 +45,8 @@
 
 #define LOCAL_TRACE 0
 
+static unsigned long key_bitmap[BITMAP_NUM_WORDS(MAX_KEYS)];
+
 typedef struct {
 	struct list_node node;
 	uint16_t code;
@@ -52,7 +55,7 @@ typedef struct {
 
 static struct list_node event_queue;
 static event_t key_posted;
-static mutex_t queue_mutex;
+static mutex_t queue_mutex, bitmap_mutex;
 
 static struct list_node event_sources;
 static mutex_t source_mutex;
@@ -84,6 +87,9 @@ static void keys_init_threading(uint level)
 
 static void keys_init_heap(uint level)
 {
+	memset(key_bitmap, 0, sizeof(key_bitmap));
+	mutex_init(&bitmap_mutex);
+
 	list_initialize(&event_queue);
 	event_init(&key_posted, 0, EVENT_FLAG_AUTOUNSIGNAL);
 	mutex_init(&queue_mutex);
@@ -106,6 +112,13 @@ int keys_post_event(uint16_t code, int16_t value)
 		LTRACEF("Invalid keycode posted: %d\n", code);
 		return ERR_INVALID_ARGS;
 	}
+
+	mutex_acquire(&bitmap_mutex);
+	if (value)
+		bitmap_set(key_bitmap, code);
+	else
+		bitmap_clear(key_bitmap, code);
+	mutex_release(&bitmap_mutex);
 
 	// I guess we shouldn't ignore these
 	if(!value) return NO_ERROR;
@@ -134,9 +147,21 @@ int keys_get_state(uint16_t code)
 		return ERR_INVALID_ARGS;
 	}
 
-	// TODO	
+	return bitmap_test(key_bitmap, code);
+}
 
-	return 0;
+void keys_clear_all(void)
+{
+	mutex_acquire(&bitmap_mutex);
+	memset(key_bitmap, 0, sizeof(key_bitmap));
+	mutex_release(&bitmap_mutex);
+
+	mutex_acquire(&queue_mutex);
+	while(keys_has_next()) {
+		key_event_t* event = list_remove_tail_type(&event_queue, key_event_t, node);
+		free(event);
+	}
+	mutex_release(&queue_mutex);
 }
 
 int keys_get_next(uint16_t* code, uint16_t* value, bool wait)

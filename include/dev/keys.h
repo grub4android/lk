@@ -106,6 +106,7 @@ struct key_event_source {
 void keys_add_source(key_event_source_t* source);
 int keys_post_event(uint16_t code, int16_t value);
 int keys_get_state(uint16_t code);
+void keys_clear_all(void);
 int keys_get_next(uint16_t* code, uint16_t* value, bool wait);
 int keys_has_next(void);
 

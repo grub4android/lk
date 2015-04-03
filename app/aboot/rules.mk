@@ -12,4 +12,8 @@ MODULE_SRCS += \
 
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
+ifneq ($(SYSPARAM_PARTITION),)
+GLOBAL_CFLAGS += -DSYSPARAM_PARTITION=\"$(SYSPARAM_PARTITION)\"
+endif
+
 include make/module.mk
