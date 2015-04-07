@@ -80,7 +80,7 @@ static ssize_t mem_bdev_write_block(struct bdev *bdev, const void *buf, bnum_t b
 	return count * BLOCKSIZE;
 }
 
-int create_membdev(const char *name, void *ptr, size_t len)
+bdev_t* create_membdev(const char *name, void *ptr, size_t len, bool publish)
 {
 	mem_bdev_t *mem = malloc(sizeof(mem_bdev_t));
 
@@ -95,8 +95,16 @@ int create_membdev(const char *name, void *ptr, size_t len)
 	mem->dev.write_block = mem_bdev_write_block;
 
 	/* register it */
-	bio_register_device(&mem->dev);
+	if(publish)
+		bio_register_device(&mem->dev);
+	else mem->dev.ref = 1;
 
+	return &mem->dev;
+}
+
+int delete_membdev(bdev_t* dev) {
+	mem_bdev_t *mem = (mem_bdev_t*)dev;
+	free(mem);
 	return 0;
 }
 

@@ -1,4 +1,5 @@
 #include <app.h>
+#include <err.h>
 #include <debug.h>
 #include <printf.h>
 #include <string.h>
@@ -6,10 +7,17 @@
 #include <stdlib.h>
 #include <lib/bio.h>
 #include <dev/keys.h>
+#include <app/aboot.h>
 #include <lib/android.h>
+#include <lib/console.h>
+#include <kernel/thread.h>
 
 #if WITH_LIB_SYSPARAM
 #include <lib/sysparam.h>
+#endif
+
+#if WITH_LIB_UEFI
+#include <uefi/pe32.h>
 #endif
 
 static void aboot_init_sysparam(void) {
@@ -30,7 +38,7 @@ static void aboot_init_sysparam(void) {
 #endif
 }
 
-static platform_halt_reason aboot_get_bootmode(void) {
+static bootmode_t aboot_initial_bootmode(void) {
 	// get key states
 	int key_volup = keys_get_state(KEY_VOLUMEUP);
 	int key_voldown = keys_get_state(KEY_VOLUMEDOWN);
@@ -39,20 +47,31 @@ static platform_halt_reason aboot_get_bootmode(void) {
 	dprintf(INFO, "keys: up:%d down:%d home:%d back:%d\n", key_volup, key_voldown, key_home, key_back);
 
 	if(key_volup && key_voldown) {
-		return HALT_REASON_SW_DOWNLOAD;
+		return BOOTMODE_DOWNLOAD;
 	}
 
 	if(key_home || key_volup) {
-		return HALT_REASON_SW_RECOVERY;
+		return BOOTMODE_RECOVERY;
 	}
 
 	if(key_back || key_voldown) {
-		return HALT_REASON_SW_BOOTLOADER;
+		return BOOTMODE_FASTBOOT;
 	}
 
-	platform_halt_reason reason = platform_get_reboot_reason();
-	dprintf(INFO, "halt reason: %d\n", reason);
-	return reason;
+	switch(platform_get_reboot_reason()) {
+		case HALT_REASON_SW_UPDATE:
+			return BOOTMODE_RECOVERY;
+		case HALT_REASON_SW_PANIC:
+			return BOOTMODE_PANIC;
+		case HALT_REASON_SW_BOOTLOADER:
+			return BOOTMODE_FASTBOOT;
+		case HALT_REASON_ALARM:
+			return BOOTMODE_ANDROID;
+
+		default:
+			return BOOTMODE_AUTO;
+
+	}
 }
 
 static void aboot_boot_partition(const char* name) {
@@ -68,44 +87,76 @@ static void aboot_boot_partition(const char* name) {
 	android_do_boot(&parsed, false);
 }
 
-void aboot_boot(platform_halt_reason reason) {
-	switch(reason) {
-		case HALT_REASON_SW_RESET:
-		case HALT_REASON_UNKNOWN:
+static uint aboot_boot_grub(void) {
+	bdev_t* dev = bio_open("grub");
+	if(!dev) {
+		dprintf(CRITICAL, "grub partition not found\n");
+		return ERR_INVALID_ARGS;
+	}
+
+	return peloader_load(dev, NULL);
+}
+
+void aboot_boot(bootmode_t bootmode) {
+	switch(bootmode) {
+		case BOOTMODE_AUTO:
+			if(!aboot_boot_grub()) {
+				thread_become_idle();
+				break;
+			}
 			aboot_boot_partition("boot");
 			break;
-		case HALT_REASON_SW_RECOVERY:
+		case BOOTMODE_ANDROID:
+			aboot_boot_partition("boot");
+			break;
+		case BOOTMODE_RECOVERY:
 			aboot_boot_partition("recovery");
 			break;
-		case HALT_REASON_SW_BOOTLOADER:
-			platform_halt(HALT_ACTION_REBOOT, HALT_REASON_SW_BOOTLOADER);
+		case BOOTMODE_DOWNLOAD:
+			// TODO implement dload
+			break;
+		case BOOTMODE_PANIC:
+			// TODO display last_kmsg on screen
+			break;
+		case BOOTMODE_GRUB:
+			aboot_boot_grub();
 			break;
 
 		default:
-			dprintf(CRITICAL, "Unsupported boot mode %d\n", reason);
+			dprintf(CRITICAL, "Unsupported boot mode %d\n", bootmode);
 	}
 }
 
 static void aboot_init(const struct app_descriptor *app)
 {
+#ifdef GRUB_PARTITION_NAME
+	bdev_t* dev = bio_open_by_label(GRUB_PARTITION_NAME);
+	if(dev) {
+		bnum_t start_block = 0;
+
+#ifdef GRUB_PARTITION_OFFSET
+		start_block = ALIGN(GRUB_PARTITION_OFFSET, dev->block_size)/dev->block_size;
+#endif
+
+		if(!bio_publish_subdevice(dev->name, "grub", start_block, dev->block_count - start_block - dev->block_size)) {
+			bdev_t* grubdev = bio_open("grub");
+			grubdev->label = strdup("grub");
+			grubdev->is_virtual = true;
+			bio_close(grubdev);
+		}
+	}
+#endif
+
 	aboot_init_sysparam();
 
-	switch(aboot_get_bootmode()) {
-		case HALT_REASON_SW_RESET:
-		case HALT_REASON_ALARM:
-		case HALT_REASON_UNKNOWN:
-			aboot_boot_partition("boot");
-			break;
-		case HALT_REASON_SW_RECOVERY:
-			aboot_boot_partition("recovery");
+	bootmode_t bootmode = aboot_initial_bootmode();
+	switch(bootmode) {
+		case BOOTMODE_FASTBOOT:
+			// fall through so fastboot can be started
 			break;
 
 		default:
-		case HALT_REASON_SW_PANIC:
-			// maybe display last_kmsg on screen?
-		case HALT_REASON_SW_BOOTLOADER:
-			// fall through so fastboot can be started
-			break;
+			aboot_boot(bootmode);
 	}
 }
 

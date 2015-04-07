@@ -41,6 +41,7 @@ typedef struct bdev {
 	char *label;
 	bool is_gpt;
 	bool is_subdev;
+	bool is_virtual;
 
 	/* function pointers */
 	ssize_t (*read)(struct bdev *, void *buf, off_t offset, size_t len);
@@ -83,7 +84,8 @@ int bio_num_devices(bool subdevs);
 status_t bio_publish_subdevice(const char *parent_dev, const char *subdev, bnum_t startblock, bnum_t block_count);
 
 /* memory based block device */
-int create_membdev(const char *name, void *ptr, size_t len);
+bdev_t* create_membdev(const char *name, void *ptr, size_t len, bool publish);
+int delete_membdev(bdev_t* dev);
 
 /* helper routine to trim an offset + len to the device */
 size_t bio_trim_range(const bdev_t *dev, off_t offset, size_t len);

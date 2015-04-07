@@ -434,6 +434,7 @@ void bio_initialize_bdev(bdev_t *dev, const char *name, size_t block_size, bnum_
 	dev->label = NULL;
 	dev->is_gpt = false;
 	dev->is_subdev = false;
+	dev->is_virtual = false;
 
 	/* set up the default hooks, the sub driver should override the block operations at least */
 	dev->read = bio_default_read;

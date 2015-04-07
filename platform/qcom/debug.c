@@ -94,7 +94,7 @@ void platform_halt(platform_halt_action suggested_action,
             printf("REBOOT\n");
             if(reason==HALT_REASON_SW_BOOTLOADER)
                 reboot_device(REBOOT_MODE_BOOTLOADER);
-            else if(reason==HALT_REASON_SW_RECOVERY)
+            else if(reason==HALT_REASON_SW_UPDATE)
                 reboot_device(REBOOT_MODE_RECOVERY);
             else
                 reboot_device(REBOOT_MODE_NORMAL);
@@ -114,7 +114,7 @@ platform_halt_reason platform_get_reboot_reason(void) {
 		case REBOOT_MODE_NORMAL:
 			return HALT_REASON_SW_RESET;
 		case REBOOT_MODE_RECOVERY:
-			return HALT_REASON_SW_RECOVERY;
+			return HALT_REASON_SW_UPDATE;
 		case REBOOT_MODE_ALARM:
 			return HALT_REASON_ALARM;
 		case REBOOT_MODE_PANIC:

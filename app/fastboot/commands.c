@@ -218,7 +218,7 @@ static void cmd_reboot_bootloader(const char *arg, void *data, unsigned sz)
 static void cmd_oem_reboot_recovery(const char *arg, void *data, unsigned sz)
 {
 	fastboot_okay("");
-	platform_halt(HALT_ACTION_REBOOT, HALT_REASON_SW_RECOVERY);
+	platform_halt(HALT_ACTION_REBOOT, HALT_REASON_SW_UPDATE);
 }
 
 static void cmd_boot(const char *arg, void *data, unsigned sz)
@@ -233,17 +233,28 @@ static void cmd_boot(const char *arg, void *data, unsigned sz)
 	PRINT_PARSED_INFO(parsed);
 
 #if WITH_LIB_UEFI
+	// create devices for kernel and ramdisk
+	bdev_t* kernel_dev = create_membdev("", parsed.kernel, parsed.hdr->kernel_size, false);
+	bdev_t* ramdisk_dev = NULL;
+	if(parsed.hdr->ramdisk_size>0)
+		ramdisk_dev = create_membdev("", parsed.ramdisk, parsed.hdr->ramdisk_size, false);
+
 	// try to load as PE image
-	int rc = peloader_load(parsed.kernel, parsed.hdr->kernel_size, parsed.ramdisk, parsed.hdr->ramdisk_size);
+	int rc = peloader_load(kernel_dev, ramdisk_dev);
 	if(rc!=ERR_INVALID_ARGS) {
 		if(rc==NO_ERROR) fastboot_okay("");
 		else fastboot_fail("failed to load PE image");
-		return;
+		goto done;
 	}
 #endif
 
 	// boot
 	android_do_boot(&parsed, true);
+
+done:
+	if(ramdisk_dev)
+		delete_membdev(ramdisk_dev);
+	delete_membdev(kernel_dev);
 }
 
 static void cmd_continue(const char *arg, void *data, unsigned sz)

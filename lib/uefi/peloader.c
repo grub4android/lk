@@ -37,15 +37,22 @@ static int efiboot_thread_entry(void *arg)
 	return 0;
 }
 
-int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size) {
+int peloader_load(bdev_t* kernel, bdev_t* ramdisk) {
 	uint16_t i;
 	const char* bootdev_name = NULL;
 	const char* bootdev_label = NULL;
 	const char* bootpath = GRUB_BOOT_PATH_PREFIX "/boot/grub/core.img";
 
-	struct pe32_header* hdr = data;
+	struct pe32_header __hdr;
+	struct pe32_header* hdr = &__hdr;
 	struct pe32_coff_header* coff = &hdr->coff_header;
 	struct pe32_optional_header* opt = &hdr->optional_header;
+
+	// read PE header
+	if(bio_read(kernel, hdr, 0, sizeof(*hdr))!=(ssize_t)sizeof(*hdr)) {
+		dprintf(CRITICAL, "Could not read PE header!");
+		return ERR_NOT_VALID;
+	}
 
 	// check magic
 	if(memcmp(hdr->signature, "PE\0\0", PE32_SIGNATURE_SIZE)) {
@@ -82,28 +89,46 @@ int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size) {
 
 	// copy pe32 header
 	// GRUB needs this to find the mod section
-	memcpy(memory, hdr, opt->header_size);
+	if(bio_read(kernel, memory, 0, opt->header_size)!=(ssize_t)opt->header_size) {
+		dprintf(CRITICAL, "Could not read header!");
+		return ERR_NOT_VALID;
+	}
+
+	// read section table
+	struct pe32_section_table sections[coff->num_sections];
+	if(bio_read(kernel, sections, ((char*)(opt+1)) - (char*)hdr, sizeof(*sections)*coff->num_sections)!=(ssize_t)sizeof(*sections)*coff->num_sections) {
+		dprintf(CRITICAL, "Could not read section table!");
+		return ERR_NOT_VALID;
+	}
 
 	// load sections
-	struct pe32_section_table* sections = (struct pe32_section_table*)(opt+1);
 	for(i=0; i<coff->num_sections; i++) {
 		struct pe32_section_table* section = &sections[i];
 		dprintf(SPEW, "section: %.8s virt:%x(%x) phys:%x(%x) rel:%x(%x) char:%x\n", section->name, section->virtual_address, section->virtual_size,
 			section->raw_data_offset, section->raw_data_size, section->relocations_offset, section->num_relocations, section->characteristics);
 
 		if(!(section->characteristics & PE32_SCN_MEM_DISCARDABLE)) {
-			// copy section into memory
-			memcpy(memory+section->virtual_address, data+section->raw_data_offset, section->raw_data_size);
+			// read section into memory
+			ASSERT(bio_read(kernel, memory+section->virtual_address, section->raw_data_offset, section->raw_data_size)==(ssize_t)section->raw_data_size);
+
+			// zero out the remaining space
 			if(section->virtual_size>section->raw_data_size)
 				memset(memory+section->virtual_address+section->raw_data_size, 0, section->virtual_size-section->raw_data_size);
 		}
 	}
 
+	// read relocation table
+	void* relocation_table = malloc(opt->base_relocation_table.size);
+	if(bio_read(kernel, relocation_table, opt->base_relocation_table.rva, opt->base_relocation_table.size)!=(ssize_t)opt->base_relocation_table.size) {
+		dprintf(CRITICAL, "Could not read relocation table!");
+		return ERR_NOT_VALID;
+	}
+
 	// relocate
-	dprintf(SPEW, "relocate to %p\n", memory);	
+	dprintf(INFO, "relocate to %p\n", memory);
 	uint32_t fixup_offset = 0;
 	while(fixup_offset<opt->base_relocation_table.size) {
-		struct pe32_fixup_block* fixup = data + opt->base_relocation_table.rva + fixup_offset;
+		struct pe32_fixup_block* fixup = relocation_table + fixup_offset;
 		uint32_t num_entries = (fixup->block_size-sizeof(*fixup))/sizeof(*fixup->entries);
 		dprintf(SPEW, "reloc: page_rva=%x bs=%d items=%d\n", fixup->page_rva, fixup->block_size, num_entries);
 
@@ -128,6 +153,7 @@ int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size) {
 
 		fixup_offset+=fixup->block_size;
 	}
+	free(relocation_table);
 
 	// allocate boot-request and image-handle
 	efiboot_request_t* req = malloc(1024*1024*10);
@@ -150,9 +176,20 @@ int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size) {
 	li->unload = NULL; // TODO
 
 	// ramdisk
-	if(ramdisk && ramdisk_size>0) {
+	if(ramdisk) {
+		// allocate memory for ramdisk
+		void* ramdiskmem = malloc(ramdisk->size);
+		ASSERT(ramdiskmem);
+
+		// read ramdisk data
+		if(bio_read(ramdisk, ramdiskmem, 0, ramdisk->size)!=(ssize_t)ramdisk->size) {
+			dprintf(CRITICAL, "Could not read ramdisk!");
+			return ERR_NOT_VALID;
+		}
+
+		// create public ramdisk device
 		bootdev_name = "grub_ramdisk";
-		create_membdev(bootdev_name, ramdisk, ramdisk_size);
+		create_membdev(bootdev_name, ramdiskmem, ramdisk->size, true);
 	}
 #ifdef GRUB_BOOT_PARTITION
 	{

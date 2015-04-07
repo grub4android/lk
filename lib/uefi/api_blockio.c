@@ -64,7 +64,7 @@ static void bio_subdev_cb(const char* name, void* _pdata) {
 		dev = pdata->parent;
 	else
 		dev= bio_open(name);
-	if(!dev) return;
+	if(!dev || dev->is_virtual) return;
 
 	// get partition offset
 	efi_lba_t partition_start = 0;
@@ -148,7 +148,7 @@ static void bio_iter_cb(const char* name, void* pdata) {
 
 	// open disk
 	bdev_t* dev = bio_open(name);
-	if(!dev) return;
+	if(!dev || dev->is_virtual) return;
 
 	// add to media devices
 	uint32_t media_id = num_devices++;

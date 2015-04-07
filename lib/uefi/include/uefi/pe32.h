@@ -20,6 +20,7 @@
 #define EFI_PE32_HEADER	1
 
 #include <stdint.h>
+#include <lib/bio.h>
 
 /* The MSDOS compatibility stub. This was copied from the output of
    objcopy, and it is not necessary to care about what this means.  */
@@ -307,6 +308,6 @@ struct pe32_reloc {
 #define PE32_REL_I386_DIR32	0x6
 #define PE32_REL_I386_REL32	0x14
 
-int peloader_load(void* data, size_t size, void* ramdisk, size_t ramdisk_size);
+int peloader_load(bdev_t* kernel, bdev_t* ramdisk);
 
 #endif /* ! EFI_PE32_HEADER */
